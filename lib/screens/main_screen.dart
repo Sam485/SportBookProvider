@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/screens/DashBoard/dash_board_screen.dart';
+import 'package:flutter_application_1/screens/monitor/monitor_screen.dart';
 import '../widgets/navbar/bottom_navbar.dart';
 
 class MainScreen extends StatefulWidget {
@@ -13,7 +14,7 @@ class _MainScreenState extends State<MainScreen> {
 
   static const _screens = [
     DashBoardScreen(),
-    _PlaceholderScreen(icon: Icons.calendar_month_rounded, label: 'Bookings'),
+    MonitorScreen(),
     _PlaceholderScreen(icon: Icons.group_rounded, label: 'Players'),
     _PlaceholderScreen(icon: Icons.settings_rounded, label: 'Settings'),
   ];
