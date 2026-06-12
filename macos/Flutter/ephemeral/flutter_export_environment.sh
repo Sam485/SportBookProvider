@@ -1,8 +1,8 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
 export "FLUTTER_ROOT=D:\flutter"
-export "FLUTTER_APPLICATION_PATH=D:\Coding\Flutter\SportBookProvider\flutter_application_1"
-export "FLUTTER_FRAMEWORK_SWIFT_PACKAGE_PATH=D:\Coding\Flutter\SportBookProvider\flutter_application_1\macos\Flutter\ephemeral\Packages\.packages\FlutterFramework"
+export "FLUTTER_APPLICATION_PATH=D:\Coding\Flutter\SportBookProvider"
+export "FLUTTER_FRAMEWORK_SWIFT_PACKAGE_PATH=D:\Coding\Flutter\SportBookProvider\macos\Flutter\ephemeral\Packages\.packages\FlutterFramework"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
 export "FLUTTER_BUILD_DIR=build"
 export "FLUTTER_BUILD_NAME=1.0.0"
