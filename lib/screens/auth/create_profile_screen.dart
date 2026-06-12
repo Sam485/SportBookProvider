@@ -158,7 +158,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
     await Future.delayed(const Duration(seconds: 2));
     setState(() => _isLoading = false);
     if (mounted) {
-      Navigator.pushNamed(context, AppRoutes.dashBoard);
+      Navigator.pushNamed(context, AppRoutes.home);
     }
   }
 
@@ -489,7 +489,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: GestureDetector(
-        onTap: () => Navigator.pushNamed(context, AppRoutes.dashBoard),
+        onTap: () => Navigator.pushNamed(context, AppRoutes.home),
         child: Text(
           'skip_for_now'.tr(context),
           style: TextStyle(
