@@ -1,0 +1,299 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_application_1/core/theme.dart';
+import 'package:flutter_application_1/translations/app_translations.dart';
+
+class PasswordSecurityScreen extends StatefulWidget {
+  const PasswordSecurityScreen({super.key});
+
+  @override
+  State<PasswordSecurityScreen> createState() => _PasswordSecurityScreenState();
+}
+
+class _PasswordSecurityScreenState extends State<PasswordSecurityScreen> {
+  final TextEditingController _currentPasswordController =
+      TextEditingController();
+  final TextEditingController _newPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+  bool _obscureCurrent = true;
+  bool _obscureNew = true;
+  bool _obscureConfirm = true;
+
+  @override
+  void dispose() {
+    _currentPasswordController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  void _changePassword() {
+    if (_currentPasswordController.text.isEmpty) {
+      _showError('enter_current_password'.tr(context));
+      return;
+    }
+    if (_newPasswordController.text.isEmpty) {
+      _showError('enter_new_password'.tr(context));
+      return;
+    }
+    if (_newPasswordController.text.length < 6) {
+      _showError('password_min_length'.tr(context));
+      return;
+    }
+    if (_newPasswordController.text != _confirmPasswordController.text) {
+      _showError('passwords_do_not_match'.tr(context));
+      return;
+    }
+
+    // Handle password change
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('password_changed_success'.tr(context))),
+    );
+    Navigator.pop(context);
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Scaffold(
+      backgroundColor: isDark ? AppTheme.kBg : AppTheme.kLightBg,
+      appBar: AppBar(
+        backgroundColor: isDark ? AppTheme.kBg : AppTheme.kLightBg,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios,
+            color: isDark ? Colors.white : AppTheme.kLightText,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'password_security'.tr(context),
+          style: TextStyle(
+            color: isDark ? Colors.white : AppTheme.kLightText,
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.3,
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Security Tips
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: AppTheme.cardDecorationAdaptive(context),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppTheme.kAccent.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.shield, color: AppTheme.kAccent),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'security_tips'.tr(context),
+                          style: TextStyle(
+                            color: isDark ? Colors.white : AppTheme.kLightText,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'strong_password_tip'.tr(context),
+                          style: TextStyle(
+                            color: isDark
+                                ? AppTheme.kTextSub
+                                : AppTheme.kLightTextSub,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Change Password Section
+            Text(
+              'change_password_section'.tr(context).toUpperCase(),
+              style: TextStyle(
+                color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Current Password
+            _buildPasswordField(
+              controller: _currentPasswordController,
+              label: 'current_password'.tr(context),
+              obscure: _obscureCurrent,
+              onToggle: () =>
+                  setState(() => _obscureCurrent = !_obscureCurrent),
+              isDark: isDark,
+            ),
+            const SizedBox(height: 16),
+
+            // New Password
+            _buildPasswordField(
+              controller: _newPasswordController,
+              label: 'new_password'.tr(context),
+              obscure: _obscureNew,
+              onToggle: () => setState(() => _obscureNew = !_obscureNew),
+              isDark: isDark,
+            ),
+            const SizedBox(height: 16),
+
+            // Confirm Password
+            _buildPasswordField(
+              controller: _confirmPasswordController,
+              label: 'confirm_new_password'.tr(context),
+              obscure: _obscureConfirm,
+              onToggle: () =>
+                  setState(() => _obscureConfirm = !_obscureConfirm),
+              isDark: isDark,
+            ),
+            const SizedBox(height: 24),
+
+            // Change Password Button
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: _changePassword,
+                style: AppTheme.elevatedButtonStyle(),
+                child: Text('change_password'.tr(context)),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Two-Factor Authentication
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: AppTheme.cardDecorationAdaptive(context),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.verified_user, color: Colors.green),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'two_factor_auth'.tr(context),
+                          style: TextStyle(
+                            color: isDark ? Colors.white : AppTheme.kLightText,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'two_factor_desc'.tr(context),
+                          style: TextStyle(
+                            color: isDark
+                                ? AppTheme.kTextSub
+                                : AppTheme.kLightTextSub,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Switch(
+                    value: false,
+                    onChanged: (value) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('two_factor_coming_soon'.tr(context)),
+                        ),
+                      );
+                    },
+                    activeColor: AppTheme.kAccent,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPasswordField({
+    required TextEditingController controller,
+    required String label,
+    required bool obscure,
+    required VoidCallback onToggle,
+    required bool isDark,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: obscure,
+      style: TextStyle(
+        color: isDark ? Colors.white : AppTheme.kLightText,
+        fontSize: 16,
+      ),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(
+          color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
+        ),
+        prefixIcon: Icon(
+          Icons.lock_outline,
+          color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
+        ),
+        suffixIcon: IconButton(
+          icon: Icon(
+            obscure ? Icons.visibility_off : Icons.visibility,
+            color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
+          ),
+          onPressed: onToggle,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: isDark ? AppTheme.kBorder : AppTheme.kLightBorder,
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppTheme.kAccent, width: 2),
+        ),
+        filled: true,
+        fillColor: isDark ? AppTheme.kCard : AppTheme.kLightCard,
+      ),
+    );
+  }
+}

@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/core/theme.dart';
+import 'package:flutter_application_1/routes/app_routes.dart';
 
 class DashBoardScreen extends StatefulWidget {
   const DashBoardScreen({super.key});
@@ -119,7 +120,8 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
           ),
           const Spacer(),
           IconButton(
-            onPressed: () {},
+            onPressed: () =>
+                Navigator.pushNamed(context, AppRoutes.notifications),
             icon: const Icon(Icons.notifications_outlined),
           ),
         ],
