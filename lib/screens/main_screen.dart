@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/screens/DashBoard/dash_board_screen.dart';
 import 'package:flutter_application_1/screens/monitor/monitor_screen.dart';
 import 'package:flutter_application_1/screens/resource/resource_screen.dart';
+import 'package:flutter_application_1/screens/settings/settings_screen.dart';
 import '../widgets/navbar/bottom_navbar.dart';
 
 class MainScreen extends StatefulWidget {
@@ -17,7 +18,7 @@ class _MainScreenState extends State<MainScreen> {
     DashBoardScreen(),
     MonitorScreen(),
     ResourceScreen(),
-    _PlaceholderScreen(icon: Icons.settings_rounded, label: 'Settings'),
+    ProfileScreen(),
   ];
 
   @override
@@ -30,27 +31,4 @@ class _MainScreenState extends State<MainScreen> {
       ),
     );
   }
-}
-
-class _PlaceholderScreen extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  const _PlaceholderScreen({required this.icon, required this.label});
-
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    body: Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: Colors.white38, size: 48),
-          const SizedBox(height: 12),
-          Text(
-            label,
-            style: const TextStyle(color: Colors.white38, fontSize: 18),
-          ),
-        ],
-      ),
-    ),
-  );
 }

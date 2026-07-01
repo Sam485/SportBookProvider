@@ -73,6 +73,7 @@ class ThemeProvider extends ChangeNotifier {
         return AppTheme.dark;
       case ThemeMode.system:
         // Check system brightness
+        // ignore: deprecated_member_use
         final brightness = WidgetsBinding.instance.window.platformBrightness;
         return brightness == Brightness.dark ? AppTheme.dark : AppTheme.light;
     }

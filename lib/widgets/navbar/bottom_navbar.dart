@@ -56,7 +56,7 @@ class AppBottomNavBar extends StatelessWidget {
                 GButton(icon: Icons.dashboard_rounded, text: 'Dashboard'),
                 GButton(icon: Icons.monitor_rounded, text: 'Monitor'),
                 GButton(icon: Icons.grading_rounded, text: 'Resource'),
-                GButton(icon: Icons.person_rounded, text: 'User'),
+                GButton(icon: Icons.person_rounded, text: 'Profile'),
               ],
             ),
           ),

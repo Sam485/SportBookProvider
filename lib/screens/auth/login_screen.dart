@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../core/theme.dart';
-import '../../routes/app_routes.dart';
-import '../../translations/app_translations.dart';
+import 'package:flutter_application_1/core/di/service_locator.dart';
+import 'package:flutter_application_1/core/theme.dart';
+import 'package:flutter_application_1/features/Token/service/token_service.dart';
+import 'package:flutter_application_1/features/User/Model/login_request.dart';
+import 'package:flutter_application_1/features/User/Service/user_service.dart';
+import 'package:flutter_application_1/routes/app_routes.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,17 +14,114 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  bool isChecked = false;
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _identifierController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
+  bool _rememberMe = false;
+  String? _errorMessage;
+
+  final _userService = getIt<UserService>();
+  final _tokenService = getIt<TokenService>();
+
+  @override
+  void initState() {
+    super.initState();
+    _userService.addListener(_onUserServiceChanged);
+  }
 
   @override
   void dispose() {
-    _phoneController.dispose();
+    _userService.removeListener(_onUserServiceChanged);
+    _identifierController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _onUserServiceChanged() {
+    if (mounted) {
+      setState(() {
+        // If service has an error, update local error message
+        if (_userService.error.isNotEmpty) {
+          _errorMessage = _userService.error;
+        }
+      });
+    }
+  }
+
+  // ✅ Updated to handle "invalid credentials" specifically
+  String _getUserFriendlyErrorMessage(String error) {
+    final msg = error.toLowerCase();
+
+    // Handle the "invalid credentials" response from your API
+    if (msg.contains('invalid credentials') ||
+        msg.contains('wrong password') ||
+        msg.contains('password is incorrect') ||
+        msg.contains('invalid email or password')) {
+      return 'Invalid email or password. Please try again.';
+    } else if (msg.contains('user not found') || msg.contains('no user')) {
+      return 'User not found. Please check your email or sign up.';
+    } else if (msg.contains('timeout') || msg.contains('timed out')) {
+      return 'Connection timeout. Please check your internet.';
+    } else if (msg.contains('network') || msg.contains('internet')) {
+      return 'Network error. Please check your connection.';
+    } else if (msg.contains('401') || msg.contains('unauthorized')) {
+      return 'Wrong user or password.';
+    } else if (msg.contains('500') || msg.contains('server')) {
+      return 'Server error. Please try again later.';
+    } else if (msg.contains('locked') || msg.contains('too many attempts')) {
+      return 'Account locked due to too many failed attempts. Please try again later.';
+    } else {
+      return 'Login failed: ${error.replaceAll('Exception: ', '')}';
+    }
+  }
+
+  Future<void> _handleLogin() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    // Clear previous error
+    setState(() {
+      _errorMessage = null;
+    });
+
+    try {
+      LoginRequest loginRequest = LoginRequest(
+        email: _identifierController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      final response = await _userService.loginUser(loginRequest);
+
+      // Save tokens
+      await _tokenService.saveTokens(response.token);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Login successful!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+
+        Navigator.pushReplacementNamed(context, AppRoutes.home);
+      }
+    } catch (e) {
+      if (mounted) {
+        final errorMsg = _getUserFriendlyErrorMessage(e.toString());
+        setState(() {
+          _errorMessage = errorMsg;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMsg),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -31,318 +131,374 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       backgroundColor: isDark ? AppTheme.kBg : AppTheme.kLightBg,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(child: _header(isDark)),
-              const SliverToBoxAdapter(child: SizedBox(height: 15)),
-              SliverToBoxAdapter(child: _Input(isDark)),
-              const SliverToBoxAdapter(child: SizedBox(height: 15)),
-              SliverToBoxAdapter(child: _confirmButton()),
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [_orSignUp(isDark)],
-                ),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 420),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _buildHeader(isDark),
+                  const SizedBox(height: 32),
+                  _buildFormCard(isDark),
+                  const SizedBox(height: 20),
+                  _buildFooter(isDark),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _header(bool isDark) {
+  Widget _buildHeader(bool isDark) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        CircleAvatar(
-          backgroundColor: isDark ? Colors.black : AppTheme.kLightCardAlt,
-          maxRadius: 80,
-          minRadius: 40,
-          child: Icon(
-            Icons.person,
-            size: 60,
-            color: isDark ? Colors.white : AppTheme.kLightText,
-          ),
-        ),
-        const SizedBox(height: 10),
         Text(
-          'login'.tr(context),
+          'Welcome Back',
           style: TextStyle(
             color: isDark ? Colors.white : AppTheme.kLightText,
-            fontSize: 32,
+            fontSize: 28,
             fontWeight: FontWeight.w800,
-            letterSpacing: -0.3,
+            letterSpacing: -0.5,
           ),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          'welcome_back'.tr(context),
-          style: TextStyle(
-            color: isDark ? Colors.white70 : AppTheme.kLightTextSub,
-            fontSize: 16,
-          ),
-          textAlign: TextAlign.center,
         ),
       ],
     );
   }
 
-  Widget _Input(bool isDark) {
-    return SizedBox(
-      width: double.infinity,
+  Widget _buildFormCard(bool isDark) {
+    final isLoading = _userService.isLoading;
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.kCard : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+        ],
+        border: Border.all(
+          color: isDark ? AppTheme.kBorder : AppTheme.kLightBorder,
+          width: 0.5,
+        ),
+      ),
       child: Form(
         key: _formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Email/Username Field
             Text(
-              'phone_or_username'.tr(context),
+              'Email',
               style: TextStyle(
                 color: isDark ? Colors.white : AppTheme.kLightText,
-                fontSize: 16,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             TextFormField(
-              controller: _phoneController,
-              keyboardType: TextInputType.phone,
+              controller: _identifierController,
               style: TextStyle(
                 color: isDark ? Colors.white : AppTheme.kLightText,
+                fontSize: 15,
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'phone_required'.tr(context);
+              onChanged: (_) {
+                // Clear error when user types
+                if (_errorMessage != null && mounted) {
+                  setState(() {
+                    _errorMessage = null;
+                  });
                 }
-                if (value.length < 9) {
-                  return 'valid_phone_required'.tr(context);
+              },
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Please enter your email';
                 }
                 return null;
               },
               decoration: InputDecoration(
-                hintText: 'phone_hint'.tr(context),
+                hintText: 'Enter your email',
                 hintStyle: TextStyle(
                   color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
+                  fontSize: 14,
                 ),
                 prefixIcon: Icon(
-                  Icons.phone,
+                  Icons.email_outlined,
                   color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                 ),
-                suffixIcon: null,
+                filled: true,
+                fillColor: isDark ? AppTheme.kBg : AppTheme.kLightBg,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  borderSide: BorderSide(
-                    color: isDark ? AppTheme.kBorder : AppTheme.kLightBorder,
-                  ),
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(14),
                   borderSide: const BorderSide(
                     color: AppTheme.kAccent,
                     width: 2,
                   ),
                 ),
                 errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  borderSide: const BorderSide(color: Colors.red),
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: Colors.red, width: 1.5),
                 ),
                 focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(14),
                   borderSide: const BorderSide(color: Colors.red, width: 2),
                 ),
-                filled: true,
-                fillColor: isDark ? AppTheme.kCard : AppTheme.kLightCard,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 16,
                 ),
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 18),
+
+            // Password Field
             Text(
-              'password'.tr(context),
+              'Password',
               style: TextStyle(
                 color: isDark ? Colors.white : AppTheme.kLightText,
-                fontSize: 16,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             TextFormField(
               controller: _passwordController,
               obscureText: !_isPasswordVisible,
               style: TextStyle(
                 color: isDark ? Colors.white : AppTheme.kLightText,
+                fontSize: 15,
               ),
+              onChanged: (_) {
+                // Clear error when user types
+                if (_errorMessage != null && mounted) {
+                  setState(() {
+                    _errorMessage = null;
+                  });
+                }
+              },
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'password_required'.tr(context);
+                  return 'Please enter your password';
                 }
                 if (value.length < 6) {
-                  return 'password_min_length'.tr(context);
+                  return 'Password must be at least 6 characters';
                 }
                 return null;
               },
               decoration: InputDecoration(
-                hintText: 'password_hint'.tr(context),
+                hintText: 'Enter your password',
                 hintStyle: TextStyle(
                   color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
+                  fontSize: 14,
                 ),
                 prefixIcon: Icon(
-                  Icons.lock,
+                  Icons.lock_outline_rounded,
                   color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                 ),
                 suffixIcon: IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _isPasswordVisible = !_isPasswordVisible;
-                    });
-                  },
+                  onPressed: () =>
+                      setState(() => _isPasswordVisible = !_isPasswordVisible),
                   icon: Icon(
                     _isPasswordVisible
-                        ? Icons.visibility
-                        : Icons.visibility_off,
+                        ? Icons.visibility_rounded
+                        : Icons.visibility_off_rounded,
                     color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
+                    size: 20,
                   ),
                 ),
+                filled: true,
+                fillColor: isDark ? AppTheme.kBg : AppTheme.kLightBg,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  borderSide: BorderSide(
-                    color: isDark ? AppTheme.kBorder : AppTheme.kLightBorder,
-                  ),
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(14),
                   borderSide: const BorderSide(
                     color: AppTheme.kAccent,
                     width: 2,
                   ),
                 ),
                 errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  borderSide: const BorderSide(color: Colors.red),
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: Colors.red, width: 1.5),
                 ),
                 focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(14),
                   borderSide: const BorderSide(color: Colors.red, width: 2),
                 ),
-                filled: true,
-                fillColor: isDark ? AppTheme.kCard : AppTheme.kLightCard,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 16,
                 ),
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
+
+            // Remember Me & Forgot Password
             Row(
-              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Checkbox(
-                  value: isChecked,
-                  onChanged: (value) {
-                    setState(() {
-                      isChecked = value ?? false;
-                    });
-                  },
-                  activeColor: AppTheme.kAccent,
-                  checkColor: Colors.black,
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: Checkbox(
+                        value: _rememberMe,
+                        onChanged: (value) =>
+                            setState(() => _rememberMe = value ?? false),
+                        activeColor: AppTheme.kAccent,
+                        checkColor: const Color(0xFF0A1828),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Remember Me',
+                      style: TextStyle(
+                        color: isDark ? Colors.white70 : AppTheme.kLightTextSub,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 5),
-                Text(
-                  'remember_me'.tr(context),
-                  style: TextStyle(
-                    color: isDark ? Colors.white70 : AppTheme.kLightTextSub,
+              ],
+            ),
+            const SizedBox(height: 24),
+
+            // Sign In Button
+            SizedBox(
+              height: 52,
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: isLoading ? null : _handleLogin,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.kAccent,
+                  foregroundColor: const Color(0xFF0A1828),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  elevation: 0,
+                  disabledBackgroundColor: isDark
+                      ? Colors.grey[800]
+                      : Colors.grey[300],
+                ),
+                child: isLoading
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          color: Color(0xFF0A1828),
+                          strokeWidth: 2.5,
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Sign In',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? Colors.black : Colors.white,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.arrow_forward_rounded,
+                            size: 18,
+                            color: isDark ? Colors.black : Colors.white,
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Divider with "or continue with"
+            Row(
+              children: [
+                Expanded(
+                  child: Divider(
+                    color: isDark ? Colors.grey[700] : Colors.grey[300],
+                    thickness: 0.5,
                   ),
                 ),
-                const Spacer(),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pushNamed(context, AppRoutes.forget);
-                  },
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
-                    'forgot_password'.tr(context),
+                    'or continue with',
                     style: TextStyle(
-                      color: AppTheme.kAccent,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
+                      color: isDark ? Colors.grey[500] : Colors.grey[600],
+                      fontSize: 12,
                     ),
+                  ),
+                ),
+                Expanded(
+                  child: Divider(
+                    color: isDark ? Colors.grey[700] : Colors.grey[300],
+                    thickness: 0.5,
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: 16),
           ],
         ),
       ),
     );
   }
 
-  Widget _confirmButton() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return SizedBox(
-      height: 52,
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: () {
-          _validateAndLogin();
-        },
-        child: Text(
-          'login'.tr(context),
+  Widget _buildFooter(bool isDark) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          "Don't have an account?",
           style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.3,
-            color: isDark ? Colors.black : Colors.white,
+            color: isDark ? Colors.white70 : AppTheme.kLightTextSub,
+            fontSize: 14,
           ),
         ),
-        style: AppTheme.elevatedButtonStyle(),
-      ),
-    );
-  }
-
-  void _validateAndLogin() {
-    if (_formKey.currentState!.validate()) {
-      Navigator.pushNamed(context, AppRoutes.verify, arguments: false);
-    }
-  }
-
-  Widget _orSignUp(bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'dont_have_account'.tr(context),
+        const SizedBox(width: 6),
+        GestureDetector(
+          onTap: () =>
+              Navigator.pushReplacementNamed(context, AppRoutes.signUp),
+          child: Text(
+            'Sign Up',
             style: TextStyle(
-              color: isDark ? Colors.white70 : AppTheme.kLightTextSub,
+              color: AppTheme.kAccent,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(width: 5),
-          GestureDetector(
-            onTap: () {
-              Navigator.pushNamed(context, AppRoutes.signUp);
-            },
-            child: Text(
-              'sign_up'.tr(context),
-              style: TextStyle(
-                color: AppTheme.kAccent,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
