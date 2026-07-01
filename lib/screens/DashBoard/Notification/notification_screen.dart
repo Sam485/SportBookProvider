@@ -183,7 +183,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   boxShadow: sel
                       ? [
                           BoxShadow(
-                            color: AppTheme.kAccent.withOpacity(0.3),
+                            color: AppTheme.kAccent.withValues(alpha: 0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 3),
                           ),
@@ -232,7 +232,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: notification.iconColor.withOpacity(0.2),
+                color: notification.iconColor.withValues(alpha: 0.2),
               ),
               child: Icon(
                 notification.icon,

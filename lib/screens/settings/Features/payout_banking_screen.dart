@@ -211,7 +211,7 @@ class _PayoutBankingScreenState extends State<PayoutBankingScreen> {
             height: 60,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              color: data.color.withOpacity(0.4),
+              color: data.color.withValues(alpha: 0.4),
             ),
             child: Center(child: Text(data.intial)),
           ),
@@ -261,7 +261,7 @@ class _PayoutBankingScreenState extends State<PayoutBankingScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10, vertical: 2.5),
       decoration: BoxDecoration(
-        color: Colors.green.withOpacity(0.2),
+        color: Colors.green.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
@@ -282,7 +282,7 @@ class _PayoutBankingScreenState extends State<PayoutBankingScreen> {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: data.color.withOpacity(0.2),
+                color: data.color.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Center(child: Icon(data.icon, color: data.color)),

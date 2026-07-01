@@ -126,7 +126,7 @@ class _MonitorScreenState extends State<MonitorScreen>
             width: 50,
             height: 20,
             decoration: BoxDecoration(
-              color: Colors.red.withOpacity(0.3),
+              color: Colors.red.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
@@ -145,8 +145,9 @@ class _MonitorScreenState extends State<MonitorScreen>
                       height: 5 + (3 * _breathingController.value),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.red.withOpacity(
-                          0.5 +
+                        color: Colors.red.withValues(
+                          alpha:
+                              0.5 +
                               (0.5 *
                                   _breathingController.value), // Fades in/out
                         ),
@@ -237,7 +238,7 @@ class _MonitorScreenState extends State<MonitorScreen>
       padding: const EdgeInsets.all(10),
       decoration: AppTheme.cardDecorationAdaptive(
         context,
-      ).copyWith(border: Border.all(color: data.color.withOpacity(0.5))),
+      ).copyWith(border: Border.all(color: data.color.withValues(alpha: 0.5))),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -330,7 +331,10 @@ class _MonitorScreenState extends State<MonitorScreen>
   Widget _buildDivier() {
     return SizedBox(
       width: double.infinity,
-      child: Divider(thickness: 0.5, color: AppTheme.kAccent.withOpacity(0.6)),
+      child: Divider(
+        thickness: 0.5,
+        color: AppTheme.kAccent.withValues(alpha: 0.6),
+      ),
     );
   }
 
@@ -368,7 +372,7 @@ class _MonitorScreenState extends State<MonitorScreen>
               vertical: 4,
             ), // Reduced vertical padding
             decoration: BoxDecoration(
-              color: data.color.withOpacity(0.2),
+              color: data.color.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(

@@ -104,7 +104,10 @@ class _ResourceScreenState extends State<ResourceScreen> {
   Widget _buildDivier() {
     return SizedBox(
       width: double.infinity,
-      child: Divider(thickness: 0.5, color: AppTheme.kAccent.withOpacity(0.6)),
+      child: Divider(
+        thickness: 0.5,
+        color: AppTheme.kAccent.withValues(alpha: 0.6),
+      ),
     );
   }
 
@@ -126,7 +129,7 @@ class _ResourceScreenState extends State<ResourceScreen> {
                   width: 50,
                   height: 50,
                   decoration: BoxDecoration(
-                    color: data.color.withOpacity(0.3),
+                    color: data.color.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(data.icon, color: data.color),
@@ -166,10 +169,10 @@ class _ResourceScreenState extends State<ResourceScreen> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     color: data.status == "Open"
-                        ? Colors.green.withOpacity(0.3)
+                        ? Colors.green.withValues(alpha: 0.3)
                         : data.status == "Maintenance"
-                        ? Colors.yellow.withOpacity(0.3)
-                        : Colors.blue.withOpacity(0.3),
+                        ? Colors.yellow.withValues(alpha: 0.3)
+                        : Colors.blue.withValues(alpha: 0.3),
                   ),
                   margin: EdgeInsets.only(right: 5),
                   child: Padding(
@@ -192,7 +195,7 @@ class _ResourceScreenState extends State<ResourceScreen> {
                 Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    color: Colors.blue.withOpacity(0.3),
+                    color: Colors.blue.withValues(alpha: 0.3),
                   ),
                   margin: EdgeInsets.only(right: 5),
                   child: Padding(
@@ -210,7 +213,7 @@ class _ResourceScreenState extends State<ResourceScreen> {
                   Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
-                      color: Colors.blue.withOpacity(0.3),
+                      color: Colors.blue.withValues(alpha: 0.3),
                     ),
                     margin: EdgeInsets.only(right: 5),
                     child: Padding(

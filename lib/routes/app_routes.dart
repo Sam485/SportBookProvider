@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/screens/DashBoard/Notification/notification_screen.dart';
-import 'package:flutter_application_1/screens/auth/forget_screen.dart';
 import 'package:flutter_application_1/screens/auth/landing_screen.dart';
 import 'package:flutter_application_1/screens/auth/login_screen.dart';
 import 'package:flutter_application_1/screens/auth/signup_screen.dart';
-import 'package:flutter_application_1/screens/auth/verify_screen.dart';
 import 'package:flutter_application_1/screens/main_screen.dart';
 import 'package:flutter_application_1/screens/settings/Features/operating_hour_screen.dart';
 import 'package:flutter_application_1/screens/settings/Features/payout_banking_screen.dart';
@@ -15,8 +13,8 @@ import 'package:flutter_application_1/screens/settings/Features/settings_screen.
 import 'package:flutter_application_1/screens/settings/Features/venue_photos_screen.dart';
 
 class AppRoutes {
-  static const home = '/';
-  static const landing = '/landing';
+  static const home = '/mainScreen';
+  static const landing = '/';
   static const signUp = '/signup';
   static const login = '/login';
   static const forget = '/forget';
@@ -36,20 +34,10 @@ class AppRoutes {
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
-      case home:
-        return MaterialPageRoute(builder: (_) => const MainScreen());
-
-      case verify:
-        final target = settings.arguments as bool;
-        return MaterialPageRoute(
-          builder: (_) => VerifyScreen(isSignUp: target),
-        );
-
-      case forget:
-        return MaterialPageRoute(builder: (_) => const ForgetScreen());
-
       case landing:
         return MaterialPageRoute(builder: (_) => const LandingScreen());
+      case home:
+        return MaterialPageRoute(builder: (_) => const MainScreen());
 
       case login:
         return MaterialPageRoute(builder: (_) => const LoginScreen());

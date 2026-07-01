@@ -199,7 +199,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                         barRods: [
                           BarChartRodData(
                             toY: 65,
-                            color: AppTheme.kAccent.withOpacity(0.5),
+                            color: AppTheme.kAccent.withValues(alpha: 0.5),
                             width: 45,
                             borderRadius: BorderRadius.circular(4),
                           ),
@@ -210,7 +210,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                         barRods: [
                           BarChartRodData(
                             toY: 80,
-                            color: AppTheme.kAccent.withOpacity(0.5),
+                            color: AppTheme.kAccent.withValues(alpha: 0.5),
                             width: 45,
                             borderRadius: BorderRadius.circular(4),
                           ),
@@ -232,7 +232,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                         barRods: [
                           BarChartRodData(
                             toY: 95,
-                            color: AppTheme.kAccent.withOpacity(0.5),
+                            color: AppTheme.kAccent.withValues(alpha: 0.5),
                             width: 45,
                             borderRadius: BorderRadius.circular(4),
                           ),
@@ -243,7 +243,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                         barRods: [
                           BarChartRodData(
                             toY: 23,
-                            color: AppTheme.kAccent.withOpacity(0.5),
+                            color: AppTheme.kAccent.withValues(alpha: 0.5),
                             width: 45,
                             borderRadius: BorderRadius.circular(4),
                           ),
@@ -254,7 +254,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                         barRods: [
                           BarChartRodData(
                             toY: 67,
-                            color: AppTheme.kAccent.withOpacity(0.5),
+                            color: AppTheme.kAccent.withValues(alpha: 0.5),
                             width: 45,
                             borderRadius: BorderRadius.circular(4),
                           ),
@@ -364,7 +364,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                           ),
                           belowBarData: BarAreaData(
                             show: true,
-                            color: Colors.blue.withOpacity(0.2),
+                            color: Colors.blue.withValues(alpha: 0.2),
                           ),
                         ),
                       ],
@@ -457,7 +457,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
           width: 50,
           height: 50,
           decoration: BoxDecoration(
-            color: data.statusColor.withOpacity(0.2),
+            color: data.statusColor.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Center(
@@ -483,7 +483,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
               padding: EdgeInsets.symmetric(horizontal: 10, vertical: 2.5),
               height: 25,
               decoration: BoxDecoration(
-                color: data.statusColor.withOpacity(0.2),
+                color: data.statusColor.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Center(
@@ -502,7 +502,10 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
   Widget _buildDivier() {
     return SizedBox(
       width: double.infinity,
-      child: Divider(thickness: 0.5, color: AppTheme.kAccent.withOpacity(0.6)),
+      child: Divider(
+        thickness: 0.5,
+        color: AppTheme.kAccent.withValues(alpha: 0.6),
+      ),
     );
   }
 }

@@ -127,7 +127,7 @@ class _VenuePhotosScreenState extends State<VenuePhotosScreen> {
         child: Container(
           padding: const EdgeInsets.all(20),
           decoration: AppTheme.cardDecorationAdaptive(context).copyWith(
-            color: AppTheme.kCard.withOpacity(0.3),
+            color: AppTheme.kCard.withValues(alpha: 0.3),
             border: Border.all(color: AppTheme.kBorder, width: 2),
           ),
           child: Column(
@@ -255,7 +255,9 @@ class _VenuePhotosScreenState extends State<VenuePhotosScreen> {
                           icon: const Icon(Icons.edit, size: 18),
                           color: Colors.amber,
                           style: IconButton.styleFrom(
-                            backgroundColor: Colors.black.withOpacity(0.5),
+                            backgroundColor: Colors.black.withValues(
+                              alpha: 0.5,
+                            ),
                             padding: const EdgeInsets.all(6),
                             minimumSize: const Size(30, 30),
                           ),
@@ -270,7 +272,9 @@ class _VenuePhotosScreenState extends State<VenuePhotosScreen> {
                           icon: const Icon(Icons.delete, size: 18),
                           color: Colors.red,
                           style: IconButton.styleFrom(
-                            backgroundColor: Colors.black.withOpacity(0.5),
+                            backgroundColor: Colors.black.withValues(
+                              alpha: 0.5,
+                            ),
                             padding: const EdgeInsets.all(6),
                             minimumSize: const Size(30, 30),
                           ),

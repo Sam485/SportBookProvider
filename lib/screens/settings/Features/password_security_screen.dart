@@ -99,7 +99,7 @@ class _PasswordSecurityScreenState extends State<PasswordSecurityScreen> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: AppTheme.kAccent.withOpacity(0.2),
+                      color: AppTheme.kAccent.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(Icons.shield, color: AppTheme.kAccent),
@@ -200,7 +200,7 @@ class _PasswordSecurityScreenState extends State<PasswordSecurityScreen> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.2),
+                      color: Colors.green.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(Icons.verified_user, color: Colors.green),
@@ -240,7 +240,7 @@ class _PasswordSecurityScreenState extends State<PasswordSecurityScreen> {
                         ),
                       );
                     },
-                    activeColor: AppTheme.kAccent,
+                    activeThumbColor: AppTheme.kAccent,
                   ),
                 ],
               ),

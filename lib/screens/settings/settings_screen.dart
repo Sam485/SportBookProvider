@@ -253,7 +253,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           width: 50,
                           height: 50,
                           decoration: BoxDecoration(
-                            color: data[index].color.withOpacity(0.4),
+                            color: data[index].color.withValues(alpha: 0.4),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Center(
@@ -306,7 +306,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _showSignOutDialog();
           },
           style: AppTheme.elevatedButtonStyle(
-            backgroundColor: Colors.red.withOpacity(0.3),
+            backgroundColor: Colors.red.withValues(alpha: 0.3),
             foregroundColor: Colors.red,
           ),
           child: const Text('Sign out'),
@@ -351,7 +351,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.3),
+        color: color.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(title, style: AppTheme.tsBody.copyWith(color: color)),

@@ -113,7 +113,7 @@ class _OperatingHourScreenState extends State<OperatingHourScreen> {
               decoration: weeklySchedule[index].status == false
                   ? AppTheme.cardDecorationAdaptive(
                       context,
-                    ).copyWith(color: AppTheme.kCard.withOpacity(0.5))
+                    ).copyWith(color: AppTheme.kCard.withValues(alpha: 0.5))
                   : AppTheme.cardDecorationAdaptive(context),
               child: Row(
                 children: [
@@ -199,7 +199,7 @@ class _OperatingHourScreenState extends State<OperatingHourScreen> {
                               width: 50,
                               height: 50,
                               decoration: BoxDecoration(
-                                color: Colors.blue.withOpacity(0.3),
+                                color: Colors.blue.withValues(alpha: 0.3),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Center(

@@ -88,7 +88,7 @@ class _LandingScreenState extends State<LandingScreen> {
                 Image.network(
                   slide['imageUrl'],
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
+                  errorBuilder: (_, _, _) => Container(
                     color: isDark ? AppTheme.kCardAlt : AppTheme.kLightCardAlt,
                     child: Icon(
                       Icons.image_not_supported,
@@ -211,7 +211,8 @@ class _LandingScreenState extends State<LandingScreen> {
             width: double.infinity,
             height: 52,
             child: ElevatedButton(
-              onPressed: () => Navigator.pushNamed(context, AppRoutes.signUp),
+              onPressed: () =>
+                  Navigator.pushReplacementNamed(context, AppRoutes.signUp),
               style: AppTheme.elevatedButtonStyle(),
               child: Text(
                 AppTranslations.translate('sign_up', locale: null),
@@ -227,7 +228,8 @@ class _LandingScreenState extends State<LandingScreen> {
             width: double.infinity,
             height: 52,
             child: OutlinedButton(
-              onPressed: () => Navigator.pushNamed(context, AppRoutes.login),
+              onPressed: () =>
+                  Navigator.pushReplacementNamed(context, AppRoutes.login),
               style: OutlinedButton.styleFrom(
                 foregroundColor: isDark ? Colors.white : AppTheme.kLightText,
                 side: BorderSide(
