@@ -1,4 +1,4 @@
-// feature/Notification/model/notification_model.dart
+  // feature/Notification/model/notification_model.dart
 class NotificationModel {
   final int id;
   final String title;
