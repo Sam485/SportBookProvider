@@ -1,6 +1,10 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_application_1/core/config/app_config.dart';
 import 'package:flutter_application_1/core/interceptors/auth_interceptor.dart';
+import 'package:flutter_application_1/features/Notification/repository/notification_repository.dart';
+import 'package:flutter_application_1/features/Notification/service/notification_service.dart';
+import 'package:flutter_application_1/features/Notification/service/notification_service_imp.dart';
 import 'package:flutter_application_1/features/Token/Api/token_api.dart';
 import 'package:flutter_application_1/features/Token/service/token_service.dart';
 import 'package:flutter_application_1/features/Auth/auth_service.dart';
@@ -16,7 +20,7 @@ Future<void> setupServiceLocator() async {
   getIt.registerLazySingleton<FlutterSecureStorage>(
     () => const FlutterSecureStorage(),
   );
- 
+
   // ============================================================
   // REGISTER DIO FIRST (no dependencies)
   // ============================================================
@@ -59,5 +63,13 @@ Future<void> setupServiceLocator() async {
 
   getIt.registerLazySingleton<UserService>(
     () => UserServiceImp(getIt<UserRespository>()),
+  );
+
+  //Notification
+  getIt.registerLazySingleton<NotificationRepository>(
+    () => NotificationRepository(getIt<Dio>()),
+  );
+  getIt.registerLazySingleton<NotificationService>(
+    () => NotificationServiceImp(getIt<NotificationRepository>()),
   );
 }

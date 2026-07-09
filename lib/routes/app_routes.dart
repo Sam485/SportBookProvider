@@ -11,6 +11,7 @@ import 'package:flutter_application_1/screens/settings/Features/password_securit
 import 'package:flutter_application_1/screens/settings/Features/reviews_screen.dart';
 import 'package:flutter_application_1/screens/settings/Features/settings_screen.dart';
 import 'package:flutter_application_1/screens/settings/Features/venue_photos_screen.dart';
+import 'package:flutter_application_1/screens/splash/splash_screen.dart';
 
 class AppRoutes {
   static const home = '/mainScreen';
@@ -20,6 +21,7 @@ class AppRoutes {
   static const forget = '/forget';
   static const verify = '/verify';
   static const createProfile = '/createProfile';
+  static const splash = '/splash';
 
   // Settings and Profile routes
   static const setting = '/settings';
@@ -34,6 +36,8 @@ class AppRoutes {
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
+      case splash:
+        return MaterialPageRoute(builder: (_) => const SplashScreen());
       case landing:
         return MaterialPageRoute(builder: (_) => const LandingScreen());
       case home:

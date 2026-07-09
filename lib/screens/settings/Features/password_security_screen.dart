@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/core/di/service_locator.dart';
 import 'package:flutter_application_1/core/theme.dart';
+import 'package:flutter_application_1/features/User/Model/update_password_model.dart';
+import 'package:flutter_application_1/features/User/Service/user_service.dart';
 import 'package:flutter_application_1/translations/app_translations.dart';
 
 class PasswordSecurityScreen extends StatefulWidget {
@@ -15,9 +18,19 @@ class _PasswordSecurityScreenState extends State<PasswordSecurityScreen> {
   final TextEditingController _newPasswordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
+
   bool _obscureCurrent = true;
   bool _obscureNew = true;
   bool _obscureConfirm = true;
+  bool _isLoading = false;
+
+  late final UserService _userService;
+
+  @override
+  void initState() {
+    super.initState();
+    _userService = getIt<UserService>();
+  }
 
   @override
   void dispose() {
@@ -27,7 +40,8 @@ class _PasswordSecurityScreenState extends State<PasswordSecurityScreen> {
     super.dispose();
   }
 
-  void _changePassword() {
+  Future<void> _changePassword() async {
+    // Validate inputs
     if (_currentPasswordController.text.isEmpty) {
       _showError('enter_current_password'.tr(context));
       return;
@@ -45,16 +59,67 @@ class _PasswordSecurityScreenState extends State<PasswordSecurityScreen> {
       return;
     }
 
-    // Handle password change
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('password_changed_success'.tr(context))),
-    );
-    Navigator.pop(context);
+    // Show loading
+    setState(() => _isLoading = true);
+
+    try {
+      final request = UpdatePasswordModel(
+        currentPassword: _currentPasswordController.text.trim(),
+        newPassword: _newPasswordController.text.trim(),
+        confirmPassword: _confirmPasswordController.text.trim(),
+      );
+
+      await _userService.changePassword(request);
+
+      if (mounted) {
+        setState(() => _isLoading = false);
+
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'password_changed_success'.tr(context),
+              style: const TextStyle(),
+            ),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+
+        // Clear fields
+        _currentPasswordController.clear();
+        _newPasswordController.clear();
+        _confirmPasswordController.clear();
+
+        // Navigate back after delay
+        Future.delayed(const Duration(seconds: 1), () {
+          if (mounted) Navigator.pop(context);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+
+        String errorMessage = e.toString();
+        // Clean up error message
+        if (errorMessage.contains('Exception:')) {
+          errorMessage = errorMessage.replaceAll('Exception: ', '');
+        }
+        if (errorMessage.contains('Server error:')) {
+          errorMessage = errorMessage.replaceAll('Server error: ', '');
+        }
+        _showError(errorMessage);
+      }
+    }
   }
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
+      SnackBar(
+        content: Text(message, style: const TextStyle()),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 3),
+      ),
     );
   }
 
@@ -99,7 +164,7 @@ class _PasswordSecurityScreenState extends State<PasswordSecurityScreen> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: AppTheme.kAccent.withValues(alpha: 0.2),
+                      color: AppTheme.kAccent.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(Icons.shield, color: AppTheme.kAccent),
@@ -183,66 +248,23 @@ class _PasswordSecurityScreenState extends State<PasswordSecurityScreen> {
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: _changePassword,
-                style: AppTheme.elevatedButtonStyle(),
-                child: Text('change_password'.tr(context)),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Two-Factor Authentication
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: AppTheme.cardDecorationAdaptive(context),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.verified_user, color: Colors.green),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'two_factor_auth'.tr(context),
-                          style: TextStyle(
-                            color: isDark ? Colors.white : AppTheme.kLightText,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                          ),
+                onPressed: _isLoading ? null : _changePassword,
+                style: AppTheme.elevatedButtonStyle().copyWith(
+                  textStyle: const MaterialStatePropertyAll(TextStyle()),
+                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.black,
+                          strokeWidth: 2,
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'two_factor_desc'.tr(context),
-                          style: TextStyle(
-                            color: isDark
-                                ? AppTheme.kTextSub
-                                : AppTheme.kLightTextSub,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Switch(
-                    value: false,
-                    onChanged: (value) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('two_factor_coming_soon'.tr(context)),
-                        ),
-                      );
-                    },
-                    activeThumbColor: AppTheme.kAccent,
-                  ),
-                ],
+                      )
+                    : Text(
+                        'change_password'.tr(context),
+                        style: const TextStyle(),
+                      ),
               ),
             ),
           ],
@@ -291,6 +313,15 @@ class _PasswordSecurityScreenState extends State<PasswordSecurityScreen> {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppTheme.kAccent, width: 2),
         ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red, width: 1.5),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red, width: 2),
+        ),
+        errorStyle: TextStyle(color: Colors.red.shade300, fontSize: 12),
         filled: true,
         fillColor: isDark ? AppTheme.kCard : AppTheme.kLightCard,
       ),

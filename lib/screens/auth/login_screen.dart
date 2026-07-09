@@ -40,10 +40,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _onUserServiceChanged() {
     if (mounted) {
-      setState(() {
-        // If service has an error, update local error message
-        if (_userService.error.isNotEmpty) {
-          _errorMessage = _userService.error;
+      // ✅ Fix: Use WidgetsBinding to schedule the setState after the current build phase
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            // If service has an error, update local error message
+            if (_userService.error.isNotEmpty) {
+              _errorMessage = _userService.error;
+            }
+          });
         }
       });
     }

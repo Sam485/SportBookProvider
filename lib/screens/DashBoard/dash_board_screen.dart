@@ -70,6 +70,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
     return Scaffold(
       body: SafeArea(
         child: CustomScrollView(
+          physics: ClampingScrollPhysics(),
           slivers: <Widget>[
             // Header
             SliverToBoxAdapter(child: _buildHeader()),
