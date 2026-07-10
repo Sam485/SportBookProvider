@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_application_1/core/config/app_config.dart';
 import 'package:flutter_application_1/core/interceptors/auth_interceptor.dart';
 import 'package:flutter_application_1/features/Booking/Repository/booking_repository.dart';
@@ -8,6 +7,9 @@ import 'package:flutter_application_1/features/Booking/Service/booking_service_i
 import 'package:flutter_application_1/features/Notification/repository/notification_repository.dart';
 import 'package:flutter_application_1/features/Notification/service/notification_service.dart';
 import 'package:flutter_application_1/features/Notification/service/notification_service_imp.dart';
+import 'package:flutter_application_1/features/Slot/repository/slot_repository.dart';
+import 'package:flutter_application_1/features/Slot/service/slot_service.dart';
+import 'package:flutter_application_1/features/Slot/service/slot_service_imp.dart';
 import 'package:flutter_application_1/features/SportClub/repository/sport_club_repository.dart';
 import 'package:flutter_application_1/features/SportClub/service/sport_club_service.dart';
 import 'package:flutter_application_1/features/SportClub/service/sport_club_service_imp.dart';
@@ -94,5 +96,13 @@ Future<void> setupServiceLocator() async {
 
   getIt.registerLazySingleton<SportClubService>(
     () => SportClubServiceImp(getIt<SportClubRepository>()),
+  );
+
+  // Slot
+  getIt.registerLazySingleton<SlotRepository>(
+    () => SlotRepository(getIt<Dio>()),
+  );
+  getIt.registerLazySingleton<SlotService>(
+    () => SlotServiceImp(getIt<SlotRepository>()),
   );
 }
