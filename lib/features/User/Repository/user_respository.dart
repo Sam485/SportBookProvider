@@ -1,7 +1,12 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_application_1/features/User/Model/login_reponse.dart';
 import 'package:flutter_application_1/features/User/Model/login_request.dart';
 import 'package:flutter_application_1/features/User/Model/register_user_model.dart';
+import 'package:flutter_application_1/features/User/Model/update_password_model.dart';
+import 'package:flutter_application_1/features/User/Model/update_user_model.dart';
+import 'package:flutter_application_1/features/User/Model/user_model.dart';
 
 class UserRespository {
   final Dio dio;
@@ -38,6 +43,72 @@ class UserRespository {
         return LoginResponse.fromJson(response.data);
       } else {
         // Handle non-200 status codes
+        final errorMessage = _extractErrorMessage(response.data);
+        throw Exception(errorMessage);
+      }
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
+  Future<UserModel> getUserProfile() async {
+    try {
+      final response = await dio.get('/users/me');
+      if (response.statusCode == 200) {
+        return UserModel.fromJson(response.data);
+      } else {
+        final errorMessage = _extractErrorMessage(response.data);
+        throw Exception(errorMessage);
+      }
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
+  Future<UserModel> updateUserProfile(UpdateUserModel update) async {
+    try {
+      final response = await dio.put('/users/me', data: update.toJson());
+      if (response.statusCode == 200) {
+        return UserModel.fromJson(response.data);
+      } else {
+        final errorMessage = _extractErrorMessage(response.data);
+        throw Exception(errorMessage);
+      }
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
+  Future<UserModel> updateUserPassword(
+    UpdatePasswordModel updatePassword,
+  ) async {
+    try {
+      final response = await dio.put(
+        '/user/me/password',
+        data: updatePassword.toJson(),
+      );
+      if (response.statusCode == 200) {
+        return UserModel.fromJson(response.data);
+      } else {
+        final errorMessage = _extractErrorMessage(response.data);
+        throw Exception(errorMessage);
+      }
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
+  Future<UserModel> uploadAvatar(File avatarFile) async {
+    try {
+      final formData = FormData.fromMap({
+        'avatar': await MultipartFile.fromFile(avatarFile.path),
+      });
+
+      final response = await dio.post('/user/me/avatar', data: formData);
+
+      if (response.statusCode == 200) {
+        return UserModel.fromJson(response.data);
+      } else {
         final errorMessage = _extractErrorMessage(response.data);
         throw Exception(errorMessage);
       }

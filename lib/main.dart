@@ -26,8 +26,25 @@ void main() async {
   runApp(const SportMateApp());
 }
 
-class SportMateApp extends StatelessWidget {
+class SportMateApp extends StatefulWidget {
   const SportMateApp({super.key});
+
+  @override
+  State<SportMateApp> createState() => _SportMateAppState();
+}
+
+class _SportMateAppState extends State<SportMateApp> {
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Register the navigator key in service locator
+    if (!getIt.isRegistered<GlobalKey<NavigatorState>>()) {
+      getIt.registerSingleton<GlobalKey<NavigatorState>>(navigatorKey);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +59,7 @@ class SportMateApp extends StatelessWidget {
           return MaterialApp(
             title: 'SportMate',
             debugShowCheckedModeBanner: false,
+            navigatorKey: navigatorKey,
             theme: AppTheme.light,
             darkTheme: AppTheme.dark,
             themeMode: themeProvider.themeMode,
@@ -52,11 +70,21 @@ class SportMateApp extends StatelessWidget {
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
-            initialRoute: AppRoutes.landing,
+            // Set splash screen as initial route
+            initialRoute: AppRoutes.splash,
             onGenerateRoute: AppRoutes.onGenerateRoute,
           );
         },
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    // Clean up the registered navigator key
+    if (getIt.isRegistered<GlobalKey<NavigatorState>>()) {
+      getIt.unregister<GlobalKey<NavigatorState>>();
+    }
+    super.dispose();
   }
 }
