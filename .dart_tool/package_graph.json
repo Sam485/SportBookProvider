@@ -9,6 +9,7 @@
       "dependencies": [
         "carousel_slider",
         "cupertino_icons",
+        "curved_navigation_bar",
         "device_preview",
         "dio",
         "fl_chart",
@@ -55,6 +56,14 @@
         "stream_channel",
         "test_api",
         "vector_math"
+      ]
+    },
+    {
+      "name": "curved_navigation_bar",
+      "version": "1.0.6",
+      "dependencies": [
+        "flutter",
+        "meta"
       ]
     },
     {

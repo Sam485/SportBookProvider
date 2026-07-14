@@ -74,6 +74,12 @@
       "languageVersion": "3.9"
     },
     {
+      "name": "curved_navigation_bar",
+      "rootUri": "file:///C:/Users/User/AppData/Local/Pub/Cache/hosted/pub.dev/curved_navigation_bar-1.0.6",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "dart_earcut",
       "rootUri": "file:///C:/Users/User/AppData/Local/Pub/Cache/hosted/pub.dev/dart_earcut-1.2.0",
       "packageUri": "lib/",
