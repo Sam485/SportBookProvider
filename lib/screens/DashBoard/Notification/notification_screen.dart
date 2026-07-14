@@ -308,7 +308,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
               Text(
                 'loading'.tr(context),
                 style: TextStyle(
-                  
                   color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                   fontSize: 14,
                 ),
@@ -336,7 +335,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
         title: Text(
           'notifications'.tr(context),
           style: TextStyle(
-            
             color: isDark ? Colors.white : AppTheme.kLightText,
             fontSize: 18,
             fontWeight: FontWeight.w800,
@@ -389,7 +387,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
               Text(
                 'loading'.tr(context),
                 style: TextStyle(
-                  
                   color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                   fontSize: 14,
                 ),
@@ -418,7 +415,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 Text(
                   _userFriendlyErrorMessage,
                   style: TextStyle(
-                    
                     color: isDark ? Colors.white : AppTheme.kLightText,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -471,7 +467,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
                           .tr(context)
                           .replaceAll('{category}', _selectedCat),
                 style: TextStyle(
-                  
                   color: isDark ? Colors.grey[400] : Colors.grey[600],
                   fontSize: 16,
                 ),
@@ -524,7 +519,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   boxShadow: sel
                       ? [
                           BoxShadow(
-                            color: AppTheme.kAccent.withOpacity(0.3),
+                            color: AppTheme.kAccent.withValues(alpha: 0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 3),
                           ),
@@ -549,7 +544,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     Text(
                       catDisplayName,
                       style: TextStyle(
-                        
                         color: sel
                             ? const Color(0xFF0A1828)
                             : (isDark
@@ -606,7 +600,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: notification.iconColor.withOpacity(0.2),
+                color: notification.iconColor.withValues(alpha: 0.2),
               ),
               child: Icon(
                 notification.icon,
@@ -617,7 +611,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
             title: Text(
               notification.title,
               style: TextStyle(
-                
                 color: isDark ? Colors.white : AppTheme.kLightText,
                 fontSize: 15,
                 fontWeight: notification.isRead
@@ -633,7 +626,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 Text(
                   notification.description,
                   style: TextStyle(
-                    
                     color: isDark ? Colors.white70 : AppTheme.kLightTextSub,
                     fontSize: 13,
                   ),
@@ -644,7 +636,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 Text(
                   notification.datetime,
                   style: TextStyle(
-                    
                     color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                     fontSize: 11,
                   ),
@@ -729,7 +720,7 @@ class NotificationDetailDialog extends StatelessWidget {
           borderRadius: BorderRadius.circular(28),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.4),
+              color: Colors.black.withValues(alpha: 0.4),
               blurRadius: 30,
               spreadRadius: 5,
               offset: const Offset(0, 15),
@@ -756,7 +747,7 @@ class NotificationDetailDialog extends StatelessWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 10,
                     offset: const Offset(0, 5),
                   ),
@@ -771,8 +762,8 @@ class NotificationDetailDialog extends StatelessWidget {
                     colors: [
                       Colors.transparent,
                       isDark
-                          ? Colors.black.withOpacity(0.4)
-                          : Colors.black.withOpacity(0.2),
+                          ? Colors.black.withValues(alpha: 0.4)
+                          : Colors.black.withValues(alpha: 0.2),
                     ],
                   ),
                 ),
@@ -792,7 +783,6 @@ class NotificationDetailDialog extends StatelessWidget {
                       child: Text(
                         notification.category,
                         style: TextStyle(
-                          
                           color: const Color(0xFF0A1828),
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
@@ -814,7 +804,6 @@ class NotificationDetailDialog extends StatelessWidget {
                 child: Text(
                   notification.title,
                   style: TextStyle(
-                    
                     color: isDark ? Colors.white : AppTheme.kLightText,
                     fontSize: 17,
                     fontWeight: FontWeight.w800,
@@ -836,7 +825,6 @@ class NotificationDetailDialog extends StatelessWidget {
                 child: Text(
                   notification.description,
                   style: TextStyle(
-                    
                     color: isDark ? Colors.white70 : Colors.grey[700],
                     fontSize: 14,
                     height: 1.6,
@@ -871,18 +859,11 @@ class NotificationDetailDialog extends StatelessWidget {
                       borderRadius: BorderRadius.circular(14),
                     ),
                     elevation: 0,
-                    textStyle: const TextStyle(
-                      
-                      fontWeight: FontWeight.w700,
-                    ),
+                    textStyle: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                   child: const Text(
                     'OK',
-                    style: TextStyle(
-                      
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                   ),
                 ),
               ),

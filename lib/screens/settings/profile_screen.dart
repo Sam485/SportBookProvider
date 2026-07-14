@@ -679,7 +679,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return Image.network(
         avatarUrl,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) =>
+        errorBuilder: (_, _, _) =>
             _buildAvatarFallback(getInitials(user?.fullName)),
       );
     }
@@ -857,6 +857,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   await authService.logout();
                   // Navigate to login screen
                   if (mounted && !_isDisposed) {
+                    // ignore: use_build_context_synchronously
                     Navigator.pushReplacementNamed(context, AppRoutes.login);
                   }
                 } catch (e) {

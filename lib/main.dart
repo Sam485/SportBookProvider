@@ -13,6 +13,7 @@ import 'routes/app_routes.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SharedPreferences.getInstance();
+  
 
   // Initialize the service locator
   await setupServiceLocator();
