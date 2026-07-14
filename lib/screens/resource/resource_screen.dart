@@ -109,7 +109,7 @@ class _ResourceScreenState extends State<ResourceScreen> {
     ),
   ];
 
-  // Court data (keeping your existing structure)
+  // Court data
   final List<Map<String, dynamic>> courtData = [
     {'name': 'Tennis Court', 'count': 3, 'price': '\$25/hr'},
     {'name': 'Basketball Court', 'count': 2, 'price': '\$30/hr'},
@@ -118,175 +118,233 @@ class _ResourceScreenState extends State<ResourceScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Theme.of(context).brightness == Brightness.dark
-          ? AppTheme.kBg
-          : AppTheme.kLightBg,
+      backgroundColor: isDark ? AppTheme.kBg : AppTheme.kLightBg,
       body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
         slivers: [
+          // ── Header ──────────────────────────────────────────────────────
           SliverToBoxAdapter(child: _buildHeader()),
           SliverToBoxAdapter(child: _buildDivider()),
-          // Sport clubs section
+
+          // ── Sport Clubs Section ────────────────────────────────────────
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [AppTheme.kAccent, Color(0xFF00B4D8)],
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.sports,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
                       Text(
                         'Sport Clubs',
                         style: AppTheme.tsLabelAdaptive(context),
                       ),
-                      Text(
-                        '${clubs.length} clubs',
-                        style: AppTheme.tsBodyAdaptive(context),
-                      ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.kAccent.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      '${clubs.length} clubs',
+                      style: TextStyle(
+                        color: AppTheme.kAccent,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
           ),
-          // Clubs horizontal list
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 320, // Fixed height for club cards
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.only(left: 10, right: 10),
-                itemCount: clubs.length,
-                itemBuilder: (context, index) {
-                  return ClubCard(club: clubs[index]);
-                },
-              ),
+
+          // ── Clubs List (Fixed) ─────────────────────────────────────────
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate((context, index) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: ClubCard(club: clubs[index]),
+                );
+              }, childCount: clubs.length),
             ),
           ),
-          SliverToBoxAdapter(child: _buildDivider()),
-          // Court pricing section
-          SliverToBoxAdapter(child: _courtPricing()),
+
+          const SliverToBoxAdapter(child: SizedBox(height: 30)),
         ],
       ),
     );
   }
 
+  // ── Header ──────────────────────────────────────────────────────────────
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 25),
+      padding: const EdgeInsets.fromLTRB(16, 26, 16, 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [AppTheme.kAccent, Color(0xFF00B4D8)],
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.dashboard, color: Colors.white, size: 24),
+          ),
+          const SizedBox(width: 12),
           Text('Resources', style: AppTheme.tsTitleAdaptive(context)),
           const Spacer(),
-          ElevatedButton(
+          ElevatedButton.icon(
             onPressed: () {
-              // Add club functionality
               Navigator.pushNamed(context, AppRoutes.editSportClub);
             },
-            style: AppTheme.elevatedButtonStyle(),
-            child: const Text('Add Club'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _courtPricing() {
-    return Padding(
-      padding: const EdgeInsets.all(10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Text('Court Pricing', style: AppTheme.tsLabelAdaptive(context)),
-              const Spacer(),
-              Text(
-                '${courtData.length} courts',
-                style: AppTheme.tsBodyAdaptive(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.kAccent,
+              foregroundColor: const Color(0xFF0A1828),
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          ...List.generate(
-            courtData.length,
-            (index) => _buildCourtCard(courtData[index]),
+            ),
+            icon: const Icon(Icons.add_circle_outline, size: 18),
+            label: const Text(
+              'Add Club',
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+            ),
           ),
         ],
       ),
     );
   }
 
+  // ── Divider ──────────────────────────────────────────────────────────────
+  Widget _buildDivider() {
+    return Container(
+      width: double.infinity,
+      height: 1,
+      color: AppTheme.kAccent.withValues(alpha: 0.3),
+    );
+  }
+
+  // ── Court Card ──────────────────────────────────────────────────────────
   Widget _buildCourtCard(Map<String, dynamic> court) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: isDark ? AppTheme.kCardAlt : AppTheme.kLightCardAlt,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: isDark ? AppTheme.kBorder : AppTheme.kLightBorder,
           width: 1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             children: [
-              Icon(Icons.sports_tennis, color: AppTheme.kAccent, size: 20),
-              const SizedBox(width: 12),
-              Text(
-                court['name'],
-                style: TextStyle(
-                  color: isDark ? Colors.white : AppTheme.kLightText,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppTheme.kAccent.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.sports_tennis,
+                  color: AppTheme.kAccent,
+                  size: 20,
                 ),
               ),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: AppTheme.kAccent.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '${court['count']} courts',
-                  style: TextStyle(
-                    color: AppTheme.kAccent,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    court['name'],
+                    style: TextStyle(
+                      color: isDark ? Colors.white : AppTheme.kLightText,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.kAccent.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      '${court['count']} courts available',
+                      style: TextStyle(
+                        color: AppTheme.kAccent,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-          Text(
-            court['price'],
-            style: TextStyle(
-              color: isDark ? Colors.white70 : AppTheme.kLightTextSub,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [AppTheme.kAccent, Color(0xFF00B4D8)],
+              ),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              court['price'],
+              style: const TextStyle(
+                color: Color(0xFF0A1828),
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildDivider() {
-    return SizedBox(
-      width: double.infinity,
-      child: Divider(
-        thickness: 0.5,
-        color: AppTheme.kAccent.withValues(alpha: 0.6),
       ),
     );
   }

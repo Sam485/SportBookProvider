@@ -163,28 +163,6 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
           'Create Sport Club',
           style: AppTheme.tsTitleAdaptive(context),
         ),
-        actions: [
-          TextButton(
-            onPressed: _isSubmitting ? null : _submitForm,
-            style: TextButton.styleFrom(
-              foregroundColor: AppTheme.kAccent,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-            ),
-            child: _isSubmitting
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppTheme.kAccent,
-                    ),
-                  )
-                : Text(
-                    'Save',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-          ),
-        ],
       ),
       body: SafeArea(
         child: Form(

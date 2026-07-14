@@ -107,21 +107,6 @@ class _SlotScreenState extends State<SlotScreen> {
           'Court & Pricing',
           style: AppTheme.tsTitleAdaptive(context),
         ),
-        actions: [
-          TextButton.icon(
-            onPressed: () {
-              Navigator.pushNamed(context, AppRoutes.adjustSlot);
-            },
-            icon: const Icon(Icons.add_circle_outline, color: AppTheme.kAccent),
-            label: Text(
-              'Add Court',
-              style: TextStyle(
-                color: AppTheme.kAccent,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
       ),
       body: SafeArea(
         child: CustomScrollView(
@@ -144,12 +129,7 @@ class _SlotScreenState extends State<SlotScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           // Quick add court
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Quick add court feature coming soon!'),
-              duration: Duration(seconds: 2),
-            ),
-          );
+          Navigator.pushNamed(context, AppRoutes.adjustSlot);
         },
         backgroundColor: AppTheme.kAccent,
         icon: const Icon(Icons.add, color: Color(0xFF0A1828)),
