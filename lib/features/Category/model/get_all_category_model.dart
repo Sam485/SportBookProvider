@@ -1,5 +1,4 @@
 import 'package:flutter_application_1/features/Category/model/category_model.dart';
-import 'package:flutter_application_1/screens/settings/Features/venue_photos_screen.dart';
 
 class GetAllCategoryModel {
   final List<CategoriesModel> data;

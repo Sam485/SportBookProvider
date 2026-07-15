@@ -1,8 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/core/di/service_locator.dart';
 import 'package:flutter_application_1/core/theme.dart';
+import 'package:flutter_application_1/core/util/image_utils.dart';
+import 'package:flutter_application_1/features/Category/model/category_model.dart';
+import 'package:flutter_application_1/features/Category/service/category_service.dart';
+import 'package:flutter_application_1/features/SportClub/model/dto/created_sport_clubs_dto.dart';
+import 'package:flutter_application_1/features/SportClub/service/sport_club_service.dart';
 import 'package:flutter_application_1/widgets/common/map_picker_screen.dart';
-import 'package:image_picker/image_picker.dart'; // Adjust path as needed
 
 class CreateSportClubScreen extends StatefulWidget {
   const CreateSportClubScreen({super.key});
@@ -16,18 +21,28 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
 
   // Controllers for text fields
   final _nameController = TextEditingController();
-  final _latController = TextEditingController(); // Hidden but keeps value
-  final _lngController = TextEditingController(); // Hidden but keeps value
+  final _latController = TextEditingController();
+  final _lngController = TextEditingController();
   final _locationController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _categoryIdController = TextEditingController();
-
+  final CategoryService categoryService = getIt<CategoryService>();
   // Variables for other fields
   bool? _isOpen;
   TimeOfDay? _openTime;
   TimeOfDay? _closeTime;
   List<File> _images = [];
   bool _isSubmitting = false;
+
+  // Category selection
+  CategoriesModel? _selectedCategory;
+  List<CategoriesModel> _categories = [];
+  bool _isLoadingCategories = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+  }
 
   @override
   void dispose() {
@@ -36,24 +51,363 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
     _lngController.dispose();
     _locationController.dispose();
     _descriptionController.dispose();
-    _categoryIdController.dispose();
     super.dispose();
   }
 
-  // Convert TimeOfDay to Duration
-  Duration? _timeToDuration(TimeOfDay? time) {
-    if (time == null) return null;
-    return Duration(hours: time.hour, minutes: time.minute);
+  // Load categories from API
+  Future<void> _loadCategories() async {
+    setState(() {
+      _isLoadingCategories = true;
+    });
+
+    try {
+      final categories = await categoryService.fetchAllCategories(1, 100, '');
+
+      if (mounted) {
+        setState(() {
+          _categories = categories;
+          _isLoadingCategories = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingCategories = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load categories: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
-  // Pick images from gallery
-  Future<void> _pickImages() async {
-    final picker = ImagePicker();
-    final List<XFile> pickedImages = await picker.pickMultiImage();
+  // Convert TimeOfDay to Duration
 
-    setState(() {
-      _images = pickedImages.map((file) => File(file.path)).toList();
-    });
+  // Pick images from gallery with custom dialog
+  Future<void> _pickImages() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    await showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Container(
+            height: MediaQuery.of(dialogContext).size.height * 0.75,
+            decoration: BoxDecoration(
+              color: isDark ? AppTheme.kBg : Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                // Header with drag indicator
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppTheme.kCardAlt : Colors.grey.shade50,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.grey.shade600
+                              : Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Select Images',
+                            style: TextStyle(
+                              color: isDark
+                                  ? Colors.white
+                                  : AppTheme.kLightText,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () =>
+                                Navigator.pop(dialogContext, false),
+                            icon: Icon(
+                              Icons.close,
+                              color: isDark
+                                  ? Colors.white70
+                                  : Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        'Choose up to ${5 - _images.length} images',
+                        style: TextStyle(
+                          color: isDark
+                              ? AppTheme.kTextSub
+                              : AppTheme.kLightTextSub,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Image picker options
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      children: [
+                        // Gallery option
+                        _buildPickerOption(
+                          icon: Icons.photo_library,
+                          title: 'Choose from Gallery',
+                          subtitle: 'Select multiple images from your gallery',
+                          color: AppTheme.kAccent,
+                          isDark: isDark,
+                          onTap: () => _handleGalleryPick(dialogContext),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Camera option
+                        _buildPickerOption(
+                          icon: Icons.camera_alt,
+                          title: 'Take Photo',
+                          subtitle: 'Capture a new photo with camera',
+                          color: Colors.orange,
+                          isDark: isDark,
+                          onTap: () => _handleCameraPick(dialogContext),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Cancel option
+                        _buildPickerOption(
+                          icon: Icons.cancel,
+                          title: 'Cancel',
+                          subtitle: 'Go back without selecting',
+                          color: Colors.red,
+                          isDark: isDark,
+                          onTap: () => Navigator.pop(dialogContext, false),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+  
+  Future<void> _handleGalleryPick(BuildContext dialogContext) async {
+    // Close the dialog first
+    Navigator.pop(dialogContext, false);
+
+    // Check if widget is still mounted
+    if (!mounted) return;
+
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+      // Pick and save images
+      final savedImages = await ImageUtils.pickMultipleImages(context);
+
+      // Close loading dialog
+      if (mounted) {
+        Navigator.pop(context);
+      }
+
+      if (savedImages.isNotEmpty && mounted) {
+        setState(() {
+          _images = savedImages;
+        });
+
+        // Show success message
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                '${savedImages.length} images selected successfully',
+              ),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No images selected'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    } catch (e) {
+      // Close loading dialog if still open
+      if (mounted) {
+        Navigator.pop(context);
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error selecting images: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleCameraPick(BuildContext dialogContext) async {
+    // Close the dialog first
+    Navigator.pop(dialogContext, false);
+
+    // Check if widget is still mounted
+    if (!mounted) return;
+
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+      final savedImage = await ImageUtils.pickImageFromCamera(context);
+
+      // Close loading dialog
+      if (mounted) {
+        Navigator.pop(context);
+      }
+
+      if (savedImage != null && mounted) {
+        setState(() {
+          _images.add(savedImage);
+        });
+
+        // Show success message
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Photo captured successfully'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      // Close loading dialog if still open
+      if (mounted) {
+        Navigator.pop(context);
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error taking photo: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  // Helper widget for picker options
+  Widget _buildPickerOption({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required bool isDark,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isDark ? AppTheme.kCardAlt : Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark ? AppTheme.kBorder : Colors.grey.shade200,
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: isDark ? Colors.white : AppTheme.kLightText,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: isDark
+                          ? AppTheme.kTextSub
+                          : AppTheme.kLightTextSub,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
+              size: 16,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   // Remove image
@@ -92,6 +446,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
   }
 
   // Submit form
+  // Submit form - Update this method
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
       // Validate location is selected
@@ -105,41 +460,128 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
         return;
       }
 
+      // Validate category is selected
+      if (_selectedCategory == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please select a category'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+
+      // Validate images
+      if (_images.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please upload at least one image'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+
+      // Validate status is selected
+      if (_isOpen == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please select club status (Open/Closed)'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+
+      // Validate times are selected
+      if (_openTime == null || _closeTime == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please select opening and closing times'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+
+      // Validate lat/lng are present
+      final lat = double.tryParse(_latController.text);
+      final lng = double.tryParse(_lngController.text);
+
+      if (lat == null || lng == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invalid location coordinates'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+
       setState(() {
         _isSubmitting = true;
       });
 
-      // Collect all data with lat/lng from hidden controllers
-      // ignore: unused_local_variable
-      final clubData = {
-        'name': _nameController.text,
-        'lat': double.tryParse(_latController.text),
-        'lng': double.tryParse(_lngController.text),
-        'location': _locationController.text,
-        'isOpen': _isOpen,
-        'openTime': _timeToDuration(_openTime),
-        'closeTime': _timeToDuration(_closeTime),
-        'description': _descriptionController.text,
-        'categoryId': int.tryParse(_categoryIdController.text),
-        'images': _images,
-      };
+      // Create DTO with all data
+      final sportClubDto = CreatedSportClubsDto(
+        name: _nameController.text,
+        lat: lat,
+        lng: lng,
+        location: _locationController.text,
+        isOpen: _isOpen!,
+        openTime: _timeToDuration(_openTime!),
+        closeTime: _timeToDuration(_closeTime!),
+        description: _descriptionController.text,
+        categoryId: _selectedCategory!.id,
+        images: _images,
+      );
 
-      // Simulate API call
-      Future.delayed(const Duration(seconds: 2), () {
-        if (mounted) {
-          setState(() {
-            _isSubmitting = false;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Club created successfully! 🎉'),
-              backgroundColor: Colors.green,
-              duration: Duration(seconds: 2),
+      // Call the API
+      _createSportClub(sportClubDto);
+    }
+  }
+
+  // Add helper method to convert TimeOfDay to Duration
+  Duration _timeToDuration(TimeOfDay time) {
+    return Duration(hours: time.hour, minutes: time.minute);
+  }
+
+  // Add method to create sport club
+  Future<void> _createSportClub(CreatedSportClubsDto sportClubDto) async {
+    try {
+      final sportClubService = getIt<SportClubService>();
+      final createdClub = await sportClubService.createSportClub(sportClubDto);
+
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Club "${createdClub.name}" created successfully! 🎉',
             ),
-          );
-          Navigator.pop(context);
-        }
-      });
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        Navigator.pop(context, true); // Return true to indicate success
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to create club: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
 
@@ -199,6 +641,10 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                     ),
                     const SizedBox(height: 16),
 
+                    // ── Category Selection ─────────────────────────────────
+                    _buildCategoryDropdown(isDark),
+                    const SizedBox(height: 16),
+
                     // ── Location with Map Picker ──────────────────────────
                     _buildLocationField(isDark),
                     const SizedBox(height: 24),
@@ -236,19 +682,6 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                           ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 24),
-
-                    // ── Category ──────────────────────────────────────────
-                    _buildSectionTitle('Category', Icons.category, isDark),
-                    const SizedBox(height: 12),
-
-                    _buildTextField(
-                      controller: _categoryIdController,
-                      label: 'Category ID',
-                      hint: 'Enter category number',
-                      icon: Icons.numbers,
-                      keyboardType: TextInputType.number,
                     ),
                     const SizedBox(height: 24),
 
@@ -315,6 +748,144 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  // ── Category Dropdown ─────────────────────────────────────────────────
+  Widget _buildCategoryDropdown(bool isDark) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.kCardAlt : AppTheme.kLightCardAlt,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? AppTheme.kBorder : AppTheme.kLightBorder,
+          width: 1,
+        ),
+      ),
+      child: _isLoadingCategories
+          ? Container(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Loading categories...',
+                    style: TextStyle(
+                      color: isDark
+                          ? AppTheme.kTextSub
+                          : AppTheme.kLightTextSub,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : DropdownButtonHideUnderline(
+              child: DropdownButton<CategoriesModel>(
+                value: _selectedCategory,
+                isExpanded: true,
+                hint: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Icon(Icons.category, color: AppTheme.kAccent),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Select Category',
+                        style: TextStyle(
+                          color: isDark
+                              ? Colors.white70
+                              : AppTheme.kLightTextSub,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                items: _categories.map((category) {
+                  return DropdownMenuItem<CategoriesModel>(
+                    value: category,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        children: [
+                          if (category.imageUrl.isNotEmpty)
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(
+                                category.imageUrl,
+                                width: 30,
+                                height: 30,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    width: 30,
+                                    height: 30,
+                                    color: Colors.grey.shade300,
+                                    child: const Icon(
+                                      Icons.error_outline,
+                                      size: 16,
+                                    ),
+                                  );
+                                },
+                              ),
+                            )
+                          else
+                            Container(
+                              width: 30,
+                              height: 30,
+                              decoration: BoxDecoration(
+                                color: AppTheme.kAccent.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(
+                                Icons.category,
+                                color: AppTheme.kAccent,
+                                size: 16,
+                              ),
+                            ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              category.name,
+                              style: TextStyle(
+                                color: isDark
+                                    ? Colors.white
+                                    : AppTheme.kLightText,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+                onChanged: (CategoriesModel? newValue) {
+                  setState(() {
+                    _selectedCategory = newValue;
+                  });
+                },
+                dropdownColor: isDark ? AppTheme.kBg : Colors.white,
+                icon: Padding(
+                  padding: const EdgeInsets.only(right: 16),
+                  child: Icon(
+                    Icons.arrow_drop_down,
+                    color: isDark ? Colors.white70 : AppTheme.kLightText,
+                  ),
+                ),
+                style: TextStyle(
+                  color: isDark ? Colors.white : AppTheme.kLightText,
+                  fontSize: 14,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                elevation: 8,
+              ),
+            ),
     );
   }
 
@@ -687,6 +1258,8 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
             },
             activeThumbColor: AppTheme.kAccent,
             activeTrackColor: AppTheme.kAccent.withValues(alpha: 0.3),
+            inactiveThumbColor: Colors.red,
+            inactiveTrackColor: Colors.red.withValues(alpha: 0.3),
           ),
         ],
       ),
@@ -745,15 +1318,75 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
     );
   }
 
-  // ── Select Time ────────────────────────────────────────────────────────
+  // ── Select Time (Updated with Theme) ─────────────────────────────────
   Future<void> _selectTime({required bool isOpen}) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(primary: AppTheme.kAccent),
+            colorScheme: ColorScheme(
+              primary: AppTheme.kAccent,
+              primaryContainer: AppTheme.kAccent.withValues(alpha: 0.1),
+              secondary: AppTheme.kAccent,
+              surface: isDark ? AppTheme.kBg : Colors.white,
+              error: Colors.red,
+              onPrimary: Colors.white,
+              onSecondary: Colors.white,
+              onSurface: isDark ? Colors.white : AppTheme.kLightText,
+              onError: Colors.white,
+              brightness: isDark ? Brightness.dark : Brightness.light,
+            ),
+            cardColor: isDark ? AppTheme.kCardAlt : Colors.white,
+            scaffoldBackgroundColor: isDark ? AppTheme.kBg : Colors.white,
+            timePickerTheme: TimePickerThemeData(
+              backgroundColor: isDark ? AppTheme.kBg : Colors.white,
+              dialBackgroundColor: isDark
+                  ? AppTheme.kCardAlt
+                  : Colors.grey.shade50,
+              dialHandColor: AppTheme.kAccent,
+              hourMinuteTextColor: isDark ? Colors.white : AppTheme.kLightText,
+              hourMinuteColor: isDark
+                  ? AppTheme.kCardAlt
+                  : Colors.grey.shade100,
+              dayPeriodTextColor: isDark ? Colors.white : AppTheme.kLightText,
+              dayPeriodColor: isDark ? AppTheme.kCardAlt : Colors.grey.shade100,
+              inputDecorationTheme: InputDecorationTheme(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: isDark ? AppTheme.kBorder : AppTheme.kLightBorder,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppTheme.kAccent, width: 2),
+                ),
+                hintStyle: TextStyle(
+                  color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
+                ),
+                labelStyle: TextStyle(
+                  color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
+                ),
+              ),
+              helpTextStyle: TextStyle(
+                color: isDark ? Colors.white : AppTheme.kLightText,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+              dialTextStyle: TextStyle(
+                color: isDark ? Colors.white : AppTheme.kLightText,
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+              ),
+              entryModeIconColor: AppTheme.kAccent,
+            ),
+            dialogTheme: DialogThemeData(
+              backgroundColor: isDark ? AppTheme.kBg : Colors.white,
+            ),
           ),
           child: child!,
         );

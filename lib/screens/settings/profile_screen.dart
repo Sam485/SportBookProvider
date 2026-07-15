@@ -6,7 +6,11 @@ import 'package:flutter_application_1/features/Notification/service/notification
 import 'package:flutter_application_1/features/User/Model/user_model.dart';
 import 'package:flutter_application_1/features/User/Service/user_service.dart';
 import 'package:flutter_application_1/routes/app_routes.dart';
+import 'package:flutter_application_1/providers/language_provider.dart';
+import 'package:flutter_application_1/providers/theme_provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -28,8 +32,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   UserModel? user;
   int newNotification = 0;
 
+  // Notification toggle state
+  bool _isNotificationsEnabled = true;
+  static const String _notificationsKey = 'notifications_enabled';
+
   late List<FeaturesData> accountData;
-  late List<FeaturesData> venueData;
 
   @override
   void initState() {
@@ -39,6 +46,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     userService.addListener(_onUserServiceChanged);
     // Load user data on init
     _loadUserData();
+    _loadNotificationSettings();
   }
 
   @override
@@ -54,12 +62,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_isDisposed && mounted) {
         setState(() {
-          // Safe assignment - don't use null check operator
           user = userService.currentUser;
           _isLoading = userService.isLoading;
           _error = userService.error;
 
-          // If user data is loaded and no error, ensure loading is false
           if (user != null && _error == null) {
             _isLoading = false;
           }
@@ -86,23 +92,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
         route: AppRoutes.notifications,
       ),
     ];
+  }
 
-    venueData = [
-      FeaturesData(
-        icon: Icons.work_outline,
-        title: 'Operating Hours',
-        des: '6:00 AM - 10:00 PM',
-        color: Colors.blue,
-        route: AppRoutes.operatingHours,
-      ),
-      FeaturesData(
-        icon: Icons.location_city_outlined,
-        title: 'Venue Photos',
-        des: '14 photos uploaded',
-        color: Colors.amber,
-        route: AppRoutes.editVenueProfile,
-      ),
-    ];
+  Future<void> _loadNotificationSettings() async {
+    if (_isDisposed || !mounted) return;
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final enabled = prefs.getBool(_notificationsKey) ?? true;
+      if (mounted && !_isDisposed) {
+        setState(() {
+          _isNotificationsEnabled = enabled;
+        });
+      }
+    } catch (e) {
+      // Ignore
+    }
+  }
+
+  Future<void> _saveNotificationSettings(bool enabled) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_notificationsKey, enabled);
+    } catch (e) {
+      // Ignore
+    }
+  }
+
+  Future<void> _toggleNotifications(bool value) async {
+    if (_isDisposed || !mounted) return;
+
+    setState(() {
+      _isNotificationsEnabled = value;
+    });
+
+    await _saveNotificationSettings(value);
   }
 
   Future<void> _loadUserData() async {
@@ -125,7 +149,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         }
       }
 
-      // Double-check: if listener didn't fire, update manually
       if (mounted && !_isDisposed) {
         setState(() {
           newNotification = count;
@@ -163,6 +186,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  void _showLanguageSelector() async {
+    if (_isDisposed || !mounted) return;
+
+    final languageProvider = Provider.of<LanguageProvider>(
+      context,
+      listen: false,
+    );
+    final currentLanguage = languageProvider.currentLanguage;
+
+    final selectedLanguage = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) =>
+          LanguageSelector(currentLanguage: currentLanguage.toUpperCase()),
+    );
+
+    if (selectedLanguage != null && mounted && !_isDisposed) {
+      setState(() {});
+    }
+  }
+
+  void _showAppearanceSelector() async {
+    if (_isDisposed || !mounted) return;
+
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+
+    final selectedTheme = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) =>
+          AppearanceSelector(currentTheme: themeProvider.currentTheme),
+    );
+
+    if (selectedTheme != null && mounted && !_isDisposed) {
+      setState(() {});
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isDisposed) return const SizedBox.shrink();
@@ -195,7 +258,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Show error state if there's an error and no user data
     if (_error != null && user == null && !_isLoading) {
       return Center(
         child: Column(
@@ -246,13 +308,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   : _buildButtonSection('Account', accountData),
             ),
           ),
+          // ============================================================
+          // NEW SETTINGS SECTION
+          // ============================================================
           SliverToBoxAdapter(
             child: Skeletonizer(
               enabled: _isLoading && _isFirstLoad,
               enableSwitchAnimation: true,
               child: _isLoading && _isFirstLoad
-                  ? _buildSkeletonButtonSection(isDark, 'Venue', 2)
-                  : _buildButtonSection('Venue', venueData),
+                  ? _buildSkeletonSettingsSection(isDark)
+                  : _buildSettingsSection(),
             ),
           ),
           SliverToBoxAdapter(
@@ -265,6 +330,149 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 20)),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // SETTINGS SECTION
+  // ============================================================
+
+  Widget _buildSettingsSection() {
+    if (_isDisposed) return const SizedBox.shrink();
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final languageProvider = Provider.of<LanguageProvider>(context);
+
+    // Define settings data with the same structure as accountData
+    final settingsData = [
+      SettingsData(
+        icon: Icons.notifications_outlined,
+        title: 'Notifications',
+        des: 'Booking alerts & reminders',
+        color: Colors.amber,
+        type: SettingsType.switchToggle,
+      ),
+      SettingsData(
+        icon: Icons.language_outlined,
+        title: 'Language',
+        des: languageProvider.currentLanguage == 'en' ? 'English' : 'Khmer',
+        color: Colors.blue,
+        type: SettingsType.selector,
+        badge: languageProvider.currentLanguage == 'en' ? 'EN' : 'KM',
+      ),
+      SettingsData(
+        icon: Icons.dark_mode_outlined,
+        title: 'Appearance',
+        des: themeProvider.currentTheme == 'dark'
+            ? 'Dark Mode'
+            : (themeProvider.currentTheme == 'light'
+                  ? 'Light Mode'
+                  : 'System Default'),
+        color: Colors.purple,
+        type: SettingsType.selector,
+        badge: themeProvider.currentTheme == 'dark'
+            ? 'Dark'
+            : (themeProvider.currentTheme == 'light' ? 'Light' : 'System'),
+      ),
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Settings', style: AppTheme.tsLabelAdaptive(context)),
+          const SizedBox(height: 10),
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: isDark ? AppTheme.kCard : AppTheme.kLightCard,
+            ),
+            child: Column(
+              children: List.generate(settingsData.length, (index) {
+                final data = settingsData[index];
+                return InkWell(
+                  onTap: data.type == SettingsType.switchToggle
+                      ? null
+                      : () {
+                          if (data.title == 'Language') {
+                            _showLanguageSelector();
+                          } else if (data.title == 'Appearance') {
+                            _showAppearanceSelector();
+                          }
+                        },
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.only(
+                        topLeft: index == 0
+                            ? const Radius.circular(12)
+                            : Radius.zero,
+                        topRight: index == 0
+                            ? const Radius.circular(12)
+                            : Radius.zero,
+                        bottomLeft: index == settingsData.length - 1
+                            ? const Radius.circular(12)
+                            : Radius.zero,
+                        bottomRight: index == settingsData.length - 1
+                            ? const Radius.circular(12)
+                            : Radius.zero,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: data.color.withValues(alpha: 0.4),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Center(
+                            child: Icon(data.icon, color: data.color),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                data.title,
+                                style: AppTheme.tsLabelAdaptive(
+                                  context,
+                                ).copyWith(fontSize: 14),
+                              ),
+                              const SizedBox(height: 5),
+                              Text(data.des, style: AppTheme.tsBody),
+                            ],
+                          ),
+                        ),
+                        if (data.type == SettingsType.switchToggle)
+                          Switch(
+                            value: _isNotificationsEnabled,
+                            onChanged: _toggleNotifications,
+                            activeThumbColor: AppTheme.kAccent,
+                          )
+                        else if (data.badge != null)
+                          Row(
+                            children: [
+                              _buildBadge(data.badge!, Colors.grey),
+                              const SizedBox(width: 10),
+                              const Icon(Icons.chevron_right, size: 20),
+                            ],
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
         ],
       ),
     );
@@ -401,6 +609,123 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildSkeletonSettingsSection(bool isDark) {
+    final skeletonBaseColor = isDark
+        ? const Color(0xFF1E3A5F)
+        : const Color(0xFFE0E0E0);
+    final skeletonHighlightColor = isDark
+        ? const Color(0xFF2A4A6F)
+        : const Color(0xFFF5F5F5);
+
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            height: 16,
+            width: 60,
+            color: isDark ? AppTheme.kCardAlt : AppTheme.kLightCardAlt,
+          ),
+          const SizedBox(height: 10),
+          Skeletonizer(
+            enabled: true,
+            effect: ShimmerEffect(
+              baseColor: skeletonBaseColor,
+              highlightColor: skeletonHighlightColor,
+            ),
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: isDark ? AppTheme.kCard : AppTheme.kLightCard,
+              ),
+              child: Column(
+                children: List.generate(
+                  3,
+                  (index) => Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.only(
+                        topLeft: index == 0
+                            ? const Radius.circular(12)
+                            : Radius.zero,
+                        topRight: index == 0
+                            ? const Radius.circular(12)
+                            : Radius.zero,
+                        bottomLeft: index == 2
+                            ? const Radius.circular(12)
+                            : Radius.zero,
+                        bottomRight: index == 2
+                            ? const Radius.circular(12)
+                            : Radius.zero,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 45,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? AppTheme.kCardAlt
+                                : AppTheme.kLightCardAlt,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                height: 14,
+                                width: 80,
+                                color: isDark
+                                    ? AppTheme.kCardAlt
+                                    : AppTheme.kLightCardAlt,
+                              ),
+                              const SizedBox(height: 4),
+                              Container(
+                                height: 10,
+                                width: 120,
+                                color: isDark
+                                    ? AppTheme.kCardAlt
+                                    : AppTheme.kLightCardAlt,
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          width: 40,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            color: isDark
+                                ? AppTheme.kCardAlt
+                                : AppTheme.kLightCardAlt,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Container(
+                          width: 20,
+                          height: 20,
+                          color: isDark
+                              ? AppTheme.kCardAlt
+                              : AppTheme.kLightCardAlt,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -673,7 +998,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return _buildAvatarFallback('U');
     }
 
-    // Check if avatarUrl exists and is not empty - SAFE NULL HANDLING
     final String? avatarUrl = user?.avatarUrl;
     if (avatarUrl != null && avatarUrl.isNotEmpty) {
       return Image.network(
@@ -684,7 +1008,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
     }
 
-    // Fallback to initials if no avatar URL
     return _buildAvatarFallback(getInitials(user?.fullName));
   }
 
@@ -852,10 +1175,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             ElevatedButton(
               onPressed: () async {
-                Navigator.pop(context); // Close dialog
+                Navigator.pop(context);
                 try {
                   await authService.logout();
-                  // Navigate to login screen
                   if (mounted && !_isDisposed) {
                     // ignore: use_build_context_synchronously
                     Navigator.pushReplacementNamed(context, AppRoutes.login);
@@ -890,7 +1212,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   String getInitials(String? fullName) {
     if (fullName == null || fullName.trim().isEmpty) {
-      return 'U'; // Default for unknown user
+      return 'U';
     }
 
     final trimmedName = fullName.trim();
@@ -904,17 +1226,279 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     if (nameParts.length == 1) {
-      // Only one name part, return first character
       return nameParts.first.substring(0, 1).toUpperCase();
     }
 
-    // Return first character of first and last name parts
     final firstInitial = nameParts.first.substring(0, 1).toUpperCase();
     final lastInitial = nameParts.last.substring(0, 1).toUpperCase();
 
     return '$firstInitial$lastInitial';
   }
 }
+
+// ============================================================
+// LANGUAGE SELECTOR
+// ============================================================
+
+class LanguageSelector extends StatelessWidget {
+  final String currentLanguage;
+
+  const LanguageSelector({super.key, required this.currentLanguage});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.kCard : AppTheme.kLightCard,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 40,
+            height: 4,
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              color: (isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub)
+                  .withValues(alpha: 0.4),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          Text(
+            'Select Language',
+            style: TextStyle(
+              color: isDark ? Colors.white : AppTheme.kLightText,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildLanguageOption(
+            context,
+            'English',
+            'EN',
+            currentLanguage == 'EN',
+            isDark,
+            () {
+              final languageProvider = Provider.of<LanguageProvider>(
+                context,
+                listen: false,
+              );
+              languageProvider.setLanguage('en');
+              Navigator.pop(context, 'EN');
+            },
+          ),
+          _buildLanguageOption(
+            context,
+            'Khmer',
+            'KM',
+            currentLanguage == 'KM',
+            isDark,
+            () {
+              final languageProvider = Provider.of<LanguageProvider>(
+                context,
+                listen: false,
+              );
+              languageProvider.setLanguage('km');
+              Navigator.pop(context, 'KM');
+            },
+          ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLanguageOption(
+    BuildContext context,
+    String label,
+    String code,
+    bool isSelected,
+    bool isDark,
+    VoidCallback onTap,
+  ) {
+    return ListTile(
+      leading: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppTheme.kAccent.withValues(alpha: 0.2)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected
+                ? AppTheme.kAccent
+                : (isDark ? AppTheme.kBorder : AppTheme.kLightBorder),
+          ),
+        ),
+        child: Center(
+          child: Text(
+            code,
+            style: TextStyle(
+              color: isSelected ? AppTheme.kAccent : Colors.grey,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              fontSize: 12,
+            ),
+          ),
+        ),
+      ),
+      title: Text(
+        label,
+        style: TextStyle(color: isDark ? Colors.white : AppTheme.kLightText),
+      ),
+      trailing: isSelected
+          ? Icon(Icons.check_circle, color: AppTheme.kAccent)
+          : null,
+      onTap: onTap,
+    );
+  }
+}
+
+// ============================================================
+// APPEARANCE SELECTOR
+// ============================================================
+
+class AppearanceSelector extends StatelessWidget {
+  final String currentTheme;
+
+  const AppearanceSelector({super.key, required this.currentTheme});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.kCard : AppTheme.kLightCard,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 40,
+            height: 4,
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              color: (isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub)
+                  .withValues(alpha: 0.4),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          Text(
+            'Select Theme',
+            style: TextStyle(
+              color: isDark ? Colors.white : AppTheme.kLightText,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildThemeOption(
+            context,
+            'Light Mode',
+            'light',
+            Icons.wb_sunny,
+            currentTheme == 'light',
+            isDark,
+            () {
+              final themeProvider = Provider.of<ThemeProvider>(
+                context,
+                listen: false,
+              );
+              themeProvider.setTheme('light');
+              Navigator.pop(context, 'light');
+            },
+          ),
+          _buildThemeOption(
+            context,
+            'Dark Mode',
+            'dark',
+            Icons.nightlight_round,
+            currentTheme == 'dark',
+            isDark,
+            () {
+              final themeProvider = Provider.of<ThemeProvider>(
+                context,
+                listen: false,
+              );
+              themeProvider.setTheme('dark');
+              Navigator.pop(context, 'dark');
+            },
+          ),
+          _buildThemeOption(
+            context,
+            'System Default',
+            'system',
+            Icons.settings_suggest,
+            currentTheme == 'system',
+            isDark,
+            () {
+              final themeProvider = Provider.of<ThemeProvider>(
+                context,
+                listen: false,
+              );
+              themeProvider.setTheme('system');
+              Navigator.pop(context, 'system');
+            },
+          ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildThemeOption(
+    BuildContext context,
+    String label,
+    String value,
+    IconData icon,
+    bool isSelected,
+    bool isDark,
+    VoidCallback onTap,
+  ) {
+    return ListTile(
+      leading: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppTheme.kAccent.withValues(alpha: 0.2)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected
+                ? AppTheme.kAccent
+                : (isDark ? AppTheme.kBorder : AppTheme.kLightBorder),
+          ),
+        ),
+        child: Icon(
+          icon,
+          color: isSelected ? AppTheme.kAccent : Colors.grey,
+          size: 20,
+        ),
+      ),
+      title: Text(
+        label,
+        style: TextStyle(color: isDark ? Colors.white : AppTheme.kLightText),
+      ),
+      trailing: isSelected
+          ? Icon(Icons.check_circle, color: AppTheme.kAccent)
+          : null,
+      onTap: onTap,
+    );
+  }
+}
+
+// ============================================================
+// FEATURES DATA CLASS
+// ============================================================
 
 class FeaturesData {
   final IconData icon;
@@ -931,5 +1515,29 @@ class FeaturesData {
     this.label,
     required this.color,
     required this.route,
+  });
+}
+
+// ============================================================
+// SETTINGS DATA CLASS
+// ============================================================
+
+enum SettingsType { switchToggle, selector }
+
+class SettingsData {
+  final IconData icon;
+  final String title;
+  final String des;
+  final Color color;
+  final SettingsType type;
+  final String? badge;
+
+  SettingsData({
+    required this.icon,
+    required this.title,
+    required this.des,
+    required this.color,
+    required this.type,
+    this.badge,
   });
 }

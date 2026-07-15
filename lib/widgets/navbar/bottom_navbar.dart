@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter_application_1/providers/theme_provider.dart';
 import 'package:flutter_application_1/translations/app_translations.dart';
 import 'package:provider/provider.dart';
@@ -39,35 +38,35 @@ class AppBottomNavBar extends StatelessWidget {
         ),
         child: SafeArea(
           top: false,
-          child: CurvedNavigationBar(
-            index: selectedIndex,
+          child: BottomNavigationBar(
+            currentIndex: selectedIndex,
             onTap: onTabChange,
-            height: 60,
             backgroundColor: Colors.transparent,
-            color: AppTheme.kAccent,
-            buttonBackgroundColor: AppTheme.kAccent,
-            animationCurve: Curves.easeInOut,
-            animationDuration: const Duration(milliseconds: 350),
-            items: <Widget>[
+            elevation: 0,
+            type: BottomNavigationBarType.fixed,
+            selectedItemColor: AppTheme.kAccent,
+            unselectedItemColor: isDark ? Colors.grey[400] : Colors.grey[600],
+            selectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+            ),
+            unselectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.normal,
+              fontSize: 12,
+            ),
+            items: [
               _buildNavItem(
                 icon: Icons.dashboard,
                 label: 'dashboard'.tr(context),
-                isActive: selectedIndex == 0,
               ),
-              _buildNavItem(
-                icon: Icons.monitor,
-                label: 'monitor'.tr(context),
-                isActive: selectedIndex == 1,
-              ),
+              _buildNavItem(icon: Icons.monitor, label: 'monitor'.tr(context)),
               _buildNavItem(
                 icon: Icons.list_alt,
                 label: 'resource'.tr(context),
-                isActive: selectedIndex == 2,
               ),
               _buildNavItem(
                 icon: Icons.person_rounded,
                 label: 'profile'.tr(context),
-                isActive: selectedIndex == 3,
               ),
             ],
           ),
@@ -76,25 +75,10 @@ class AppBottomNavBar extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem({
+  BottomNavigationBarItem _buildNavItem({
     required IconData icon,
     required String label,
-    required bool isActive,
   }) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 24, color: Colors.black),
-        const SizedBox(height: 2),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 10,
-            color: Colors.black,
-            fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
-          ),
-        ),
-      ],
-    );
+    return BottomNavigationBarItem(icon: Icon(icon, size: 24), label: label);
   }
 }

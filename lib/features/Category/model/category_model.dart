@@ -18,8 +18,8 @@ class CategoriesModel {
       id: json['id'] ?? '',
       name: json['name'] ?? '',
       imageUrl: json['image_url'] ?? '',
-      createdAt: json['created_at'] ?? DateTime(0),
-      updatedAt: json['updated_at'] ?? '',
+      createdAt: DateTime.parse(json['created_at']),
+      updatedAt: DateTime.parse(json['updated_at']),
     );
   }
 

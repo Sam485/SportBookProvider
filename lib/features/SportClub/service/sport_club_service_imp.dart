@@ -7,6 +7,7 @@ import 'package:flutter_application_1/features/SportClub/service/sport_club_serv
 class SportClubServiceImp implements SportClubService {
   SportClubRepository sportClubRepository;
   SportClubServiceImp(this.sportClubRepository);
+
   String _error = '';
   bool _isLoading = false;
 
@@ -15,6 +16,7 @@ class SportClubServiceImp implements SportClubService {
 
   @override
   bool get isLoading => _isLoading;
+
   @override
   Future<SportClubModel> createSportClub(CreatedSportClubsDto sportClub) async {
     _isLoading = true;
@@ -23,21 +25,6 @@ class SportClubServiceImp implements SportClubService {
       final data = await sportClubRepository.createSportClub(sportClub);
       _isLoading = false;
       return data;
-    } catch (e) {
-      _isLoading = false;
-      _error = e.toString();
-      rethrow;
-    }
-  }
-
-  @override
-  Future<bool> deleteSportClub(int sportClubId) async {
-    _isLoading = true;
-    _error = '';
-    try {
-      final response = await sportClubRepository.deleteSportclub(sportClubId);
-      _isLoading = false;
-      return response;
     } catch (e) {
       _isLoading = false;
       _error = e.toString();
@@ -59,6 +46,21 @@ class SportClubServiceImp implements SportClubService {
       );
       _isLoading = false;
       return data;
+    } catch (e) {
+      _isLoading = false;
+      _error = e.toString();
+      rethrow;
+    }
+  }
+
+  @override
+  Future<bool> deleteSportClub(int sportClubId) async {
+    _isLoading = true;
+    _error = '';
+    try {
+      final response = await sportClubRepository.deleteSportclub(sportClubId);
+      _isLoading = false;
+      return response;
     } catch (e) {
       _isLoading = false;
       _error = e.toString();

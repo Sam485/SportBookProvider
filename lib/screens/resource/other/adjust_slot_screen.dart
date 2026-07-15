@@ -105,16 +105,6 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
       });
 
       // Collect all data
-      final slotData = {
-        'sportClubId': widget.sportClubId,
-        'name': _nameController.text,
-        'description': _descriptionController.text,
-        'price': double.tryParse(_priceController.text),
-        'capacity': int.tryParse(_capacityController.text),
-        'isAvailable': _isAvailable,
-        'categoryId': int.tryParse(_categoryIdController.text),
-        'image': _imageFile,
-      };
 
       // Simulate API call
       Future.delayed(const Duration(seconds: 2), () {
@@ -701,7 +691,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                 _isAvailable = value;
               });
             },
-            activeColor: AppTheme.kAccent,
+            activeThumbColor: AppTheme.kAccent,
             activeTrackColor: AppTheme.kAccent.withValues(alpha: 0.3),
             inactiveThumbColor: Colors.red,
             inactiveTrackColor: Colors.red.withValues(alpha: 0.3),

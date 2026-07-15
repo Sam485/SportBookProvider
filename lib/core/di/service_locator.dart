@@ -4,6 +4,9 @@ import 'package:flutter_application_1/core/interceptors/auth_interceptor.dart';
 import 'package:flutter_application_1/features/Booking/Repository/booking_repository.dart';
 import 'package:flutter_application_1/features/Booking/Service/booking_service.dart';
 import 'package:flutter_application_1/features/Booking/Service/booking_service_imp.dart';
+import 'package:flutter_application_1/features/Category/repository/category_repository.dart';
+import 'package:flutter_application_1/features/Category/service/category_service.dart';
+import 'package:flutter_application_1/features/Category/service/category_service_imp.dart';
 import 'package:flutter_application_1/features/Notification/repository/notification_repository.dart';
 import 'package:flutter_application_1/features/Notification/service/notification_service.dart';
 import 'package:flutter_application_1/features/Notification/service/notification_service_imp.dart';
@@ -71,6 +74,15 @@ Future<void> setupServiceLocator() async {
 
   getIt.registerLazySingleton<UserService>(
     () => UserServiceImp(getIt<UserRespository>()),
+  );
+
+  //Category
+  getIt.registerLazySingleton<CategoryRepository>(
+    () => CategoryRepository(getIt<Dio>()),
+  );
+
+  getIt.registerLazySingleton<CategoryService>(
+    () => CategoryServiceImp(getIt<CategoryRepository>()),
   );
 
   //Notification
