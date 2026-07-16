@@ -59,7 +59,6 @@ class AppBottomNavBar extends StatelessWidget {
                 icon: Icons.dashboard,
                 label: 'dashboard'.tr(context),
               ),
-              _buildNavItem(icon: Icons.monitor, label: 'monitor'.tr(context)),
               _buildNavItem(
                 icon: Icons.list_alt,
                 label: 'resource'.tr(context),

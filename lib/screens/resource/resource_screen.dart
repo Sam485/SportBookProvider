@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/core/di/service_locator.dart';
 import 'package:flutter_application_1/core/theme.dart';
+import 'package:flutter_application_1/features/SportClub/model/sport_club_model.dart';
+import 'package:flutter_application_1/features/SportClub/service/sport_club_service.dart';
 import 'package:flutter_application_1/routes/app_routes.dart';
-import 'package:flutter_application_1/widgets/cards/club_card.dart'; // Adjust path as needed
+import 'package:flutter_application_1/widgets/cards/club_card.dart';
+import 'package:flutter_application_1/widgets/cards/club_card_skeleton.dart';
 
 class ResourceScreen extends StatefulWidget {
   const ResourceScreen({super.key});
@@ -11,110 +15,43 @@ class ResourceScreen extends StatefulWidget {
 }
 
 class _ResourceScreenState extends State<ResourceScreen> {
-  // Sample club data
-  final List<Club> clubs = [
-    Club(
-      name: 'Fitness Center Pro',
-      initials: 'FC',
-      color: Colors.blue,
-      openTime: '6:00 AM',
-      closeTime: '10:00 PM',
-      location: '123 Main St, Downtown',
-      distanceKm: 2.5,
-      favoriteCount: 128,
-      imageUrls: [
-        'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400',
-        'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400',
-        'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400',
-      ],
-      isCurrentlyOpen: true,
-    ),
-    Club(
-      name: 'Tennis Academy',
-      initials: 'TA',
-      color: Colors.green,
-      openTime: '7:00 AM',
-      closeTime: '9:00 PM',
-      location: '456 Sports Ave, Uptown',
-      distanceKm: 4.8,
-      favoriteCount: 89,
-      imageUrls: [
-        'https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?w=400',
-        'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=400',
-      ],
-      isCurrentlyOpen: true,
-    ),
-    Club(
-      name: 'Swimming Paradise',
-      initials: 'SP',
-      color: Colors.cyan,
-      openTime: '5:30 AM',
-      closeTime: '8:00 PM',
-      location: '789 Waterfront Blvd, Eastside',
-      distanceKm: 6.2,
-      favoriteCount: 234,
-      imageUrls: [
-        'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?w=400',
-        'https://images.unsplash.com/photo-1530023367847-a683933f4172?w=400',
-        'https://images.unsplash.com/photo-1518288774672-b94e808873ff?w=400',
-      ],
-      isCurrentlyOpen: false,
-    ),
-    Club(
-      name: 'Yoga Wellness',
-      initials: 'YW',
-      color: Colors.purple,
-      openTime: '8:00 AM',
-      closeTime: '7:00 PM',
-      location: '321 Zen Garden, Westside',
-      distanceKm: 1.8,
-      favoriteCount: 156,
-      imageUrls: [
-        'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400',
-        'https://images.unsplash.com/photo-1599447292180-45fd84092ef4?w=400',
-      ],
-      isCurrentlyOpen: true,
-    ),
-    Club(
-      name: 'Gym Elite',
-      initials: 'GE',
-      color: Colors.red,
-      openTime: '4:00 AM',
-      closeTime: '11:00 PM',
-      location: '555 Power St, Northside',
-      distanceKm: 3.4,
-      favoriteCount: 312,
-      imageUrls: [
-        'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400',
-        'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400',
-        'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400',
-        'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=400',
-      ],
-      isCurrentlyOpen: false,
-    ),
-    Club(
-      name: 'Badminton Arena',
-      initials: 'BA',
-      color: Colors.orange,
-      openTime: '6:00 AM',
-      closeTime: '10:00 PM',
-      location: '888 Shuttle Rd, Southside',
-      distanceKm: 5.1,
-      favoriteCount: 67,
-      imageUrls: [
-        'https://images.unsplash.com/photo-1613918108466-292b78a8ef95?w=400',
-        'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=400',
-      ],
-      isCurrentlyOpen: true,
-    ),
-  ];
+  final service = getIt<SportClubService>();
+  List<SportClubModel> clubs = [];
+  bool _loading = true; // Start with loading true
+  String? _error;
 
-  // Court data
-  final List<Map<String, dynamic>> courtData = [
-    {'name': 'Tennis Court', 'count': 3, 'price': '\$25/hr'},
-    {'name': 'Basketball Court', 'count': 2, 'price': '\$30/hr'},
-    {'name': 'Badminton Court', 'count': 3, 'price': '\$20/hr'},
-  ];
+  @override
+  void initState() {
+    super.initState();
+    loadingData();
+  }
+
+  Future<void> loadingData() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
+    try {
+      final response = await service.getAllSportClub(1, 100, '');
+      if (response.isNotEmpty) {
+        setState(() {
+          clubs = response;
+          _loading = false;
+        });
+      } else {
+        setState(() {
+          clubs = [];
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _loading = false;
+        _error = e.toString();
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -122,80 +59,166 @@ class _ResourceScreenState extends State<ResourceScreen> {
 
     return Scaffold(
       backgroundColor: isDark ? AppTheme.kBg : AppTheme.kLightBg,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          // ── Header ──────────────────────────────────────────────────────
-          SliverToBoxAdapter(child: _buildHeader()),
-          SliverToBoxAdapter(child: _buildDivider()),
+      body: _loading
+          ? const ResourceScreenSkeleton() // Show skeleton while loading
+          : _error != null
+          ? _buildErrorWidget() // Show error if any
+          : _buildContent(), // Show actual content
+    );
+  }
 
-          // ── Sport Clubs Section ────────────────────────────────────────
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [AppTheme.kAccent, Color(0xFF00B4D8)],
-                          ),
-                          borderRadius: BorderRadius.circular(10),
+  // ── Content Builder ──────────────────────────────────────────────────────
+  Widget _buildContent() {
+    return CustomScrollView(
+      physics: const BouncingScrollPhysics(),
+      slivers: [
+        SliverToBoxAdapter(child: _buildHeader()),
+        SliverToBoxAdapter(child: _buildDivider()),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [AppTheme.kAccent, Color(0xFF00B4D8)],
                         ),
-                        child: const Icon(
-                          Icons.sports,
-                          color: Colors.white,
-                          size: 18,
-                        ),
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      const SizedBox(width: 10),
-                      Text(
-                        'Sport Clubs',
-                        style: AppTheme.tsLabelAdaptive(context),
+                      child: const Icon(
+                        Icons.sports,
+                        color: Colors.white,
+                        size: 18,
                       ),
-                    ],
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Sport Clubs',
+                      style: AppTheme.tsLabelAdaptive(context),
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppTheme.kAccent.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      '${clubs.length} clubs',
-                      style: TextStyle(
-                        color: AppTheme.kAccent,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
+                  decoration: BoxDecoration(
+                    color: AppTheme.kAccent.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '${clubs.length} clubs',
+                    style: TextStyle(
+                      color: AppTheme.kAccent,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          sliver: clubs.isEmpty
+              ? SliverToBoxAdapter(child: _buildEmptyState())
+              : SliverList(
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: ClubCard(club: clubs[index]),
+                    );
+                  }, childCount: clubs.length),
+                ),
+        ),
+        const SliverToBoxAdapter(child: SizedBox(height: 30)),
+      ],
+    );
+  }
+
+  // ── Error Widget ────────────────────────────────────────────────────────
+  Widget _buildErrorWidget() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
+            const SizedBox(height: 16),
+            Text(
+              'Something went wrong',
+              style: AppTheme.tsTitleAdaptive(context),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _error ?? 'Failed to load clubs',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: isDark ? Colors.grey[400] : Colors.grey[700],
+                fontSize: 14,
               ),
             ),
-          ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: loadingData,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.kAccent,
+                foregroundColor: const Color(0xFF0A1828),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              icon: const Icon(Icons.refresh),
+              label: const Text('Try Again'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-          // ── Clubs List (Fixed) ─────────────────────────────────────────
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate((context, index) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: ClubCard(club: clubs[index]),
-                );
-              }, childCount: clubs.length),
+  // ── Empty State Widget ──────────────────────────────────────────────────
+  Widget _buildEmptyState() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 40),
+      child: Column(
+        children: [
+          Icon(
+            Icons.sports,
+            size: 80,
+            color: isDark ? Colors.grey[600] : Colors.grey[400],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No clubs found',
+            style: AppTheme.tsTitleAdaptive(
+              context,
+            )?.copyWith(color: isDark ? Colors.grey[400] : Colors.grey[600]),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Tap the "Add Club" button to create one',
+            style: TextStyle(
+              color: isDark ? Colors.grey[500] : Colors.grey[500],
+              fontSize: 14,
             ),
           ),
-
-          const SliverToBoxAdapter(child: SizedBox(height: 30)),
         ],
       ),
     );

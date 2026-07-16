@@ -10,8 +10,8 @@ class SlotModel {
   final int capacity;
   final bool isAvailable;
   final int sportClubId;
-  final CategoryDto category;
-  final UserDto createdBy;
+  final CategoryDto? category; // Made nullable
+  final UserDto? createdBy; // Made nullable
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -24,30 +24,40 @@ class SlotModel {
     required this.capacity,
     required this.isAvailable,
     required this.sportClubId,
-    required this.category,
-    required this.createdBy,
+    this.category, // Now optional
+    this.createdBy, // Now optional
     required this.createdAt,
     required this.updatedAt,
   });
 
   factory SlotModel.fromJson(Map<String, dynamic> json) {
     return SlotModel(
-      id: json['id'] ?? '',
+      id: json['id'] ?? 0,
       name: json['name'] ?? '',
       imageUrl: json['image_url'] ?? '',
       description: json['description'] ?? '',
       price: json['price'] ?? 0,
       capacity: json['capacity'] ?? 0,
-      isAvailable: json['isAvailable'] ?? false,
-      sportClubId: json['sportClubId'] ?? 0,
-      category: CategoryDto.fromJson(json['cateogry']),
-      createdBy: UserDto.fromjson(json['created_by']),
-      createdAt: json['created_at'] ?? DateTime(0),
-      updatedAt: json['updated_at'] ?? DateTime(0),
+      isAvailable: json['is_available'] ?? false,
+      sportClubId: json['sport_club_id'] ?? 0,
+      // Safe handling for category - check if it exists and is not null
+      category: json['category'] != null
+          ? CategoryDto.fromJson(json['category'] as Map<String, dynamic>)
+          : null,
+      // Safe handling for createdBy
+      createdBy: json['created_by'] != null
+          ? UserDto.fromjson(json['created_by'] as Map<String, dynamic>)
+          : null,
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'].toString())
+          : DateTime.now(),
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'].toString())
+          : DateTime.now(),
     );
   }
 
-  SlotModel copyWith(
+  SlotModel copyWith({
     int? id,
     String? name,
     String? imageUrl,
@@ -60,7 +70,7 @@ class SlotModel {
     UserDto? createdBy,
     DateTime? createdAt,
     DateTime? updatedAt,
-  ) {
+  }) {
     return SlotModel(
       id: id ?? this.id,
       name: name ?? this.name,
@@ -73,7 +83,7 @@ class SlotModel {
       category: category ?? this.category,
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 }

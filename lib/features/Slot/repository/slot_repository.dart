@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_application_1/features/Slot/model/dto/create_slot_dto.dart';
+import 'package:flutter_application_1/features/Slot/model/dto/get_all_slot_dto.dart';
 import 'package:flutter_application_1/features/Slot/model/dto/update_slot_dto.dart';
 import 'package:flutter_application_1/features/Slot/model/slot_model.dart';
 
@@ -83,6 +84,27 @@ class SlotRepository {
       final response = await dio.delete('/partner/slots/$slotId');
       if (response.statusCode == 200 || response.statusCode == 201) {
         return true;
+      } else {
+        final errorMessage = _extractErrorMessage(response.statusCode);
+        throw Exception(errorMessage);
+      }
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
+  Future<GetAllSlotDto> getSlotBySportClub(
+    int clubId,
+    int page,
+    int limit,
+    int? categoryId,
+  ) async {
+    try {
+      final response = await dio.get(
+        '/sport-clubs/$clubId/slots?page=$page&limit=$limit&available=&search=&category_id=${categoryId ?? ''}',
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return GetAllSlotDto.fromJson(response.data);
       } else {
         final errorMessage = _extractErrorMessage(response.statusCode);
         throw Exception(errorMessage);

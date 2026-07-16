@@ -974,18 +974,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 10),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, AppRoutes.editVenueProfile);
-                },
-                style: AppTheme.elevatedButtonStyle(),
-                child: const Text('Edit Venue Profile'),
-              ),
-            ),
           ],
         ),
       ),

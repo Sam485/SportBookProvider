@@ -1,91 +1,113 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/core/di/service_locator.dart';
 import 'package:flutter_application_1/core/theme.dart';
+import 'package:flutter_application_1/features/Slot/model/slot_model.dart';
+import 'package:flutter_application_1/features/Slot/service/slot_service.dart';
 import 'package:flutter_application_1/routes/app_routes.dart';
 
-class CourtPricing {
-  final IconData icon;
-  final Color color;
-  final String title;
-  final String description;
-  final String status;
-  final String member;
-  final String? openDate;
-  final String? courtTime;
-  final String? priceInHour;
-
-  CourtPricing({
-    required this.icon,
-    required this.color,
-    required this.title,
-    required this.description,
-    required this.status,
-    required this.member,
-    this.openDate,
-    this.courtTime,
-    this.priceInHour,
-  });
-}
-
 class SlotScreen extends StatefulWidget {
-  const SlotScreen({super.key});
+  final int clubId;
+  const SlotScreen({super.key, required this.clubId});
 
   @override
   State<SlotScreen> createState() => _SlotScreenState();
 }
 
 class _SlotScreenState extends State<SlotScreen> {
-  // Sample court data
-  final List<CourtPricing> courtData = [
-    CourtPricing(
-      icon: Icons.sports_tennis,
-      color: Colors.blue,
-      title: 'Court 1 - Badminton',
-      description: 'Indoor, Max 4 players',
-      status: 'Open',
-      member: '4 players',
-      openDate: 'Mon - Sun',
-      courtTime: '6:00 - 9:00 AM',
-      priceInHour: '\$8/hr',
-    ),
-    CourtPricing(
-      icon: Icons.sports_soccer,
-      color: Colors.green,
-      title: 'Field 1 - Soccer',
-      description: 'Indoor, Max 14 players',
-      status: 'Open',
-      member: '14 players',
-      openDate: 'Mon - Sun',
-      courtTime: '6:00 - 9:00 AM',
-      priceInHour: '\$20/hr',
-    ),
-    CourtPricing(
-      icon: Icons.sports_tennis,
-      color: Colors.orange,
-      title: 'Court 3 - Badminton',
-      description: 'Indoor, Max 4 players',
-      status: 'Maintenance',
-      member: '4 players',
-    ),
-    CourtPricing(
-      icon: Icons.sports_basketball,
-      color: Colors.purple,
-      title: 'Court 2 - Basketball',
-      description: 'Indoor, Max 10 players',
-      status: 'Open',
-      member: '10 players',
-      openDate: 'Mon - Sun',
-      courtTime: '9:00 - 12:00 AM',
-      priceInHour: '\$15/hr',
-    ),
-    CourtPricing(
-      icon: Icons.sports_volleyball,
-      color: Colors.red,
-      title: 'Court 4 - Volleyball',
-      description: 'Indoor, Max 12 players',
-      status: 'Closed',
-      member: '12 players',
-    ),
-  ];
+  final slotService = getIt<SlotService>();
+  List<SlotModel> slots = [];
+  bool _loading = true;
+  String? _error;
+  final int _currentPage = 1;
+  final int _limit = 100;
+  int? _selectedCategoryId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSlots();
+  }
+
+  Future<void> _loadSlots() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
+    try {
+      final fetchedSlots = await slotService.fetchSlotBySportClub(
+        widget.clubId,
+        _currentPage,
+        _limit,
+        _selectedCategoryId,
+      );
+
+      setState(() {
+        slots = fetchedSlots;
+        _loading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _loading = false;
+        _error = e.toString();
+      });
+    }
+  }
+
+  // ── Refresh method for pull-to-refresh ────────────────────────────────
+  Future<void> _refreshSlots() async {
+    await _loadSlots();
+  }
+
+  // ── Delete slot ────────────────────────────────────────────────────────
+  Future<void> _deleteSlot(int slotId, String slotName) async {
+    final confirmDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Court'),
+        content: Text('Are you sure you want to delete "$slotName"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmDelete == true) {
+      try {
+        await slotService.deleteSlot(slotId);
+        // Remove from local list
+        setState(() {
+          slots.removeWhere((slot) => slot.id == slotId);
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('$slotName deleted successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to delete: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -107,29 +129,57 @@ class _SlotScreenState extends State<SlotScreen> {
           'Court & Pricing',
           style: AppTheme.tsTitleAdaptive(context),
         ),
+        actions: [
+          IconButton(
+            onPressed: _refreshSlots,
+            icon: Icon(
+              Icons.refresh,
+              color: isDark ? Colors.white : AppTheme.kLightText,
+            ),
+            tooltip: 'Refresh',
+          ),
+        ],
       ),
-      body: SafeArea(
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            SliverToBoxAdapter(child: _buildHeader(isDark)),
-            SliverPadding(
-              padding: const EdgeInsets.all(16),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) => _buildCourtCard(courtData[index], isDark),
-                  childCount: courtData.length,
+      body: _loading
+          ? _buildSkeletonLoader(isDark)
+          : _error != null
+          ? _buildErrorWidget(isDark)
+          : RefreshIndicator(
+              onRefresh: _refreshSlots,
+              color: AppTheme.kAccent,
+              backgroundColor: isDark ? AppTheme.kBg : AppTheme.kLightBg,
+              child: CustomScrollView(
+                physics: const BouncingScrollPhysics(
+                  parent: AlwaysScrollableScrollPhysics(),
                 ),
+                slivers: [
+                  SliverToBoxAdapter(child: _buildHeader(isDark)),
+                  SliverPadding(
+                    padding: const EdgeInsets.all(16),
+                    sliver: slots.isEmpty
+                        ? SliverToBoxAdapter(child: _buildEmptyState(isDark))
+                        : SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) =>
+                                  _buildSlotCard(slots[index], isDark),
+                              childCount: slots.length,
+                            ),
+                          ),
+                  ),
+                  const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                ],
               ),
             ),
-            const SliverToBoxAdapter(child: SizedBox(height: 20)),
-          ],
-        ),
-      ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          // Quick add court
-          Navigator.pushNamed(context, AppRoutes.adjustSlot);
+        onPressed: () async {
+          final result = await Navigator.pushNamed(
+            context,
+            AppRoutes.adjustSlot,
+            arguments: {'clubId': widget.clubId},
+          );
+          if (result == true) {
+            _refreshSlots();
+          }
         },
         backgroundColor: AppTheme.kAccent,
         icon: const Icon(Icons.add, color: Color(0xFF0A1828)),
@@ -144,8 +194,144 @@ class _SlotScreenState extends State<SlotScreen> {
     );
   }
 
+  // ── Skeleton Loader ────────────────────────────────────────────────────
+  Widget _buildSkeletonLoader(bool isDark) {
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: 3,
+      itemBuilder: (context, index) => Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(14),
+        decoration: AppTheme.cardDecorationAdaptive(context),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.grey[800] : Colors.grey[300],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        height: 16,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: isDark ? Colors.grey[800] : Colors.grey[300],
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        height: 12,
+                        width: 100,
+                        decoration: BoxDecoration(
+                          color: isDark ? Colors.grey[800] : Colors.grey[300],
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Error Widget ──────────────────────────────────────────────────────
+  Widget _buildErrorWidget(bool isDark) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
+            const SizedBox(height: 16),
+            Text(
+              'Failed to load courts',
+              style: AppTheme.tsTitleAdaptive(context),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _error ?? 'Something went wrong',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: isDark ? Colors.grey[400] : Colors.grey[700],
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: _loadSlots,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.kAccent,
+                foregroundColor: const Color(0xFF0A1828),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              icon: const Icon(Icons.refresh),
+              label: const Text('Try Again'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Empty State ────────────────────────────────────────────────────────
+  Widget _buildEmptyState(bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 40),
+      child: Column(
+        children: [
+          Icon(
+            Icons.sports_tennis,
+            size: 80,
+            color: isDark ? Colors.grey[600] : Colors.grey[400],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No courts available',
+            style: AppTheme.tsTitleAdaptive(
+              context,
+            )?.copyWith(color: isDark ? Colors.grey[400] : Colors.grey[600]),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Tap the "Add Court" button to create one',
+            style: TextStyle(
+              color: isDark ? Colors.grey[500] : Colors.grey[500],
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ── Header Widget ──────────────────────────────────────────────────────
   Widget _buildHeader(bool isDark) {
+    // Count status
+    final openCount = slots.where((s) => s.isAvailable).length;
+    final closedCount = slots.where((s) => !s.isAvailable).length;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
       child: Column(
@@ -181,7 +367,7 @@ class _SlotScreenState extends State<SlotScreen> {
                       ),
                     ),
                     Text(
-                      '${courtData.length} courts available',
+                      '${slots.length} courts available',
                       style: TextStyle(
                         color: isDark
                             ? AppTheme.kTextSub
@@ -202,7 +388,7 @@ class _SlotScreenState extends State<SlotScreen> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  'Total: ${courtData.length}',
+                  'Total: ${slots.length}',
                   style: TextStyle(
                     color: AppTheme.kAccent,
                     fontWeight: FontWeight.w600,
@@ -226,21 +412,8 @@ class _SlotScreenState extends State<SlotScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildStatusChip(
-                  'Open',
-                  Colors.green,
-                  courtData.where((c) => c.status == 'Open').length,
-                ),
-                _buildStatusChip(
-                  'Maintenance',
-                  Colors.orange,
-                  courtData.where((c) => c.status == 'Maintenance').length,
-                ),
-                _buildStatusChip(
-                  'Closed',
-                  Colors.red,
-                  courtData.where((c) => c.status == 'Closed').length,
-                ),
+                _buildStatusChip('Available', Colors.green, openCount),
+                _buildStatusChip('Unavailable', Colors.red, closedCount),
               ],
             ),
           ),
@@ -266,8 +439,12 @@ class _SlotScreenState extends State<SlotScreen> {
     );
   }
 
-  // ── Court Card Widget ──────────────────────────────────────────────────
-  Widget _buildCourtCard(CourtPricing data, bool isDark) {
+  // ── Slot Card Widget ──────────────────────────────────────────────────
+  Widget _buildSlotCard(SlotModel slot, bool isDark) {
+    final isAvailable = slot.isAvailable;
+    final statusColor = isAvailable ? Colors.green : Colors.red;
+    final statusText = isAvailable ? 'Available' : 'Unavailable';
+
     return Container(
       width: MediaQuery.of(context).size.width,
       decoration: AppTheme.cardDecorationAdaptive(context),
@@ -285,10 +462,27 @@ class _SlotScreenState extends State<SlotScreen> {
                   width: 50,
                   height: 50,
                   decoration: BoxDecoration(
-                    color: data.color.withValues(alpha: 0.2),
+                    color: AppTheme.kAccent.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(data.icon, color: data.color, size: 28),
+                  child: slot.imageUrl.isNotEmpty
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            slot.imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Icon(
+                              Icons.sports_tennis,
+                              color: AppTheme.kAccent,
+                              size: 28,
+                            ),
+                          ),
+                        )
+                      : Icon(
+                          Icons.sports_tennis,
+                          color: AppTheme.kAccent,
+                          size: 28,
+                        ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -296,7 +490,7 @@ class _SlotScreenState extends State<SlotScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        data.title,
+                        slot.name,
                         style: TextStyle(
                           color: isDark ? Colors.white : AppTheme.kLightText,
                           fontSize: 16,
@@ -305,7 +499,9 @@ class _SlotScreenState extends State<SlotScreen> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        data.description,
+                        slot.description.isNotEmpty
+                            ? slot.description
+                            : '${slot.category!.name} court',
                         style: TextStyle(
                           color: isDark
                               ? AppTheme.kTextSub
@@ -319,8 +515,18 @@ class _SlotScreenState extends State<SlotScreen> {
                 Row(
                   children: [
                     IconButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, AppRoutes.adjustSlot);
+                      onPressed: () async {
+                        final result = await Navigator.pushNamed(
+                          context,
+                          AppRoutes.adjustSlot,
+                          arguments: {
+                            'clubId': widget.clubId,
+                            'slotId': slot.id,
+                          },
+                        );
+                        if (result == true) {
+                          _refreshSlots();
+                        }
                       },
                       icon: const Icon(Icons.edit, color: Colors.blue),
                       iconSize: 20,
@@ -329,38 +535,7 @@ class _SlotScreenState extends State<SlotScreen> {
                       padding: const EdgeInsets.all(4),
                     ),
                     IconButton(
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text('Delete Court'),
-                            content: Text(
-                              'Are you sure you want to delete "${data.title}"?',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text('Cancel'),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('${data.title} deleted'),
-                                      duration: const Duration(seconds: 1),
-                                    ),
-                                  );
-                                },
-                                style: TextButton.styleFrom(
-                                  foregroundColor: Colors.red,
-                                ),
-                                child: const Text('Delete'),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+                      onPressed: () => _deleteSlot(slot.id, slot.name),
                       icon: const Icon(Icons.delete, color: Colors.red),
                       iconSize: 20,
                       tooltip: 'Delete',
@@ -381,24 +556,16 @@ class _SlotScreenState extends State<SlotScreen> {
                 Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    color: data.status == "Open"
-                        ? Colors.green.withValues(alpha: 0.15)
-                        : data.status == "Maintenance"
-                        ? Colors.orange.withValues(alpha: 0.15)
-                        : Colors.red.withValues(alpha: 0.15),
+                    color: statusColor.withValues(alpha: 0.15),
                   ),
                   padding: const EdgeInsets.symmetric(
                     vertical: 4,
                     horizontal: 10,
                   ),
                   child: Text(
-                    data.status,
+                    statusText,
                     style: TextStyle(
-                      color: data.status == "Open"
-                          ? Colors.green
-                          : data.status == "Maintenance"
-                          ? Colors.orange
-                          : Colors.red,
+                      color: statusColor,
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                     ),
@@ -414,7 +581,7 @@ class _SlotScreenState extends State<SlotScreen> {
                     horizontal: 10,
                   ),
                   child: Text(
-                    data.member,
+                    '${slot.capacity} players',
                     style: const TextStyle(
                       color: Colors.blue,
                       fontSize: 11,
@@ -422,101 +589,70 @@ class _SlotScreenState extends State<SlotScreen> {
                     ),
                   ),
                 ),
-                if (data.openDate != null)
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      color: Colors.purple.withValues(alpha: 0.15),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 4,
-                      horizontal: 10,
-                    ),
-                    child: Text(
-                      data.openDate!,
-                      style: const TextStyle(
-                        color: Colors.purple,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                      ),
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.purple.withValues(alpha: 0.15),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 4,
+                    horizontal: 10,
+                  ),
+                  child: Text(
+                    slot.category!.name,
+                    style: const TextStyle(
+                      color: Colors.purple,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
+                ),
               ],
             ),
 
-            if (data.openDate != null) ...[
-              const SizedBox(height: 12),
-              _buildDivider(isDark),
-              const SizedBox(height: 10),
+            const SizedBox(height: 12),
+            _buildDivider(isDark),
+            const SizedBox(height: 10),
 
-              // ── Time & Pricing ──────────────────────────────────────────
-              Text(
-                'Time slots & pricing',
-                style: TextStyle(
-                  color: isDark ? Colors.white70 : AppTheme.kLightTextSub,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: isDark ? AppTheme.kCardAlt : AppTheme.kLightCardAlt,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: isDark ? AppTheme.kBorder : AppTheme.kLightBorder,
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            // ── Pricing ──────────────────────────────────────────────────
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.access_time,
-                          color: AppTheme.kAccent,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          data.courtTime ?? 'Time not set',
-                          style: TextStyle(
-                            color: isDark ? Colors.white : AppTheme.kLightText,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [AppTheme.kAccent, Color(0xFF00B4D8)],
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        data.priceInHour ?? 'Price not set',
-                        style: const TextStyle(
-                          color: Color(0xFF0A1828),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                        ),
+                    Icon(Icons.attach_money, color: AppTheme.kAccent, size: 16),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Price per hour',
+                      style: TextStyle(
+                        color: isDark ? Colors.white70 : AppTheme.kLightTextSub,
+                        fontSize: 13,
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [AppTheme.kAccent, Color(0xFF00B4D8)],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '\$${slot.price}/hr',
+                    style: const TextStyle(
+                      color: Color(0xFF0A1828),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),

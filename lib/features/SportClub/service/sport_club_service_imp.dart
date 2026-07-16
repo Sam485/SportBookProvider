@@ -67,4 +67,27 @@ class SportClubServiceImp implements SportClubService {
       rethrow;
     }
   }
+
+  @override
+  Future<List<SportClubModel>> getAllSportClub(
+    int page,
+    int limit,
+    String? search,
+  ) async {
+    _isLoading = true;
+    _error = '';
+    try {
+      final response = await sportClubRepository.getlAllSportClub(
+        page,
+        limit,
+        search,
+      );
+      final sportClubs = response.data;
+      return sportClubs;
+    } catch (e) {
+      _isLoading = false;
+      _error = e.toString();
+      rethrow;
+    }
+  }
 }

@@ -13,7 +13,6 @@ import 'package:flutter_application_1/screens/settings/Features/personal_info_sc
 import 'package:flutter_application_1/screens/settings/Features/password_security_screen.dart';
 import 'package:flutter_application_1/screens/settings/Features/reviews_screen.dart';
 import 'package:flutter_application_1/screens/settings/Features/settings_screen.dart';
-import 'package:flutter_application_1/screens/settings/Features/venue_photos_screen.dart';
 import 'package:flutter_application_1/screens/splash/splash_screen.dart';
 
 class AppRoutes {
@@ -39,15 +38,14 @@ class AppRoutes {
   static const passAndSecurity = '/password-security';
   static const operatingHours = '/operating-hours';
   static const reviews = '/reviews';
-  static const venuePhotos = '/venue-photos';
-  static const editVenueProfile = '/edit-venue-profile';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       case adjustSlot:
         return MaterialPageRoute(builder: (_) => const AdjustSlotScreen());
       case slot:
-        return MaterialPageRoute(builder: (_) => const SlotScreen());
+        final target = settings.arguments as int;
+        return MaterialPageRoute(builder: (_) => SlotScreen(clubId: target));
       case editSportClub:
         return MaterialPageRoute(builder: (_) => const CreateSportClubScreen());
       case splash:
@@ -85,12 +83,6 @@ class AppRoutes {
 
       case reviews:
         return MaterialPageRoute(builder: (_) => const ReviewsScreen());
-
-      case venuePhotos:
-        return MaterialPageRoute(builder: (_) => const VenuePhotosScreen());
-
-      case editVenueProfile:
-        return MaterialPageRoute(builder: (_) => const VenuePhotosScreen());
 
       default:
         return MaterialPageRoute(

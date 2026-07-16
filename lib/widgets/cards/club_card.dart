@@ -1,37 +1,12 @@
+// widgets/cards/club_card.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/routes/app_routes.dart';
 import '../../core/theme.dart';
 import '../../translations/app_translations.dart';
-
-// Define the Club model class
-class Club {
-  final String name;
-  final String initials;
-  final Color color;
-  final String openTime;
-  final String closeTime;
-  final String location;
-  final double distanceKm;
-  final int favoriteCount;
-  final List<String> imageUrls;
-  final bool isCurrentlyOpen;
-
-  Club({
-    required this.name,
-    required this.initials,
-    required this.color,
-    required this.openTime,
-    required this.closeTime,
-    required this.location,
-    required this.distanceKm,
-    required this.favoriteCount,
-    required this.imageUrls,
-    required this.isCurrentlyOpen,
-  });
-}
+import '../../features/SportClub/model/sport_club_model.dart';
 
 class ClubCard extends StatefulWidget {
-  final Club club;
+  final SportClubModel club;
 
   const ClubCard({super.key, required this.club});
 
@@ -57,40 +32,50 @@ class _ClubCardState extends State<ClubCard> {
 
   bool get hasImages => widget.club.imageUrls.isNotEmpty;
   List<String> get urls => widget.club.imageUrls;
-  Club get c => widget.club;
+  SportClubModel get c => widget.club;
 
-  void _onDragUpdate(DragUpdateDetails d) {
-    if (widget.club.imageUrls.length <= 1 || !_ctrl.hasClients) return;
-    _ctrl.position.moveTo(_ctrl.offset - (d.primaryDelta ?? 0), clamp: false);
-  }
-
-  void _onDragEnd(DragEndDetails d) {
-    if (widget.club.imageUrls.length <= 1 || !_ctrl.hasClients) return;
-    final v = d.primaryVelocity ?? 0;
-    final c = _ctrl.page?.round() ?? 10000;
-    if (v < -300) {
-      _ctrl.animateToPage(
-        c + 1,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOutCubic,
-      );
-    } else if (v > 300) {
-      _ctrl.animateToPage(
-        c - 1,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOutCubic,
-      );
-    } else {
-      _ctrl.animateToPage(
-        c,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOutCubic,
-      );
+  // Generate initials from club name
+  String get initials {
+    final parts = c.name.split(' ');
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
     }
+    return c.name.substring(0, 2).toUpperCase();
   }
 
-  void _navigateToAddSlot() {
-    Navigator.pushNamed(context, AppRoutes.slot);
+  // Generate a consistent color based on club name
+  Color get clubColor {
+    final colors = [
+      Colors.blue,
+      Colors.green,
+      Colors.cyan,
+      Colors.purple,
+      Colors.red,
+      Colors.orange,
+      Colors.teal,
+      Colors.pink,
+      Colors.indigo,
+      Colors.lime,
+    ];
+    final index = c.name.hashCode.abs() % colors.length;
+    return colors[index];
+  }
+
+  // Format Duration to time string (HH:MM AM/PM)
+  String formatDurationToTimeString(Duration duration) {
+    final hours = duration.inHours.remainder(24);
+    final minutes = duration.inMinutes.remainder(60);
+    final period = hours >= 12 ? 'PM' : 'AM';
+    final displayHours = hours == 0
+        ? 12
+        : hours > 12
+        ? hours - 12
+        : hours;
+    return '$displayHours:${minutes.toString().padLeft(2, '0')} $period';
+  }
+
+  void _navigateToAddSlot(int id) {
+    Navigator.pushNamed(context, AppRoutes.slot, arguments: id);
   }
 
   void _navigateToEditSportClub() {
@@ -111,7 +96,6 @@ class _ClubCardState extends State<ClubCard> {
         decoration: AppTheme.cardDecorationAdaptive(context, radius: 22),
         child: Stack(
           children: [
-            // InkWell with custom border for ripple effect
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -221,7 +205,7 @@ class _ClubCardState extends State<ClubCard> {
                             child: _openCloseBadge(isDark),
                           ),
 
-                          // Favorite button - TOP RIGHT
+                          // Settings button - TOP RIGHT
                           Positioned(
                             top: 8,
                             right: 10,
@@ -325,12 +309,12 @@ class _ClubCardState extends State<ClubCard> {
                             height: 34,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: c.color.withValues(alpha: 0.2),
-                              border: Border.all(color: c.color, width: 1.8),
+                              color: clubColor.withValues(alpha: 0.2),
+                              border: Border.all(color: clubColor, width: 1.8),
                             ),
                             alignment: Alignment.center,
                             child: Text(
-                              c.initials,
+                              initials,
                               style: TextStyle(
                                 color: isDark
                                     ? Colors.white
@@ -366,7 +350,7 @@ class _ClubCardState extends State<ClubCard> {
                                     ),
                                     const SizedBox(width: 2),
                                     Text(
-                                      c.openTime,
+                                      formatDurationToTimeString(c.openTime),
                                       style: const TextStyle(
                                         color: AppTheme.kAccent,
                                         fontSize: 10,
@@ -392,7 +376,7 @@ class _ClubCardState extends State<ClubCard> {
                                     ),
                                     const SizedBox(width: 2),
                                     Text(
-                                      c.closeTime,
+                                      formatDurationToTimeString(c.closeTime),
                                       style: TextStyle(
                                         color: isDark
                                             ? AppTheme.kTextSub
@@ -417,7 +401,7 @@ class _ClubCardState extends State<ClubCard> {
                       ),
                       const SizedBox(height: 6),
 
-                      // Venue - Changed to location
+                      // Location
                       Row(
                         children: [
                           const Icon(
@@ -442,49 +426,69 @@ class _ClubCardState extends State<ClubCard> {
                       ),
                       const SizedBox(height: 6),
 
-                      // Distance + Favorite count + Book button
+                      // Categories + Favorite count + Book button
                       Row(
                         children: [
-                          const Icon(
-                            Icons.route_outlined,
-                            color: AppTheme.kAccent,
-                            size: 12,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${c.distanceKm.toStringAsFixed(1)} ${'km_away'.tr(context)}',
-                            style: TextStyle(
-                              color: isDark
-                                  ? AppTheme.kTextSub
-                                  : AppTheme.kLightTextSub,
-                              fontSize: 11,
+                          // Categories
+                          if (c.categories.isNotEmpty) ...[
+                            Icon(
+                              Icons.category_outlined,
+                              color: AppTheme.kAccent,
+                              size: 12,
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          // Favorite count indicator
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.favorite_rounded,
-                                color: AppTheme.kAccent.withValues(alpha: 0.7),
-                                size: 12,
-                              ),
-                              const SizedBox(width: 2),
-                              Text(
-                                '${c.favoriteCount}',
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                c.categories.map((cat) => cat.name).join(', '),
                                 style: TextStyle(
                                   color: isDark
                                       ? AppTheme.kTextSub
                                       : AppTheme.kLightTextSub,
                                   fontSize: 11,
-                                  fontWeight: FontWeight.w600,
                                 ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
+
                           const Spacer(),
+
+                          // Favorite count indicator
+                          if (c.favoriteCount > 0) ...[
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.favorite_rounded,
+                                  color: AppTheme.kAccent.withValues(
+                                    alpha: 0.7,
+                                  ),
+                                  size: 12,
+                                ),
+                                const SizedBox(width: 2),
+                                Text(
+                                  '${c.favoriteCount}',
+                                  style: TextStyle(
+                                    color: isDark
+                                        ? AppTheme.kTextSub
+                                        : AppTheme.kLightTextSub,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+
+                      // Book button
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
                           GestureDetector(
-                            onTap: _navigateToAddSlot,
+                            onTap: () => _navigateToAddSlot(c.id!),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 14,
@@ -526,8 +530,38 @@ class _ClubCardState extends State<ClubCard> {
     );
   }
 
+  void _onDragUpdate(DragUpdateDetails d) {
+    if (widget.club.imageUrls.length <= 1 || !_ctrl.hasClients) return;
+    _ctrl.position.moveTo(_ctrl.offset - (d.primaryDelta ?? 0), clamp: false);
+  }
+
+  void _onDragEnd(DragEndDetails d) {
+    if (widget.club.imageUrls.length <= 1 || !_ctrl.hasClients) return;
+    final v = d.primaryVelocity ?? 0;
+    final c = _ctrl.page?.round() ?? 10000;
+    if (v < -300) {
+      _ctrl.animateToPage(
+        c + 1,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutCubic,
+      );
+    } else if (v > 300) {
+      _ctrl.animateToPage(
+        c - 1,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutCubic,
+      );
+    } else {
+      _ctrl.animateToPage(
+        c,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutCubic,
+      );
+    }
+  }
+
   Widget _openCloseBadge(bool isDark) {
-    final isOpen = widget.club.isCurrentlyOpen;
+    final isOpen = widget.club.isOpen;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
