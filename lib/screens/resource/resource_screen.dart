@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/core/di/service_locator.dart';
 import 'package:flutter_application_1/core/theme.dart';
+import 'package:flutter_application_1/features/SportClub/model/sport_club_model.dart';
+import 'package:flutter_application_1/features/SportClub/service/sport_club_service.dart';
+import 'package:flutter_application_1/routes/app_routes.dart';
+import 'package:flutter_application_1/widgets/cards/club_card.dart';
+import 'package:flutter_application_1/widgets/cards/club_card_skeleton.dart';
 
 class ResourceScreen extends StatefulWidget {
   const ResourceScreen({super.key});
@@ -9,271 +15,265 @@ class ResourceScreen extends StatefulWidget {
 }
 
 class _ResourceScreenState extends State<ResourceScreen> {
-  List<CourtPricing> courtData = [
-    CourtPricing(
-      icon: Icons.sports_tennis,
-      color: Colors.blue,
-      title: 'Court 1 - Badminton',
-      description: 'Indoor, Max 4 players',
-      status: 'Open',
-      member: '4 players',
-      openDate: 'Mon - Sun',
-      courtTime: '6:00 - 9:00 AM',
-      priceInHour: '\$8/hr',
-    ),
-    CourtPricing(
-      icon: Icons.sports_soccer,
-      color: Colors.green,
-      title: 'Field 1 - Soccer',
-      description: 'Indoor, Max 14 players',
-      status: 'Open',
-      member: '4 players',
-      openDate: 'Mon - Sun',
-      courtTime: '6:00 - 9:00 AM',
-      priceInHour: '\$20/hr',
-    ),
-    CourtPricing(
-      icon: Icons.sports_tennis,
-      color: Colors.yellow,
-      title: 'Court 3 - Badminton',
-      description: 'Indoor, Max 4 players',
-      status: 'Maintenance',
-      member: '4 players',
-    ),
-  ];
+  final service = getIt<SportClubService>();
+  List<SportClubModel> clubs = [];
+  bool _loading = true; // Start with loading true
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    loadingData();
+  }
+
+  Future<void> loadingData() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
+    try {
+      final response = await service.getAllSportClub(1, 100, '');
+      if (response.isNotEmpty) {
+        setState(() {
+          clubs = response;
+          _loading = false;
+        });
+      } else {
+        setState(() {
+          clubs = [];
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _loading = false;
+        _error = e.toString();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      body: SafeArea(
-        child: CustomScrollView(
-          physics: BouncingScrollPhysics(),
-          slivers: <Widget>[
-            SliverToBoxAdapter(child: _buildHeader()),
-            SliverToBoxAdapter(child: _courtPricing()),
+      backgroundColor: isDark ? AppTheme.kBg : AppTheme.kLightBg,
+      body: _loading
+          ? const ResourceScreenSkeleton() // Show skeleton while loading
+          : _error != null
+          ? _buildErrorWidget() // Show error if any
+          : _buildContent(), // Show actual content
+    );
+  }
+
+  // ── Content Builder ──────────────────────────────────────────────────────
+  Widget _buildContent() {
+    return CustomScrollView(
+      physics: const BouncingScrollPhysics(),
+      slivers: [
+        SliverToBoxAdapter(child: _buildHeader()),
+        SliverToBoxAdapter(child: _buildDivider()),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [AppTheme.kAccent, Color(0xFF00B4D8)],
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.sports,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Sport Clubs',
+                      style: AppTheme.tsLabelAdaptive(context),
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppTheme.kAccent.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '${clubs.length} clubs',
+                    style: TextStyle(
+                      color: AppTheme.kAccent,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          sliver: clubs.isEmpty
+              ? SliverToBoxAdapter(child: _buildEmptyState())
+              : SliverList(
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: ClubCard(club: clubs[index]),
+                    );
+                  }, childCount: clubs.length),
+                ),
+        ),
+        const SliverToBoxAdapter(child: SizedBox(height: 30)),
+      ],
+    );
+  }
+
+  // ── Error Widget ────────────────────────────────────────────────────────
+  Widget _buildErrorWidget() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
+            const SizedBox(height: 16),
+            Text(
+              'Something went wrong',
+              style: AppTheme.tsTitleAdaptive(context),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _error ?? 'Failed to load clubs',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: isDark ? Colors.grey[400] : Colors.grey[700],
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: loadingData,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.kAccent,
+                foregroundColor: const Color(0xFF0A1828),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              icon: const Icon(Icons.refresh),
+              label: const Text('Try Again'),
+            ),
           ],
         ),
       ),
     );
   }
 
+  // ── Empty State Widget ──────────────────────────────────────────────────
+  Widget _buildEmptyState() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 40),
+      child: Column(
+        children: [
+          Icon(
+            Icons.sports,
+            size: 80,
+            color: isDark ? Colors.grey[600] : Colors.grey[400],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No clubs found',
+            style: AppTheme.tsTitleAdaptive(
+              context,
+            )?.copyWith(color: isDark ? Colors.grey[400] : Colors.grey[600]),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Tap the "Add Club" button to create one',
+            style: TextStyle(
+              color: isDark ? Colors.grey[500] : Colors.grey[500],
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Header ──────────────────────────────────────────────────────────────
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.fromLTRB(16, 26, 16, 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Text('Resource', style: AppTheme.tsTitleAdaptive(context)),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [AppTheme.kAccent, Color(0xFF00B4D8)],
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.dashboard, color: Colors.white, size: 24),
+          ),
+          const SizedBox(width: 12),
+          Text('Resources', style: AppTheme.tsTitleAdaptive(context)),
           const Spacer(),
-          ElevatedButton(
-            onPressed: () {},
-            style: AppTheme.elevatedButtonStyle(),
-            child: const Text('Add Court'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _courtPricing() {
-    return Padding(
-      padding: const EdgeInsets.all(10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Text(
-                'Courts & Pricing',
-                style: AppTheme.tsLabelAdaptive(context),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pushNamed(context, AppRoutes.editSportClub);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.kAccent,
+              foregroundColor: const Color(0xFF0A1828),
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-              const Spacer(),
-              Text('8 courts', style: AppTheme.tsBodyAdaptive(context)),
-            ],
-          ),
-          const SizedBox(height: 10),
-          ...List.generate(
-            courtData.length,
-            (index) => _buildCard(courtData[index]),
+            ),
+            icon: const Icon(Icons.add_circle_outline, size: 18),
+            label: const Text(
+              'Add Club',
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildDivier() {
-    return SizedBox(
-      width: double.infinity,
-      child: Divider(
-        thickness: 0.5,
-        color: AppTheme.kAccent.withValues(alpha: 0.6),
-      ),
-    );
-  }
-
-  Widget _buildCard(CourtPricing data) {
+  // ── Divider ──────────────────────────────────────────────────────────────
+  Widget _buildDivider() {
     return Container(
-      width: MediaQuery.of(context).size.width,
-      decoration: AppTheme.cardDecorationAdaptive(context),
-      margin: EdgeInsets.only(bottom: 10),
-      child: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Court Heading
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: data.color.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(data.icon, color: data.color),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        data.title,
-                        style: AppTheme.tsTitleAdaptive(context),
-                      ),
-                      Text(
-                        data.description,
-                        style: AppTheme.tsBodyAdaptive(context),
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.edit, color: Colors.blue),
-                  tooltip: 'Edit',
-                ),
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  tooltip: 'Delete',
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: data.status == "Open"
-                        ? Colors.green.withValues(alpha: 0.3)
-                        : data.status == "Maintenance"
-                        ? Colors.yellow.withValues(alpha: 0.3)
-                        : Colors.blue.withValues(alpha: 0.3),
-                  ),
-                  margin: EdgeInsets.only(right: 5),
-                  child: Padding(
-                    padding: EdgeInsetsGeometry.symmetric(
-                      vertical: 2.5,
-                      horizontal: 10,
-                    ),
-                    child: Text(
-                      data.status,
-                      style: AppTheme.tsBody.copyWith(
-                        color: data.status == "Open"
-                            ? Colors.green
-                            : data.status == "Maintenance"
-                            ? Colors.yellow
-                            : Colors.blue,
-                      ),
-                    ),
-                  ),
-                ),
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: Colors.blue.withValues(alpha: 0.3),
-                  ),
-                  margin: EdgeInsets.only(right: 5),
-                  child: Padding(
-                    padding: EdgeInsetsGeometry.symmetric(
-                      vertical: 2.5,
-                      horizontal: 10,
-                    ),
-                    child: Text(
-                      data.member,
-                      style: AppTheme.tsBody.copyWith(color: Colors.blue),
-                    ),
-                  ),
-                ),
-                if (data.openDate != null)
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      color: Colors.blue.withValues(alpha: 0.3),
-                    ),
-                    margin: EdgeInsets.only(right: 5),
-                    child: Padding(
-                      padding: EdgeInsetsGeometry.symmetric(
-                        vertical: 2.5,
-                        horizontal: 10,
-                      ),
-                      child: Text(
-                        data.openDate!,
-                        style: AppTheme.tsBody.copyWith(color: Colors.blue),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            if (data.openDate != null) _buildDivier(),
-            if (data.openDate != null)
-              Text(
-                'Time slots & pricing',
-                style: AppTheme.tsSubAdaptive(context),
-              ),
-            SizedBox(height: 10),
-            if (data.openDate != null)
-              Row(
-                children: [
-                  Text(
-                    data.courtTime!,
-                    style: AppTheme.tsBodyAdaptive(context),
-                  ),
-                  SizedBox(width: 5),
-                  Text(data.priceInHour!, style: AppTheme.tsAccent),
-                ],
-              ),
-          ],
-        ),
-      ),
+      width: double.infinity,
+      height: 1,
+      color: AppTheme.kAccent.withValues(alpha: 0.3),
     );
   }
-}
-
-class CourtPricing {
-  final IconData icon;
-  final Color color;
-  final String title;
-  final String description;
-  final String status;
-  final String member;
-  final String? openDate;
-  final String? courtTime;
-  final String? priceInHour;
-
-  CourtPricing({
-    required this.icon,
-    required this.color,
-    required this.title,
-    required this.description,
-    required this.status,
-    required this.member,
-    this.openDate,
-    this.courtTime,
-    this.priceInHour,
-  });
 }

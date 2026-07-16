@@ -164,7 +164,7 @@ class _PasswordSecurityScreenState extends State<PasswordSecurityScreen> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: AppTheme.kAccent.withOpacity(0.2),
+                      color: AppTheme.kAccent.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(Icons.shield, color: AppTheme.kAccent),
@@ -250,7 +250,7 @@ class _PasswordSecurityScreenState extends State<PasswordSecurityScreen> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _changePassword,
                 style: AppTheme.elevatedButtonStyle().copyWith(
-                  textStyle: const MaterialStatePropertyAll(TextStyle()),
+                  textStyle: const WidgetStatePropertyAll(TextStyle()),
                 ),
                 child: _isLoading
                     ? const SizedBox(

@@ -99,4 +99,29 @@ class SlotServiceImp implements SlotService {
       rethrow;
     }
   }
+
+  @override
+  Future<List<SlotModel>> fetchSlotBySportClub(
+    int clubId,
+    int page,
+    int limit,
+    int? categoryId,
+  ) async {
+    _error = '';
+    _loading = true;
+    try {
+      final response = await repository.getSlotBySportClub(
+        clubId,
+        page,
+        limit,
+        categoryId,
+      );
+      final slots = response.data;
+      return slots;
+    } catch (e) {
+      _loading = false;
+      _error = e.toString();
+      rethrow;
+    }
+  }
 }

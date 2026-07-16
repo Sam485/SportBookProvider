@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/screens/DashBoard/dash_board_screen.dart';
-import 'package:flutter_application_1/screens/monitor/monitor_screen.dart';
 import 'package:flutter_application_1/screens/resource/resource_screen.dart';
 import 'package:flutter_application_1/screens/settings/profile_screen.dart';
 import '../widgets/navbar/bottom_navbar.dart';
@@ -16,7 +15,6 @@ class _MainScreenState extends State<MainScreen> {
 
   static const _screens = [
     DashBoardScreen(),
-    MonitorScreen(),
     ResourceScreen(),
     ProfileScreen(),
   ];

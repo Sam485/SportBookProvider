@@ -9,6 +9,11 @@ abstract class SportClubService {
     int sportClubid,
   );
   Future<bool> deleteSportClub(int sportClubId);
+  Future<List<SportClubModel>> getAllSportClub(
+    int page,
+    int limit,
+    String? search,
+  );
 
   bool get isLoading;
   String get error;

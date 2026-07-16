@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/providers/theme_provider.dart';
-import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:flutter_application_1/translations/app_translations.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme.dart';
 
@@ -38,30 +38,46 @@ class AppBottomNavBar extends StatelessWidget {
         ),
         child: SafeArea(
           top: false,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-            child: GNav(
-              gap: 8,
-              activeColor: isDark
-                  ? const Color(0xFF0A1828)
-                  : AppTheme.kLightText,
-              color: isDark ? Colors.white38 : AppTheme.kLightTextSub,
-              iconSize: 22,
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-              duration: const Duration(milliseconds: 350),
-              tabBackgroundColor: AppTheme.kAccent, // Keep accent color same
-              selectedIndex: selectedIndex,
-              onTabChange: onTabChange,
-              tabs: [
-                GButton(icon: Icons.dashboard_rounded, text: 'Dashboard'),
-                GButton(icon: Icons.monitor_rounded, text: 'Monitor'),
-                GButton(icon: Icons.grading_rounded, text: 'Resource'),
-                GButton(icon: Icons.person_rounded, text: 'Profile'),
-              ],
+          child: BottomNavigationBar(
+            currentIndex: selectedIndex,
+            onTap: onTabChange,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            type: BottomNavigationBarType.fixed,
+            selectedItemColor: AppTheme.kAccent,
+            unselectedItemColor: isDark ? Colors.grey[400] : Colors.grey[600],
+            selectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
             ),
+            unselectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.normal,
+              fontSize: 12,
+            ),
+            items: [
+              _buildNavItem(
+                icon: Icons.dashboard,
+                label: 'dashboard'.tr(context),
+              ),
+              _buildNavItem(
+                icon: Icons.list_alt,
+                label: 'resource'.tr(context),
+              ),
+              _buildNavItem(
+                icon: Icons.person_rounded,
+                label: 'profile'.tr(context),
+              ),
+            ],
           ),
         ),
       ),
     );
+  }
+
+  BottomNavigationBarItem _buildNavItem({
+    required IconData icon,
+    required String label,
+  }) {
+    return BottomNavigationBarItem(icon: Icon(icon, size: 24), label: label);
   }
 }

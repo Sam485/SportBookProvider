@@ -7,6 +7,7 @@ import 'package:flutter_application_1/features/SportClub/service/sport_club_serv
 class SportClubServiceImp implements SportClubService {
   SportClubRepository sportClubRepository;
   SportClubServiceImp(this.sportClubRepository);
+
   String _error = '';
   bool _isLoading = false;
 
@@ -15,12 +16,34 @@ class SportClubServiceImp implements SportClubService {
 
   @override
   bool get isLoading => _isLoading;
+
   @override
   Future<SportClubModel> createSportClub(CreatedSportClubsDto sportClub) async {
     _isLoading = true;
     _error = '';
     try {
       final data = await sportClubRepository.createSportClub(sportClub);
+      _isLoading = false;
+      return data;
+    } catch (e) {
+      _isLoading = false;
+      _error = e.toString();
+      rethrow;
+    }
+  }
+
+  @override
+  Future<SportClubModel> updateSportClub(
+    UpdateSportClubDto sportClub,
+    int sportClubid,
+  ) async {
+    _isLoading = true;
+    _error = '';
+    try {
+      final data = await sportClubRepository.updateSportClub(
+        sportClub,
+        sportClubid,
+      );
       _isLoading = false;
       return data;
     } catch (e) {
@@ -46,19 +69,21 @@ class SportClubServiceImp implements SportClubService {
   }
 
   @override
-  Future<SportClubModel> updateSportClub(
-    UpdateSportClubDto sportClub,
-    int sportClubid,
+  Future<List<SportClubModel>> getAllSportClub(
+    int page,
+    int limit,
+    String? search,
   ) async {
     _isLoading = true;
     _error = '';
     try {
-      final data = await sportClubRepository.updateSportClub(
-        sportClub,
-        sportClubid,
+      final response = await sportClubRepository.getlAllSportClub(
+        page,
+        limit,
+        search,
       );
-      _isLoading = false;
-      return data;
+      final sportClubs = response.data;
+      return sportClubs;
     } catch (e) {
       _isLoading = false;
       _error = e.toString();
