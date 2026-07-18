@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_application_1/features/SportClub/model/dto/created_sport_clubs_dto.dart';
 import 'package:flutter_application_1/features/SportClub/model/dto/get_all_sport_club_dto.dart';
-import 'package:flutter_application_1/features/SportClub/model/dto/update_sport_club_dto.dart';
 import 'package:flutter_application_1/features/SportClub/model/sport_club_model.dart';
 
 class SportClubRepository {
@@ -31,13 +30,15 @@ class SportClubRepository {
   }
 
   Future<SportClubModel> updateSportClub(
-    UpdateSportClubDto sportClub,
+    CreatedSportClubsDto sportClub,
     int clubId,
   ) async {
     try {
+       final formData = await sportClub.toFormData();
       final response = await dio.put(
         '/partner/sport_clubs/$clubId',
-        data: sportClub.toJson(),
+        data: formData,
+         options: Options(headers: {'Content-Type': 'multipart/form-data'}),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {

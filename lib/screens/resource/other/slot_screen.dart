@@ -3,11 +3,12 @@ import 'package:flutter_application_1/core/di/service_locator.dart';
 import 'package:flutter_application_1/core/theme.dart';
 import 'package:flutter_application_1/features/Slot/model/slot_model.dart';
 import 'package:flutter_application_1/features/Slot/service/slot_service.dart';
+import 'package:flutter_application_1/features/SportClub/model/sport_club_model.dart';
 import 'package:flutter_application_1/routes/app_routes.dart';
 
 class SlotScreen extends StatefulWidget {
-  final int clubId;
-  const SlotScreen({super.key, required this.clubId});
+  final SportClubModel club;
+  const SlotScreen({super.key, required this.club});
 
   @override
   State<SlotScreen> createState() => _SlotScreenState();
@@ -21,6 +22,7 @@ class _SlotScreenState extends State<SlotScreen> {
   final int _currentPage = 1;
   final int _limit = 100;
   int? _selectedCategoryId;
+  bool _isRefreshing = false;
 
   @override
   void initState() {
@@ -29,37 +31,70 @@ class _SlotScreenState extends State<SlotScreen> {
   }
 
   Future<void> _loadSlots() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+    if (!_isRefreshing) {
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+    }
 
     try {
       final fetchedSlots = await slotService.fetchSlotBySportClub(
-        widget.clubId,
+        widget.club.id!,
         _currentPage,
         _limit,
         _selectedCategoryId,
       );
 
+      // Debug: Print slot data to check image URLs
+      // ignore: unused_local_variable
+      for (var slot in fetchedSlots) {}
+
       setState(() {
         slots = fetchedSlots;
         _loading = false;
+        _isRefreshing = false;
       });
     } catch (e) {
       setState(() {
         _loading = false;
+        _isRefreshing = false;
         _error = e.toString();
       });
     }
   }
 
-  // ── Refresh method for pull-to-refresh ────────────────────────────────
   Future<void> _refreshSlots() async {
+    setState(() {
+      _isRefreshing = true;
+    });
     await _loadSlots();
   }
 
-  // ── Delete slot ────────────────────────────────────────────────────────
+  Future<void> _navigateToCreateSlot() async {
+    final result = await Navigator.pushNamed(
+      context,
+      AppRoutes.adjustSlot,
+      arguments: widget.club, // Pass the full club model
+    );
+
+    if (result == true) {
+      _refreshSlots();
+    }
+  }
+
+  Future<void> _navigateToUpdateSlot(SlotModel slot) async {
+    final result = await Navigator.pushNamed(
+      context,
+      AppRoutes.updateSlot,
+      arguments: slot,
+    );
+
+    if (result == true) {
+      _refreshSlots();
+    }
+  }
+
   Future<void> _deleteSlot(int slotId, String slotName) async {
     final confirmDelete = await showDialog<bool>(
       context: context,
@@ -81,11 +116,15 @@ class _SlotScreenState extends State<SlotScreen> {
     );
 
     if (confirmDelete == true) {
+      setState(() {
+        _isRefreshing = true;
+      });
+
       try {
         await slotService.deleteSlot(slotId);
-        // Remove from local list
         setState(() {
           slots.removeWhere((slot) => slot.id == slotId);
+          _isRefreshing = false;
         });
 
         if (mounted) {
@@ -97,6 +136,9 @@ class _SlotScreenState extends State<SlotScreen> {
           );
         }
       } catch (e) {
+        setState(() {
+          _isRefreshing = false;
+        });
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -148,6 +190,7 @@ class _SlotScreenState extends State<SlotScreen> {
               onRefresh: _refreshSlots,
               color: AppTheme.kAccent,
               backgroundColor: isDark ? AppTheme.kBg : AppTheme.kLightBg,
+              displacement: 40,
               child: CustomScrollView(
                 physics: const BouncingScrollPhysics(
                   parent: AlwaysScrollableScrollPhysics(),
@@ -171,16 +214,7 @@ class _SlotScreenState extends State<SlotScreen> {
               ),
             ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          final result = await Navigator.pushNamed(
-            context,
-            AppRoutes.adjustSlot,
-            arguments: {'clubId': widget.clubId},
-          );
-          if (result == true) {
-            _refreshSlots();
-          }
-        },
+        onPressed: _navigateToCreateSlot,
         backgroundColor: AppTheme.kAccent,
         icon: const Icon(Icons.add, color: Color(0xFF0A1828)),
         label: Text(
@@ -194,7 +228,6 @@ class _SlotScreenState extends State<SlotScreen> {
     );
   }
 
-  // ── Skeleton Loader ────────────────────────────────────────────────────
   Widget _buildSkeletonLoader(bool isDark) {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -249,7 +282,6 @@ class _SlotScreenState extends State<SlotScreen> {
     );
   }
 
-  // ── Error Widget ──────────────────────────────────────────────────────
   Widget _buildErrorWidget(bool isDark) {
     return Center(
       child: Padding(
@@ -295,7 +327,6 @@ class _SlotScreenState extends State<SlotScreen> {
     );
   }
 
-  // ── Empty State ────────────────────────────────────────────────────────
   Widget _buildEmptyState(bool isDark) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 40),
@@ -311,7 +342,7 @@ class _SlotScreenState extends State<SlotScreen> {
             'No courts available',
             style: AppTheme.tsTitleAdaptive(
               context,
-            )?.copyWith(color: isDark ? Colors.grey[400] : Colors.grey[600]),
+            ).copyWith(color: isDark ? Colors.grey[400] : Colors.grey[600]),
           ),
           const SizedBox(height: 8),
           Text(
@@ -326,9 +357,7 @@ class _SlotScreenState extends State<SlotScreen> {
     );
   }
 
-  // ── Header Widget ──────────────────────────────────────────────────────
   Widget _buildHeader(bool isDark) {
-    // Count status
     final openCount = slots.where((s) => s.isAvailable).length;
     final closedCount = slots.where((s) => !s.isAvailable).length;
 
@@ -439,7 +468,6 @@ class _SlotScreenState extends State<SlotScreen> {
     );
   }
 
-  // ── Slot Card Widget ──────────────────────────────────────────────────
   Widget _buildSlotCard(SlotModel slot, bool isDark) {
     final isAvailable = slot.isAvailable;
     final statusColor = isAvailable ? Colors.green : Colors.red;
@@ -454,7 +482,6 @@ class _SlotScreenState extends State<SlotScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Court Heading ─────────────────────────────────────────────
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -465,24 +492,7 @@ class _SlotScreenState extends State<SlotScreen> {
                     color: AppTheme.kAccent.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: slot.imageUrl.isNotEmpty
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.network(
-                            slot.imageUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Icon(
-                              Icons.sports_tennis,
-                              color: AppTheme.kAccent,
-                              size: 28,
-                            ),
-                          ),
-                        )
-                      : Icon(
-                          Icons.sports_tennis,
-                          color: AppTheme.kAccent,
-                          size: 28,
-                        ),
+                  child: _buildSlotImage(slot),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -501,7 +511,7 @@ class _SlotScreenState extends State<SlotScreen> {
                       Text(
                         slot.description.isNotEmpty
                             ? slot.description
-                            : '${slot.category!.name} court',
+                            : '${slot.category?.name ?? 'Unknown'} court',
                         style: TextStyle(
                           color: isDark
                               ? AppTheme.kTextSub
@@ -515,19 +525,7 @@ class _SlotScreenState extends State<SlotScreen> {
                 Row(
                   children: [
                     IconButton(
-                      onPressed: () async {
-                        final result = await Navigator.pushNamed(
-                          context,
-                          AppRoutes.adjustSlot,
-                          arguments: {
-                            'clubId': widget.clubId,
-                            'slotId': slot.id,
-                          },
-                        );
-                        if (result == true) {
-                          _refreshSlots();
-                        }
-                      },
+                      onPressed: () => _navigateToUpdateSlot(slot),
                       icon: const Icon(Icons.edit, color: Colors.blue),
                       iconSize: 20,
                       tooltip: 'Edit',
@@ -547,8 +545,6 @@ class _SlotScreenState extends State<SlotScreen> {
               ],
             ),
             const SizedBox(height: 10),
-
-            // ── Status Tags ──────────────────────────────────────────────
             Wrap(
               spacing: 6,
               runSpacing: 6,
@@ -599,7 +595,7 @@ class _SlotScreenState extends State<SlotScreen> {
                     horizontal: 10,
                   ),
                   child: Text(
-                    slot.category!.name,
+                    slot.category?.name ?? 'Uncategorized',
                     style: const TextStyle(
                       color: Colors.purple,
                       fontSize: 11,
@@ -609,12 +605,9 @@ class _SlotScreenState extends State<SlotScreen> {
                 ),
               ],
             ),
-
             const SizedBox(height: 12),
             _buildDivider(isDark),
             const SizedBox(height: 10),
-
-            // ── Pricing ──────────────────────────────────────────────────
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -659,7 +652,40 @@ class _SlotScreenState extends State<SlotScreen> {
     );
   }
 
-  // ── Divider ────────────────────────────────────────────────────────────
+  Widget _buildSlotImage(SlotModel slot) {
+    final hasImage = slot.imageUrl.isNotEmpty;
+
+    if (hasImage) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Image.network(
+          slot.imageUrl,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => _buildDefaultIcon(),
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return Center(
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppTheme.kAccent,
+                ),
+              ),
+            );
+          },
+        ),
+      );
+    } else {
+      return _buildDefaultIcon();
+    }
+  }
+
+  Widget _buildDefaultIcon() {
+    return Icon(Icons.sports_tennis, color: AppTheme.kAccent, size: 28);
+  }
+
   Widget _buildDivider(bool isDark) {
     return Container(
       width: double.infinity,

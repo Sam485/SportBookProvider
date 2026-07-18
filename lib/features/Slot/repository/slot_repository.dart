@@ -5,6 +5,7 @@ import 'package:flutter_application_1/features/Slot/model/dto/create_slot_dto.da
 import 'package:flutter_application_1/features/Slot/model/dto/get_all_slot_dto.dart';
 import 'package:flutter_application_1/features/Slot/model/dto/update_slot_dto.dart';
 import 'package:flutter_application_1/features/Slot/model/slot_model.dart';
+import 'package:path/path.dart' as path;
 
 class SlotRepository {
   final Dio dio;
@@ -12,7 +13,16 @@ class SlotRepository {
 
   Future<SlotModel> createSlot(CreateSlotDto slot) async {
     try {
-      final response = await dio.post('/partner/slots', data: slot.toJson());
+      // Use FormData for file upload
+      final formData = await slot.toFormData();
+
+      // Set appropriate headers for multipart/form-data
+      final response = await dio.post(
+        '/partner/slots',
+        data: formData,
+        options: Options(headers: {'Content-Type': 'multipart/form-data'}),
+      );
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         return SlotModel.fromJson(response.data);
       } else {
@@ -26,18 +36,66 @@ class SlotRepository {
 
   Future<SlotModel> updateSlot(UpdateSlotDto updateSlot, int slotId) async {
     try {
+
+      // ✅ Always use FormData, even without files
+      final formData = FormData();
+
+      // Always add text fields
+      formData.fields.add(MapEntry('name', updateSlot.name));
+      formData.fields.add(MapEntry('price', updateSlot.price.toString()));
+      formData.fields.add(
+        MapEntry('is_available', updateSlot.isAvailable.toString()),
+      );
+
+      // Add kept_image_url if it exists
+      if (updateSlot.keptImageUrl != null &&
+          updateSlot.keptImageUrl!.isNotEmpty) {
+        formData.fields.add(
+          MapEntry('kept_image_url', updateSlot.keptImageUrl!),
+        );
+      }
+
+      // Add new image file if exists
+      if (updateSlot.hasFileUpload && updateSlot.newImage != null) {
+        try {
+          if (await updateSlot.newImage!.exists()) {
+            final fileName = path.basename(updateSlot.newImage!.path);
+            final fileSize = await updateSlot.newImage!.length();
+
+            if (fileSize > 0) {
+              final imageFile = await MultipartFile.fromFile(
+                updateSlot.newImage!.path,
+                filename: fileName,
+              );
+              formData.files.add(MapEntry('image', imageFile));
+            }
+          }
+        // ignore: empty_catches
+        } catch (e) {
+        }
+      }
+
+      // ignore: unused_local_variable
+      for (var field in formData.fields) {
+      }
+
       final response = await dio.put(
         '/partner/slots/$slotId',
-        data: updateSlot.toJson(),
+        data: formData,
+        options: Options(headers: {'Content-Type': 'multipart/form-data'}),
       );
+
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         return SlotModel.fromJson(response.data);
       } else {
-        final errorMessage = _extractErrorMessage(response.statusCode);
+        final errorMessage = _extractErrorMessage(response.data);
         throw Exception(errorMessage);
       }
     } on DioException catch (e) {
       throw _handleDioError(e);
+    } catch (e) {
+      rethrow;
     }
   }
 
@@ -47,10 +105,24 @@ class SlotRepository {
     String courtName,
   ) async {
     try {
+      // Always use FormData for image upload
+      final fileName = path.basename(image.path);
+      final imageFile = await MultipartFile.fromFile(
+        image.path,
+        filename: fileName,
+      );
+
+      final formData = FormData.fromMap({
+        'name': courtName,
+        'image': imageFile,
+      });
+
       final response = await dio.put(
         '/partner/slots/$slotId',
-        data: {'name': courtName, 'image': image},
+        data: formData,
+        options: Options(headers: {'Content-Type': 'multipart/form-data'}),
       );
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         return SlotModel.fromJson(response.data);
       } else {

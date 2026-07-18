@@ -1,5 +1,4 @@
 import 'package:flutter_application_1/features/SportClub/model/dto/created_sport_clubs_dto.dart';
-import 'package:flutter_application_1/features/SportClub/model/dto/update_sport_club_dto.dart';
 import 'package:flutter_application_1/features/SportClub/model/sport_club_model.dart';
 import 'package:flutter_application_1/features/SportClub/repository/sport_club_repository.dart';
 import 'package:flutter_application_1/features/SportClub/service/sport_club_service.dart';
@@ -34,7 +33,7 @@ class SportClubServiceImp implements SportClubService {
 
   @override
   Future<SportClubModel> updateSportClub(
-    UpdateSportClubDto sportClub,
+    CreatedSportClubsDto sportClub,
     int sportClubid,
   ) async {
     _isLoading = true;

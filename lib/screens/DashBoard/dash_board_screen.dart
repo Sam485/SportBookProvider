@@ -893,7 +893,7 @@ class _BookingDetailSheetState extends State<_BookingDetailSheet> {
 
     try {
       // Update booking status
-      final updatedBooking = await _bookingService.updateBookingStatus(
+      await _bookingService.updateBookingStatus(
         widget.booking.id,
       );
 

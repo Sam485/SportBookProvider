@@ -1,4 +1,7 @@
+
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/features/Slot/model/slot_model.dart';
+import 'package:flutter_application_1/features/SportClub/model/sport_club_model.dart';
 import 'package:flutter_application_1/screens/DashBoard/Notification/notification_screen.dart';
 import 'package:flutter_application_1/screens/auth/landing_screen.dart';
 import 'package:flutter_application_1/screens/auth/login_screen.dart';
@@ -14,6 +17,7 @@ import 'package:flutter_application_1/screens/settings/Features/password_securit
 import 'package:flutter_application_1/screens/settings/Features/reviews_screen.dart';
 import 'package:flutter_application_1/screens/settings/Features/settings_screen.dart';
 import 'package:flutter_application_1/screens/splash/splash_screen.dart';
+import 'package:flutter_application_1/screens/resource/other/update_slot_screen.dart'; // Import the update screen
 
 class AppRoutes {
   static const home = '/mainScreen';
@@ -29,6 +33,7 @@ class AppRoutes {
   static const editSportClub = '/sportClub';
   static const slot = '/addSlot';
   static const adjustSlot = '/createEditSlot';
+  static const updateSlot = '/updateSlot'; // New route for update
 
   // Settings and Profile routes
   static const setting = '/settings';
@@ -41,17 +46,65 @@ class AppRoutes {
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
+      // ── Slot Routes ──────────────────────────────────────────────
       case adjustSlot:
-        return MaterialPageRoute(builder: (_) => const AdjustSlotScreen());
+        // Expecting SportClubModel as argument
+        final args = settings.arguments;
+        if (args is SportClubModel) {
+          return MaterialPageRoute(
+            builder: (_) => AdjustSlotScreen(sportClub: args),
+          );
+        } else {
+          return MaterialPageRoute(
+            builder: (_) => Scaffold(
+              body: Center(
+                child: Text(
+                  'Error: Sport Club data required',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ),
+          );
+        }
+
+      case updateSlot:
+        // Expecting SlotModel as argument
+        final args = settings.arguments;
+        if (args is SlotModel) {
+          return MaterialPageRoute(
+            builder: (_) => UpdateSlotScreen(slot: args),
+          );
+        } else {
+          return MaterialPageRoute(
+            builder: (_) => Scaffold(
+              body: Center(
+                child: Text(
+                  'Error: Slot data required',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ),
+          );
+        }
+
       case slot:
-        final target = settings.arguments as int;
-        return MaterialPageRoute(builder: (_) => SlotScreen(clubId: target));
+        final target = settings.arguments as SportClubModel;
+        return MaterialPageRoute(builder: (_) => SlotScreen(club: target));
+
+      // ── Sport Club Routes ────────────────────────────────────────
       case editSportClub:
-        return MaterialPageRoute(builder: (_) => const CreateSportClubScreen());
+        final clubToEdit = settings.arguments as SportClubModel?;
+        return MaterialPageRoute(
+          builder: (_) => CreateSportClubScreen(clubToEdit: clubToEdit),
+        );
+
+      // ── Auth Routes ──────────────────────────────────────────────
       case splash:
         return MaterialPageRoute(builder: (_) => const SplashScreen());
+
       case landing:
         return MaterialPageRoute(builder: (_) => const LandingScreen());
+
       case home:
         return MaterialPageRoute(builder: (_) => const MainScreen());
 
@@ -61,6 +114,7 @@ class AppRoutes {
       case signUp:
         return MaterialPageRoute(builder: (_) => const SignUpScreen());
 
+      // ── Settings Routes ──────────────────────────────────────────
       case operatingHours:
         return MaterialPageRoute(builder: (_) => const OperatingHourScreen());
 

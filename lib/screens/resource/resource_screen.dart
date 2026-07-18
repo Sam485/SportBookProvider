@@ -17,7 +17,7 @@ class ResourceScreen extends StatefulWidget {
 class _ResourceScreenState extends State<ResourceScreen> {
   final service = getIt<SportClubService>();
   List<SportClubModel> clubs = [];
-  bool _loading = true; // Start with loading true
+  bool _loading = true;
   String? _error;
 
   @override
@@ -53,6 +53,11 @@ class _ResourceScreenState extends State<ResourceScreen> {
     }
   }
 
+  // Refresh function for pull-to-refresh
+  Future<void> _onRefresh() async {
+    await loadingData();
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -60,17 +65,23 @@ class _ResourceScreenState extends State<ResourceScreen> {
     return Scaffold(
       backgroundColor: isDark ? AppTheme.kBg : AppTheme.kLightBg,
       body: _loading
-          ? const ResourceScreenSkeleton() // Show skeleton while loading
+          ? const ResourceScreenSkeleton()
           : _error != null
-          ? _buildErrorWidget() // Show error if any
-          : _buildContent(), // Show actual content
+          ? _buildErrorWidget()
+          : RefreshIndicator(
+              onRefresh: _onRefresh,
+              color: AppTheme.kAccent,
+              backgroundColor: isDark ? AppTheme.kCardAlt : Colors.white,
+              displacement: 40,
+              child: _buildContent(),
+            ),
     );
   }
 
   // ── Content Builder ──────────────────────────────────────────────────────
   Widget _buildContent() {
     return CustomScrollView(
-      physics: const BouncingScrollPhysics(),
+      physics: const AlwaysScrollableScrollPhysics(),
       slivers: [
         SliverToBoxAdapter(child: _buildHeader()),
         SliverToBoxAdapter(child: _buildDivider()),
@@ -209,7 +220,7 @@ class _ResourceScreenState extends State<ResourceScreen> {
             'No clubs found',
             style: AppTheme.tsTitleAdaptive(
               context,
-            )?.copyWith(color: isDark ? Colors.grey[400] : Colors.grey[600]),
+            ).copyWith(color: isDark ? Colors.grey[400] : Colors.grey[600]),
           ),
           const SizedBox(height: 8),
           Text(
@@ -246,7 +257,10 @@ class _ResourceScreenState extends State<ResourceScreen> {
           const Spacer(),
           ElevatedButton.icon(
             onPressed: () {
-              Navigator.pushNamed(context, AppRoutes.editSportClub);
+              Navigator.pushNamed(context, AppRoutes.editSportClub).then((_) {
+                // Refresh when returning from create/edit screen
+                loadingData();
+              });
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.kAccent,

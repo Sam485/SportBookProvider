@@ -4,14 +4,14 @@ import 'package:flutter_application_1/features/SportClub/model/dto/user_dto.dart
 class SlotModel {
   final int id;
   final String name;
-  final String imageUrl;
+  final String imageUrl; // This is the correct field name
   final String description;
   final int price;
   final int capacity;
   final bool isAvailable;
   final int sportClubId;
-  final CategoryDto? category; // Made nullable
-  final UserDto? createdBy; // Made nullable
+  final CategoryDto? category;
+  final UserDto? createdBy;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -24,8 +24,8 @@ class SlotModel {
     required this.capacity,
     required this.isAvailable,
     required this.sportClubId,
-    this.category, // Now optional
-    this.createdBy, // Now optional
+    this.category,
+    this.createdBy,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -40,11 +40,9 @@ class SlotModel {
       capacity: json['capacity'] ?? 0,
       isAvailable: json['is_available'] ?? false,
       sportClubId: json['sport_club_id'] ?? 0,
-      // Safe handling for category - check if it exists and is not null
       category: json['category'] != null
           ? CategoryDto.fromJson(json['category'] as Map<String, dynamic>)
           : null,
-      // Safe handling for createdBy
       createdBy: json['created_by'] != null
           ? UserDto.fromjson(json['created_by'] as Map<String, dynamic>)
           : null,
@@ -56,6 +54,9 @@ class SlotModel {
           : DateTime.now(),
     );
   }
+
+  // ❌ REMOVE THIS - it's causing the null issue
+  // String? get image => null;
 
   SlotModel copyWith({
     int? id,
