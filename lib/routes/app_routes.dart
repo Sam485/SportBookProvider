@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/features/Slot/model/slot_model.dart';
 import 'package:flutter_application_1/features/SportClub/model/sport_club_model.dart';
@@ -6,6 +5,7 @@ import 'package:flutter_application_1/screens/DashBoard/Notification/notificatio
 import 'package:flutter_application_1/screens/auth/landing_screen.dart';
 import 'package:flutter_application_1/screens/auth/login_screen.dart';
 import 'package:flutter_application_1/screens/auth/signup_screen.dart';
+import 'package:flutter_application_1/screens/auth/verify_screen.dart'; // ✅ Import VerifyScreen
 import 'package:flutter_application_1/screens/main_screen.dart';
 import 'package:flutter_application_1/screens/resource/other/adjust_slot_screen.dart';
 import 'package:flutter_application_1/screens/resource/other/slot_screen.dart';
@@ -17,7 +17,7 @@ import 'package:flutter_application_1/screens/settings/Features/password_securit
 import 'package:flutter_application_1/screens/settings/Features/reviews_screen.dart';
 import 'package:flutter_application_1/screens/settings/Features/settings_screen.dart';
 import 'package:flutter_application_1/screens/splash/splash_screen.dart';
-import 'package:flutter_application_1/screens/resource/other/update_slot_screen.dart'; // Import the update screen
+import 'package:flutter_application_1/screens/resource/other/update_slot_screen.dart';
 
 class AppRoutes {
   static const home = '/mainScreen';
@@ -33,7 +33,7 @@ class AppRoutes {
   static const editSportClub = '/sportClub';
   static const slot = '/addSlot';
   static const adjustSlot = '/createEditSlot';
-  static const updateSlot = '/updateSlot'; // New route for update
+  static const updateSlot = '/updateSlot';
 
   // Settings and Profile routes
   static const setting = '/settings';
@@ -46,9 +46,37 @@ class AppRoutes {
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
+      // ── Auth Routes ──────────────────────────────────────────────
+      case splash:
+        return MaterialPageRoute(builder: (_) => const SplashScreen());
+
+      case landing:
+        return MaterialPageRoute(builder: (_) => const LandingScreen());
+
+      case home:
+        return MaterialPageRoute(builder: (_) => const MainScreen());
+
+      case login:
+        return MaterialPageRoute(builder: (_) => const LoginScreen());
+
+      case signUp:
+        return MaterialPageRoute(builder: (_) => const SignUpScreen());
+
+      case verify:
+        // ✅ Handle VerifyScreen with arguments
+        final args = settings.arguments;
+        if (args is Map<String, dynamic>) {
+          return MaterialPageRoute(
+            builder: (_) => const VerifyScreen(),
+            settings: RouteSettings(arguments: args),
+          );
+        } else {
+          // If no arguments, return VerifyScreen with default values
+          return MaterialPageRoute(builder: (_) => const VerifyScreen());
+        }
+
       // ── Slot Routes ──────────────────────────────────────────────
       case adjustSlot:
-        // Expecting SportClubModel as argument
         final args = settings.arguments;
         if (args is SportClubModel) {
           return MaterialPageRoute(
@@ -60,7 +88,7 @@ class AppRoutes {
               body: Center(
                 child: Text(
                   'Error: Sport Club data required',
-                  style: TextStyle(color: Colors.red),
+                  style: const TextStyle(color: Colors.red),
                 ),
               ),
             ),
@@ -68,7 +96,6 @@ class AppRoutes {
         }
 
       case updateSlot:
-        // Expecting SlotModel as argument
         final args = settings.arguments;
         if (args is SlotModel) {
           return MaterialPageRoute(
@@ -80,7 +107,7 @@ class AppRoutes {
               body: Center(
                 child: Text(
                   'Error: Slot data required',
-                  style: TextStyle(color: Colors.red),
+                  style: const TextStyle(color: Colors.red),
                 ),
               ),
             ),
@@ -97,22 +124,6 @@ class AppRoutes {
         return MaterialPageRoute(
           builder: (_) => CreateSportClubScreen(clubToEdit: clubToEdit),
         );
-
-      // ── Auth Routes ──────────────────────────────────────────────
-      case splash:
-        return MaterialPageRoute(builder: (_) => const SplashScreen());
-
-      case landing:
-        return MaterialPageRoute(builder: (_) => const LandingScreen());
-
-      case home:
-        return MaterialPageRoute(builder: (_) => const MainScreen());
-
-      case login:
-        return MaterialPageRoute(builder: (_) => const LoginScreen());
-
-      case signUp:
-        return MaterialPageRoute(builder: (_) => const SignUpScreen());
 
       // ── Settings Routes ──────────────────────────────────────────
       case operatingHours:

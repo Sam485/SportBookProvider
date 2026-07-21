@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_application_1/core/config/app_config.dart';
+import 'package:flutter_application_1/core/config/firebase_config.dart';
 import 'package:flutter_application_1/core/interceptors/auth_interceptor.dart';
+import 'package:flutter_application_1/features/Auth/firebase_otp_service.dart';
 import 'package:flutter_application_1/features/Booking/Repository/booking_repository.dart';
 import 'package:flutter_application_1/features/Booking/Service/booking_service.dart';
 import 'package:flutter_application_1/features/Booking/Service/booking_service_imp.dart';
@@ -28,6 +30,7 @@ import 'package:get_it/get_it.dart';
 final getIt = GetIt.instance;
 
 Future<void> setupServiceLocator() async {
+  await FirebaseConfig.initialize();
   getIt.registerLazySingleton<FlutterSecureStorage>(
     () => const FlutterSecureStorage(),
   );
@@ -60,6 +63,13 @@ Future<void> setupServiceLocator() async {
   getIt.registerLazySingleton<TokenApi>(() => TokenApi(getIt<Dio>()));
   getIt.registerLazySingleton<TokenService>(
     () => TokenService(getIt<TokenApi>()),
+  );
+
+  // ============================================================
+  // REGISTER FIREBASE OTP SERVICE
+  // ============================================================
+  getIt.registerLazySingleton<FirebaseOtpService>(
+    () => FirebaseOtpService.instance,
   );
 
   // ============================================================

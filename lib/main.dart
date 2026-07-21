@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_application_1/core/config/firebase_config.dart';
 import 'package:flutter_application_1/core/di/service_locator.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -13,7 +14,6 @@ import 'routes/app_routes.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SharedPreferences.getInstance();
-  
 
   // Initialize the service locator
   await setupServiceLocator();
@@ -45,6 +45,21 @@ class _SportMateAppState extends State<SportMateApp> {
     if (!getIt.isRegistered<GlobalKey<NavigatorState>>()) {
       getIt.registerSingleton<GlobalKey<NavigatorState>>(navigatorKey);
     }
+    _initializeFcmToken();
+  }
+
+  /// Initialize FCM token if Firebase is available
+  Future<void> _initializeFcmToken() async {
+    try {
+      if (FirebaseConfig.isInitialized) {
+        final token = await FirebaseConfig.getFcmToken();
+        if (token != null) {
+          // You can store this token or send it to your backend
+          // await _sendFcmTokenToBackend(token);
+        }
+      }
+      // ignore: empty_catches
+    } catch (e) {}
   }
 
   @override
