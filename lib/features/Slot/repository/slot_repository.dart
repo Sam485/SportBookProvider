@@ -36,66 +36,18 @@ class SlotRepository {
 
   Future<SlotModel> updateSlot(UpdateSlotDto updateSlot, int slotId) async {
     try {
-
-      // ✅ Always use FormData, even without files
-      final formData = FormData();
-
-      // Always add text fields
-      formData.fields.add(MapEntry('name', updateSlot.name));
-      formData.fields.add(MapEntry('price', updateSlot.price.toString()));
-      formData.fields.add(
-        MapEntry('is_available', updateSlot.isAvailable.toString()),
-      );
-
-      // Add kept_image_url if it exists
-      if (updateSlot.keptImageUrl != null &&
-          updateSlot.keptImageUrl!.isNotEmpty) {
-        formData.fields.add(
-          MapEntry('kept_image_url', updateSlot.keptImageUrl!),
-        );
-      }
-
-      // Add new image file if exists
-      if (updateSlot.hasFileUpload && updateSlot.newImage != null) {
-        try {
-          if (await updateSlot.newImage!.exists()) {
-            final fileName = path.basename(updateSlot.newImage!.path);
-            final fileSize = await updateSlot.newImage!.length();
-
-            if (fileSize > 0) {
-              final imageFile = await MultipartFile.fromFile(
-                updateSlot.newImage!.path,
-                filename: fileName,
-              );
-              formData.files.add(MapEntry('image', imageFile));
-            }
-          }
-        // ignore: empty_catches
-        } catch (e) {
-        }
-      }
-
-      // ignore: unused_local_variable
-      for (var field in formData.fields) {
-      }
-
       final response = await dio.put(
         '/partner/slots/$slotId',
-        data: formData,
-        options: Options(headers: {'Content-Type': 'multipart/form-data'}),
+        data: updateSlot.toJson(),
       );
-
-
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return SlotModel.fromJson(response.data);
+        return response.data;
       } else {
-        final errorMessage = _extractErrorMessage(response.data);
+        final errorMessage = _extractErrorMessage(response.statusCode);
         throw Exception(errorMessage);
       }
     } on DioException catch (e) {
       throw _handleDioError(e);
-    } catch (e) {
-      rethrow;
     }
   }
 

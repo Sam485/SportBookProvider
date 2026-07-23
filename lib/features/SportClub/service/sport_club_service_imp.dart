@@ -1,20 +1,28 @@
 import 'package:flutter_application_1/features/SportClub/model/dto/created_sport_clubs_dto.dart';
+import 'package:flutter_application_1/features/SportClub/model/dto/update_sport_club_dto.dart';
+import 'package:flutter_application_1/features/SportClub/model/dto/update_sport_club_images.dart';
 import 'package:flutter_application_1/features/SportClub/model/sport_club_model.dart';
 import 'package:flutter_application_1/features/SportClub/repository/sport_club_repository.dart';
 import 'package:flutter_application_1/features/SportClub/service/sport_club_service.dart';
 
 class SportClubServiceImp implements SportClubService {
-  SportClubRepository sportClubRepository;
-  SportClubServiceImp(this.sportClubRepository);
+  final SportClubRepository sportClubRepository;
 
   String _error = '';
   bool _isLoading = false;
+
+  SportClubServiceImp(this.sportClubRepository);
 
   @override
   String get error => _error;
 
   @override
   bool get isLoading => _isLoading;
+
+  @override
+  void clearError() {
+    _error = '';
+  }
 
   @override
   Future<SportClubModel> createSportClub(CreatedSportClubsDto sportClub) async {
@@ -33,15 +41,36 @@ class SportClubServiceImp implements SportClubService {
 
   @override
   Future<SportClubModel> updateSportClub(
-    CreatedSportClubsDto sportClub,
-    int sportClubid,
+    UpdateSportClubDto sportClub,
+    int sportClubId,
   ) async {
     _isLoading = true;
     _error = '';
     try {
       final data = await sportClubRepository.updateSportClub(
+        sportClubId,
         sportClub,
-        sportClubid,
+      );
+      _isLoading = false;
+      return data;
+    } catch (e) {
+      _isLoading = false;
+      _error = e.toString();
+      rethrow;
+    }
+  }
+
+  @override
+  Future<SportClubModel> updateSportClubImages(
+    UpdateSportClubImages sportClubImages,
+    int sportClubId,
+  ) async {
+    _isLoading = true;
+    _error = '';
+    try {
+      final data = await sportClubRepository.updateSportClubImage(
+        sportClubImages,
+        sportClubId,
       );
       _isLoading = false;
       return data;
@@ -81,8 +110,8 @@ class SportClubServiceImp implements SportClubService {
         limit,
         search,
       );
-      final sportClubs = response.data;
-      return sportClubs;
+      _isLoading = false;
+      return response.data;
     } catch (e) {
       _isLoading = false;
       _error = e.toString();

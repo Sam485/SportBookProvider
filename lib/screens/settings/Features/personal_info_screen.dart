@@ -119,7 +119,6 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     }
   }
 
-  // FIXED: This method now properly handles image picking
   Future<void> _pickImage() async {
     if (_isAvatarLoading) return;
 
@@ -148,7 +147,6 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     }
   }
 
-  // FIXED: This method now properly handles taking a photo
   Future<void> _takePhoto() async {
     if (_isAvatarLoading) return;
 
@@ -177,7 +175,6 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     }
   }
 
-  // FIXED: This method now properly shows the image picker options
   Future<void> _showImagePickerDialog() async {
     if (_isAvatarLoading) return;
 
@@ -292,7 +289,6 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     );
   }
 
-  // FIXED: Method to remove avatar (placeholder)
   Future<void> _removeAvatar() async {
     // You would need an API endpoint to remove avatar
     // For now, just show a message
@@ -308,8 +304,10 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     );
   }
 
+  // ✅ FIXED: Properly handle the Map result from MapPickerScreen
   Future<void> _openLocationPicker() async {
-    final result = await showModalBottomSheet<String>(
+    // ✅ Use dynamic type to handle the Map result
+    final result = await showModalBottomSheet<Map<String, dynamic>>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -329,11 +327,20 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
       },
     );
 
-    if (result != null && result.isNotEmpty && mounted) {
-      setState(() {
-        _selectedAddress = result;
-        _locationController.text = result;
-      });
+    // ✅ Check if result is a Map and extract values
+    if (result != null) {
+      final label = result['label'] as String?;
+      final lat = result['lat'] as double?;
+      final lng = result['lng'] as double?;
+
+      if (label != null && label.isNotEmpty) {
+        setState(() {
+          _selectedAddress = label;
+          _selectedLat = lat;
+          _selectedLng = lng;
+          _locationController.text = label;
+        });
+      }
     }
   }
 
@@ -508,7 +515,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                           fit: BoxFit.cover,
                           width: 120,
                           height: 120,
-                          errorBuilder: (_, _, _) => Container(
+                          errorBuilder: (_, __, ___) => Container(
                             color: isDark
                                 ? AppTheme.kCardAlt
                                 : AppTheme.kLightCardAlt,

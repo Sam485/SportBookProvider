@@ -21,6 +21,8 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _capacityController = TextEditingController();
 
   // ── State variables ──────────────────────────────────────────────────
   bool _isAvailable = true;
@@ -41,18 +43,18 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
   void _initializeData() {
     _nameController.text = widget.slot.name;
     _priceController.text = widget.slot.price.toString();
+    _descriptionController.text = widget.slot.description;
+    _capacityController.text = widget.slot.capacity.toString();
     _isAvailable = widget.slot.isAvailable;
-
-    // IMPORTANT: Get the image URL properly
     _existingImageUrl = widget.slot.imageUrl;
-
-    // Debug: Print the image URL to check if it's being set
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     _priceController.dispose();
+    _descriptionController.dispose();
+    _capacityController.dispose();
     super.dispose();
   }
 
@@ -97,40 +99,32 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
       });
 
       try {
-        String? keptImageUrl;
-        File? newImage;
-
-        if (_imageChanged) {
-          // User wants to change the image
-          if (_newImageFile != null) {
-            // User uploaded a new image
-            newImage = _newImageFile;
-            keptImageUrl = null; // Don't keep existing
-          } else {
-            // User removed the image (no image at all)
-            keptImageUrl = null;
-            newImage = null;
-          }
-        } else {
-          // User wants to keep the existing image
-          // ✅ Only set keptImageUrl if there's an existing image
-          if (_existingImageUrl != null && _existingImageUrl!.isNotEmpty) {
-            keptImageUrl = _existingImageUrl;
-          } else {
-            keptImageUrl = null;
-          }
-          newImage = null;
-        }
-
+        // Create the UpdateSlotDto with all fields
         final updateDto = UpdateSlotDto(
           name: _nameController.text.trim(),
-          price: double.parse(_priceController.text),
+          price: int.parse(_priceController.text.trim()),
           isAvailable: _isAvailable,
-          keptImageUrl: keptImageUrl,
-          newImage: newImage,
+          description: _descriptionController.text.trim(),
+          capacity: int.parse(_capacityController.text.trim()),
         );
 
+        // Call the repository update method
         await _slotService.updateSlot(updateDto, widget.slot.id);
+
+        // Handle image separately if changed
+        if (_imageChanged) {
+          if (_newImageFile != null) {
+            // Upload new image
+            await _slotService.updateSlotImage(
+              widget.slot.id,
+              _newImageFile!,
+              _nameController.text.trim(),
+            );
+          } else if (_existingImageUrl == null) {
+            // Remove image if no image exists
+            await _slotService.removeSlotImage(widget.slot.id);
+          }
+        }
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -215,6 +209,7 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
                     ),
                     const SizedBox(height: 12),
 
+                    // ✅ Name Field
                     _buildTextField(
                       controller: _nameController,
                       label: 'Slot Name',
@@ -229,20 +224,60 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
                     ),
                     const SizedBox(height: 16),
 
+                    // ✅ Price Field
                     _buildTextField(
                       controller: _priceController,
-                      label: 'Price (\$)',
-                      hint: '0.00',
+                      label: 'Price',
+                      hint: 'Enter price',
                       icon: Icons.attach_money,
-                      keyboardType: TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
+                      keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value?.isEmpty ?? true) {
                           return 'Enter price';
                         }
-                        if (double.tryParse(value!) == null) {
+                        if (int.tryParse(value!) == null) {
                           return 'Invalid price';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // ✅ Capacity Field
+                    _buildTextField(
+                      controller: _capacityController,
+                      label: 'Capacity',
+                      hint: 'Enter capacity (number of people)',
+                      icon: Icons.people,
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value?.isEmpty ?? true) {
+                          return 'Enter capacity';
+                        }
+                        if (int.tryParse(value!) == null) {
+                          return 'Invalid capacity';
+                        }
+                        if (int.parse(value) <= 0) {
+                          return 'Capacity must be greater than 0';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // ✅ Description Field
+                    _buildTextField(
+                      controller: _descriptionController,
+                      label: 'Description',
+                      hint: 'Enter slot description',
+                      icon: Icons.description,
+                      maxLines: 3,
+                      validator: (value) {
+                        if (value?.isEmpty ?? true) {
+                          return 'Please enter description';
+                        }
+                        if (value!.length < 10) {
+                          return 'Description must be at least 10 characters';
                         }
                         return null;
                       },
@@ -405,12 +440,9 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
 
   // ── Image Section ──────────────────────────────────────────────────────
   Widget _buildImageSection(bool isDark) {
-    // Determine if we should show the image options
     final hasExistingImage =
         _existingImageUrl != null && _existingImageUrl!.isNotEmpty;
     final hasNewImage = _newImageFile != null;
-
-    // Debug: Print image state
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -438,7 +470,6 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
                 ),
               ),
               const Spacer(),
-              // Show "Keep Existing" button only if we have a new image or image was changed
               if (_imageChanged && hasNewImage)
                 TextButton(
                   onPressed: _keepExistingImage,
@@ -454,7 +485,6 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
           ),
           const SizedBox(height: 12),
 
-          // ── Image Preview ──────────────────────────────────────────────
           if (hasNewImage)
             _buildNewImagePreview(isDark)
           else if (hasExistingImage)
@@ -462,7 +492,6 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
           else
             _buildImageUploadPlaceholder(isDark),
 
-          // Show warning if no image exists
           if (!hasExistingImage && !hasNewImage)
             Padding(
               padding: const EdgeInsets.only(top: 8),
@@ -543,7 +572,6 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
         borderRadius: BorderRadius.circular(12),
         child: Stack(
           children: [
-            // Image with errorBuilder
             Positioned.fill(
               child: Image.network(
                 _existingImageUrl!,
@@ -569,7 +597,6 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
                 },
               ),
             ),
-
             Positioned(
               top: 8,
               right: 8,
@@ -681,22 +708,22 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
           const SizedBox(height: 12),
           _buildInfoRow(
             'Created',
-            widget.slot.createdAt.toString(),
+            widget.slot.createdAt?.toString() ?? 'N/A',
             Icons.calendar_today,
             isDark,
           ),
           const Divider(height: 16),
           _buildInfoRow(
             'Last Updated',
-            widget.slot.updatedAt.toString(),
+            widget.slot.updatedAt?.toString() ?? 'N/A',
             Icons.access_time,
             isDark,
           ),
           const Divider(height: 16),
           _buildInfoRow(
-            'Capacity',
-            widget.slot.capacity.toString(),
-            Icons.people,
+            'Sport Club ID',
+            widget.slot.sportClubId?.toString() ?? 'N/A',
+            Icons.business,
             isDark,
           ),
         ],
@@ -766,6 +793,7 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
     required String hint,
     required IconData icon,
     TextInputType? keyboardType,
+    int? maxLines,
     String? Function(String?)? validator,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -783,6 +811,7 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
         controller: controller,
         style: TextStyle(color: isDark ? Colors.white : AppTheme.kLightText),
         keyboardType: keyboardType,
+        maxLines: maxLines ?? 1,
         validator: validator,
         decoration: InputDecoration(
           labelText: label,

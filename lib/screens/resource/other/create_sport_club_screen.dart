@@ -6,6 +6,8 @@ import 'package:flutter_application_1/core/util/image_utils.dart';
 import 'package:flutter_application_1/features/Category/model/category_model.dart';
 import 'package:flutter_application_1/features/Category/service/category_service.dart';
 import 'package:flutter_application_1/features/SportClub/model/dto/created_sport_clubs_dto.dart';
+import 'package:flutter_application_1/features/SportClub/model/dto/update_sport_club_dto.dart';
+import 'package:flutter_application_1/features/SportClub/model/dto/update_sport_club_images.dart';
 import 'package:flutter_application_1/features/SportClub/model/sport_club_model.dart';
 import 'package:flutter_application_1/features/SportClub/service/sport_club_service.dart';
 import 'package:flutter_application_1/widgets/common/map_picker_screen.dart';
@@ -29,12 +31,14 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
   final _locationController = TextEditingController();
   final _descriptionController = TextEditingController();
   final CategoryService categoryService = getIt<CategoryService>();
+  final SportClubService sportClubService = getIt<SportClubService>();
 
   // Variables for other fields
   bool? _isOpen;
   TimeOfDay? _openTime;
   TimeOfDay? _closeTime;
   List<File> _images = [];
+  List<String> _keptImageUrls = [];
   bool _isSubmitting = false;
   bool _isEditMode = false;
   int? _editingClubId;
@@ -43,6 +47,9 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
   CategoriesModel? _selectedCategory;
   List<CategoriesModel> _categories = [];
   bool _isLoadingCategories = false;
+
+  // Original images for edit mode
+  List<String> _originalImageUrls = [];
 
   @override
   void initState() {
@@ -71,8 +78,9 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
       _openTime = _durationToTimeOfDay(club.openTime);
       _closeTime = _durationToTimeOfDay(club.closeTime);
 
-      // Find and select the category
-      // Note: We'll set this after categories are loaded
+      // Store original image URLs
+      _originalImageUrls = club.imageUrls.map((img) => img).toList();
+      _keptImageUrls = List.from(_originalImageUrls);
     }
   }
 
@@ -444,7 +452,18 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
 
   void _removeImage(int index) {
     setState(() {
-      _images.removeAt(index);
+      if (_isEditMode && index < _originalImageUrls.length) {
+        // Removing an original image - remove from kept list
+        final urlToRemove = _originalImageUrls[index];
+        _keptImageUrls.remove(urlToRemove);
+        _originalImageUrls.removeAt(index);
+      } else {
+        // Removing a new image
+        final imageIndex = index - (_isEditMode ? _keptImageUrls.length : 0);
+        if (imageIndex >= 0 && imageIndex < _images.length) {
+          _images.removeAt(imageIndex);
+        }
+      }
     });
   }
 
@@ -552,7 +571,17 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
         _isSubmitting = true;
       });
 
-      // Create DTO with all data
+      if (_isEditMode && _editingClubId != null) {
+        _updateSportClub(lat, lng);
+      } else {
+        _createSportClub(lat, lng);
+      }
+    }
+  }
+
+  // Create method
+  Future<void> _createSportClub(double lat, double lng) async {
+    try {
       final sportClubDto = CreatedSportClubsDto(
         name: _nameController.text,
         lat: lat,
@@ -566,19 +595,6 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
         images: _images,
       );
 
-      // Call the API (create or update)
-      if (_isEditMode && _editingClubId != null) {
-        _updateSportClub(sportClubDto, _editingClubId!);
-      } else {
-        _createSportClub(sportClubDto);
-      }
-    }
-  }
-
-  // Create method
-  Future<void> _createSportClub(CreatedSportClubsDto sportClubDto) async {
-    try {
-      final sportClubService = getIt<SportClubService>();
       final createdClub = await sportClubService.createSportClub(sportClubDto);
 
       if (mounted) {
@@ -614,33 +630,82 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
     }
   }
 
-  // Update method
-  Future<void> _updateSportClub(
-    CreatedSportClubsDto sportClubDto,
-    int clubId,
-  ) async {
+  // Update method - FIXED to use correct DTOs
+  Future<void> _updateSportClub(double lat, double lng) async {
     try {
-      final sportClubService = getIt<SportClubService>();
-      final updatedClub = await sportClubService.updateSportClub(
-        sportClubDto,
-        clubId,
-      );
+      final clubId = _editingClubId!;
 
-      if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
+      // Check if images were changed
+      final imagesChanged =
+          _images.isNotEmpty ||
+          _keptImageUrls.length != _originalImageUrls.length;
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Club "${updatedClub.name}" updated successfully! ✏️',
-            ),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 2),
-          ),
+      if (imagesChanged) {
+        // Update with images using UpdateSportClubImages
+        final updateImagesDto = UpdateSportClubImages(
+          name: _nameController.text,
+          isOpen: _isOpen!,
+          imagesChanged: true,
+          keptImageUrls: _keptImageUrls,
+          images: _images.isNotEmpty ? _images : null,
         );
-        Navigator.pop(context, true);
+
+        final updatedClub = await sportClubService.updateSportClubImages(
+          updateImagesDto,
+          clubId,
+        );
+
+        if (mounted) {
+          setState(() {
+            _isSubmitting = false;
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Club "${updatedClub.name}" updated successfully! ✏️',
+              ),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+          Navigator.pop(context, true);
+        }
+      } else {
+        // Update without images using UpdateSportClubDto
+        final updateDto = UpdateSportClubDto(
+          name: _nameController.text,
+          location: _locationController.text,
+          description: _descriptionController.text,
+          openTime: _timeToDuration(_openTime!),
+          closeTime: _timeToDuration(_closeTime!),
+          lat: lat,
+          lng: lng,
+          isOpen: _isOpen!,
+          categoryId: _selectedCategory!.id, // List of category IDs
+        );
+
+        final updatedClub = await sportClubService.updateSportClub(
+          updateDto,
+          clubId,
+        );
+
+        if (mounted) {
+          setState(() {
+            _isSubmitting = false;
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Club "${updatedClub.name}" updated successfully! ✏️',
+              ),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+          Navigator.pop(context, true);
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -1156,6 +1221,148 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
 
   // ── Image Section ──────────────────────────────────────────────────────
   Widget _buildImageSection(bool isDark) {
+    // Combine original images and new images for display
+    List<Widget> imageWidgets = [];
+
+    // Display original images if in edit mode
+    if (_isEditMode) {
+      for (int i = 0; i < _originalImageUrls.length; i++) {
+        final url = _originalImageUrls[i];
+        // Check if this image is being kept
+        final isKept = _keptImageUrls.contains(url);
+        if (isKept) {
+          imageWidgets.add(
+            Stack(
+              children: [
+                Container(
+                  width: 100,
+                  height: 100,
+                  margin: const EdgeInsets.only(right: 8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    image: DecorationImage(
+                      image: NetworkImage(url),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 4,
+                  right: 12,
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _keptImageUrls.remove(url);
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: Colors.black54,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 14,
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: 4,
+                  right: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withValues(alpha: 0.8),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Text(
+                      'Existing',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 8,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+      }
+    }
+
+    // Display new images
+    for (int i = 0; i < _images.length; i++) {
+      final index = i;
+      imageWidgets.add(
+        Stack(
+          children: [
+            Container(
+              width: 100,
+              height: 100,
+              margin: const EdgeInsets.only(right: 8),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                image: DecorationImage(
+                  image: FileImage(_images[i]),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            Positioned(
+              top: 4,
+              right: 12,
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _images.removeAt(index);
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    color: Colors.black54,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.close, color: Colors.white, size: 14),
+                ),
+              ),
+            ),
+            if (_isEditMode)
+              Positioned(
+                bottom: 4,
+                right: 12,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withValues(alpha: 0.8),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Text(
+                    'New',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 8,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -1183,7 +1390,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
               ),
               const Spacer(),
               Text(
-                '${_images.length}/5',
+                '${_keptImageUrls.length + _images.length}/5',
                 style: TextStyle(
                   color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                   fontSize: 12,
@@ -1194,101 +1401,67 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
           const SizedBox(height: 12),
 
           // Image grid
-          if (_images.isNotEmpty)
+          if (imageWidgets.isNotEmpty)
             SizedBox(
               height: 100,
-              child: ListView.builder(
+              child: ListView(
                 scrollDirection: Axis.horizontal,
-                itemCount: _images.length,
-                itemBuilder: (context, index) {
-                  return Stack(
-                    children: [
-                      Container(
-                        width: 100,
-                        height: 100,
-                        margin: const EdgeInsets.only(right: 8),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          image: DecorationImage(
-                            image: FileImage(_images[index]),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        top: 4,
-                        right: 12,
-                        child: GestureDetector(
-                          onTap: () => _removeImage(index),
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(
-                              color: Colors.black54,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.close,
-                              color: Colors.white,
-                              size: 14,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                },
+                children: imageWidgets,
               ),
             ),
 
-          if (_images.isNotEmpty) const SizedBox(height: 12),
+          if (imageWidgets.isNotEmpty) const SizedBox(height: 12),
 
-          // Upload button - Show different text for edit mode
-          GestureDetector(
-            onTap: _images.length < 5 ? _pickImages : null,
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                color: isDark ? Colors.white10 : Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: AppTheme.kAccent.withValues(alpha: 0.3),
-                  style: BorderStyle.solid,
-                  width: 2,
+          // Upload button
+          if (_keptImageUrls.length + _images.length < 5)
+            GestureDetector(
+              onTap: _pickImages,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.white10 : Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppTheme.kAccent.withValues(alpha: 0.3),
+                    style: BorderStyle.solid,
+                    width: 2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.kAccent.withValues(alpha: 0.1),
+                      blurRadius: 8,
+                    ),
+                  ],
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.kAccent.withValues(alpha: 0.1),
-                    blurRadius: 8,
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.cloud_upload,
-                    color: _images.length < 5 ? AppTheme.kAccent : Colors.grey,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    _images.isEmpty
-                        ? (_isEditMode
-                              ? 'Add new images'
-                              : 'Tap to upload images')
-                        : 'Add more images (${5 - _images.length} remaining)',
-                    style: TextStyle(
-                      color: _images.length < 5
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.cloud_upload,
+                      color: _keptImageUrls.length + _images.length < 5
                           ? AppTheme.kAccent
                           : Colors.grey,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    Text(
+                      _images.isEmpty && _keptImageUrls.isEmpty
+                          ? (_isEditMode
+                                ? 'Add new images'
+                                : 'Tap to upload images')
+                          : 'Add more images (${5 - (_keptImageUrls.length + _images.length)} remaining)',
+                      style: TextStyle(
+                        color: _keptImageUrls.length + _images.length < 5
+                            ? AppTheme.kAccent
+                            : Colors.grey,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
