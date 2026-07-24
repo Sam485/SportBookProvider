@@ -36,12 +36,22 @@ class SlotRepository {
 
   Future<SlotModel> updateSlot(UpdateSlotDto updateSlot, int slotId) async {
     try {
+      final FormData formData = updateSlot.toFormData();
+
       final response = await dio.put(
         '/partner/slots/$slotId',
-        data: updateSlot.toJson(),
+        data: formData,
+        options: Options(
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Accept': 'application/json',
+          },
+        ),
       );
+
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return response.data;
+        // Fix: Parse the response data through SlotModel.fromJson
+        return SlotModel.fromJson(response.data);
       } else {
         final errorMessage = _extractErrorMessage(response.statusCode);
         throw Exception(errorMessage);
@@ -57,7 +67,6 @@ class SlotRepository {
     String courtName,
   ) async {
     try {
-      // Always use FormData for image upload
       final fileName = path.basename(image.path);
       final imageFile = await MultipartFile.fromFile(
         image.path,
@@ -72,7 +81,12 @@ class SlotRepository {
       final response = await dio.put(
         '/partner/slots/$slotId',
         data: formData,
-        options: Options(headers: {'Content-Type': 'multipart/form-data'}),
+        options: Options(
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Accept': 'application/json', // Add this for consistency
+          },
+        ),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -88,10 +102,23 @@ class SlotRepository {
 
   Future<SlotModel> removeSlotImage(int slotId) async {
     try {
+      // Use FormData instead of raw Map
+      final formData = FormData.fromMap({
+        'images_changed': true,
+        'kept_image_url': null,
+      });
+
       final response = await dio.put(
         '/partner/slots/$slotId',
-        data: {'images_changed': true, 'kept_image_url': null},
+        data: formData, // Now using FormData
+        options: Options(
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Accept': 'application/json',
+          },
+        ),
       );
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         return SlotModel.fromJson(response.data);
       } else {

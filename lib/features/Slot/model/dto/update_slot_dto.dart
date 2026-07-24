@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+
 class UpdateSlotDto {
   final String name;
   final int price;
@@ -13,29 +15,14 @@ class UpdateSlotDto {
     required this.capacity,
   });
 
-  Map<String, dynamic> toJson() {
-    return {
+  FormData toFormData() {
+    // Use FormData.fromMap without await since it's synchronous
+    return FormData.fromMap({
       'name': name,
       'price': price,
       'is_available': isAvailable,
       'description': description,
       'capacity': capacity,
-    };
-  }
-
-  UpdateSlotDto copyWith({
-    String? name,
-    int? price,
-    bool? isAvailable,
-    String? description,
-    int? capacity,
-  }) {
-    return UpdateSlotDto(
-      name: name ?? this.name,
-      price: price ?? this.price,
-      isAvailable: isAvailable ?? this.isAvailable,
-      description: description ?? this.description,
-      capacity: capacity ?? this.capacity,
-    );
+    });
   }
 }

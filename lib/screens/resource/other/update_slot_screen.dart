@@ -172,13 +172,6 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
           ),
         ),
         title: Text('Update Slot', style: AppTheme.tsTitleAdaptive(context)),
-        actions: [
-          IconButton(
-            onPressed: _isSubmitting ? null : _submitForm,
-            icon: const Icon(Icons.save),
-            color: AppTheme.kAccent,
-          ),
-        ],
       ),
       body: SafeArea(
         child: Form(
@@ -189,14 +182,6 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
                 padding: const EdgeInsets.all(16),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
-                    // ── Header ─────────────────────────────────────────────
-                    _buildHeader(isDark),
-                    const SizedBox(height: 20),
-
-                    // ── Slot ID ────────────────────────────────────────────
-                    _buildSlotIdInfo(isDark),
-                    const SizedBox(height: 24),
-
                     // ── Image Section ──────────────────────────────────────
                     _buildImageSection(isDark),
                     const SizedBox(height: 24),
@@ -308,132 +293,6 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  // ── Header ────────────────────────────────────────────────────────────
-  Widget _buildHeader(bool isDark) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppTheme.kAccent.withValues(alpha: 0.1),
-            const Color(0xFF00B4D8).withValues(alpha: 0.05),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppTheme.kAccent.withValues(alpha: 0.2),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppTheme.kAccent, Color(0xFF00B4D8)],
-              ),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.edit_note, color: Colors.white, size: 28),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Update Slot #${widget.slot.id}',
-                  style: TextStyle(
-                    color: isDark ? Colors.white : AppTheme.kLightText,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  'Modify the slot details below',
-                  style: TextStyle(
-                    color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── Slot ID Info ──────────────────────────────────────────────────────
-  Widget _buildSlotIdInfo(bool isDark) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? AppTheme.kCardAlt : AppTheme.kLightCardAlt,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isDark ? AppTheme.kBorder : AppTheme.kLightBorder,
-          width: 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppTheme.kAccent.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(Icons.sports, color: AppTheme.kAccent, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Slot ID',
-                  style: TextStyle(
-                    color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
-                    fontSize: 12,
-                  ),
-                ),
-                Text(
-                  '#${widget.slot.id}',
-                  style: TextStyle(
-                    color: isDark ? Colors.white : AppTheme.kLightText,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: widget.slot.isAvailable
-                  ? Colors.green.withValues(alpha: 0.15)
-                  : Colors.red.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              widget.slot.isAvailable ? 'Active' : 'Inactive',
-              style: TextStyle(
-                color: widget.slot.isAvailable ? Colors.green : Colors.red,
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -708,21 +567,21 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
           const SizedBox(height: 12),
           _buildInfoRow(
             'Created',
-            widget.slot.createdAt?.toString() ?? 'N/A',
+            widget.slot.createdAt.toString(),
             Icons.calendar_today,
             isDark,
           ),
           const Divider(height: 16),
           _buildInfoRow(
             'Last Updated',
-            widget.slot.updatedAt?.toString() ?? 'N/A',
+            widget.slot.updatedAt.toString(),
             Icons.access_time,
             isDark,
           ),
           const Divider(height: 16),
           _buildInfoRow(
             'Sport Club ID',
-            widget.slot.sportClubId?.toString() ?? 'N/A',
+            widget.slot.sportClubId.toString(),
             Icons.business,
             isDark,
           ),

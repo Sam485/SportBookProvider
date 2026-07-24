@@ -515,7 +515,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                           fit: BoxFit.cover,
                           width: 120,
                           height: 120,
-                          errorBuilder: (_, __, ___) => Container(
+                          errorBuilder: (_, _, _) => Container(
                             color: isDark
                                 ? AppTheme.kCardAlt
                                 : AppTheme.kLightCardAlt,

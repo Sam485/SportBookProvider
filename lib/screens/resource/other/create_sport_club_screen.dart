@@ -450,22 +450,6 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
     );
   }
 
-  void _removeImage(int index) {
-    setState(() {
-      if (_isEditMode && index < _originalImageUrls.length) {
-        // Removing an original image - remove from kept list
-        final urlToRemove = _originalImageUrls[index];
-        _keptImageUrls.remove(urlToRemove);
-        _originalImageUrls.removeAt(index);
-      } else {
-        // Removing a new image
-        final imageIndex = index - (_isEditMode ? _keptImageUrls.length : 0);
-        if (imageIndex >= 0 && imageIndex < _images.length) {
-          _images.removeAt(imageIndex);
-        }
-      }
-    });
-  }
 
   // Open Map Picker
   Future<void> _openMapPicker() async {

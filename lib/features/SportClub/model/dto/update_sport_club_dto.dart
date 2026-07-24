@@ -84,7 +84,6 @@ class UpdateSportClubDto {
           }
         } catch (e) {
           // Handle error
-          print('Error adding image: $e');
         }
       }
     }
