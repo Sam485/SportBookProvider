@@ -11,12 +11,25 @@ class BookingRepository {
     int page,
     int limit,
     String? status,
-    DateTime? date,
+    String? date, // Changed from DateTime? to String?
   ) async {
     try {
+      // Build query parameters
+      Map<String, dynamic> queryParams = {'page': page, 'limit': limit};
+
+      if (status != null && status.isNotEmpty) {
+        queryParams['status'] = status;
+      }
+
+      if (date != null && date.isNotEmpty) {
+        queryParams['date'] = date; // Already formatted as YYYY-MM-DD
+      }
+
       var response = await dio.get(
-        '/partner/sport-clubs/$sportClubId/bookings?page=$page&limit=$limit&status=$status&date=$date',
+        '/partner/sport-clubs/$sportClubId/bookings',
+        queryParameters: queryParams,
       );
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         return GetAllBookingDto.fromJson(response.data);
       } else {

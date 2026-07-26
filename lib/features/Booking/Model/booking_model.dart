@@ -39,22 +39,48 @@ class BookingModel {
   });
 
   factory BookingModel.fromJson(Map<String, dynamic> json) {
+    Duration parseTimeToDuration(String timeString) {
+      try {
+        // Remove any whitespace
+        timeString = timeString.trim();
+
+        // Split by colon
+        final parts = timeString.split(':');
+
+        if (parts.length >= 2) {
+          final hours = int.tryParse(parts[0]) ?? 0;
+          final minutes = int.tryParse(parts[1]) ?? 0;
+          final seconds = parts.length > 2 ? int.tryParse(parts[2]) ?? 0 : 0;
+
+          // Ensure values are within valid ranges
+          return Duration(
+            hours: hours.clamp(0, 23),
+            minutes: minutes.clamp(0, 59),
+            seconds: seconds.clamp(0, 59),
+          );
+        }
+        return Duration.zero;
+      } catch (e) {
+        return Duration.zero;
+      }
+    }
+
     return BookingModel(
       id: json['id'] ?? 0,
       user: UserDto.fromJson(json['user']),
       slot: SlotDto.fromJson(json['slot']),
       sportClub: SportClubDto.fromjson(json['sport_club']),
-      bookingDate: json['booking_date'] ?? DateTime(0),
-      startTime: json['start_time'] ?? Duration(days: 0),
-      endTime: json['end_time'] ?? Duration(days: 0),
+      bookingDate: DateTime.parse(json['booking_date']),
+      startTime: parseTimeToDuration(json['start_time']),
+      endTime: parseTimeToDuration(json['end_time']),
       totalAmount: json['total_amount'] ?? 0,
       status: json['status'] ?? '',
       note: json['note'] ?? '',
       paymentStatus: json['payment_status'] ?? '',
       payment: PaymentDto.fromJson(json['payment']),
       cancelledAt: json['cancelled_at'] ?? DateTime(0),
-      createdAt: json['created_at'] ?? DateTime(0),
-      updatedAt: json['updated_at'] ?? DateTime(0),
+      createdAt: DateTime.parse(json['created_at']),
+      updatedAt: DateTime.parse(json['updated_at']),
     );
   }
 

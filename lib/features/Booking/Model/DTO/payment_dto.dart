@@ -28,10 +28,10 @@ class PaymentDto {
       method: json['method'] ?? '',
       status: json['status'] ?? '',
       transactionRef: json['transaction_ref'] ?? '',
-      proofImageUrl: json['proof_image_url'] ?? 0,
+      proofImageUrl: json['proof_image_url'] ?? '',
       paidAt: json['paid_at'],
       note: json['note'],
-      createdAt: json['created_at'] ?? DateTime(0),
+      createdAt: DateTime.parse(json['created_at']),
     );
   }
 
