@@ -6,7 +6,7 @@ abstract class BookingService {
     int page,
     int limit,
     String? status,
-    DateTime? date,
+    String? date, // Changed from DateTime? to String?
   );
   Future<BookingModel> updateBookingStatus(int bookingId);
   Future<BookingModel> udpatePaymentStatus(

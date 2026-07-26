@@ -75,11 +75,15 @@ class _ClubCardState extends State<ClubCard> {
   }
 
   void _navigateToAddSlot(int id) {
-    Navigator.pushNamed(context, AppRoutes.slot, arguments: id);
+     Navigator.pushNamed(
+      context,
+      AppRoutes.slot,
+      arguments: widget.club, // Pass the entire club model
+    );
   }
 
   void _navigateToEditSportClub() {
-    Navigator.pushNamed(context, AppRoutes.editSportClub);
+    Navigator.pushNamed(context, AppRoutes.editSportClub,arguments: c);
   }
 
   @override

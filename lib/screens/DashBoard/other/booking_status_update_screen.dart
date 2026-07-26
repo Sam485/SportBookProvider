@@ -25,7 +25,6 @@ class _BookingStatusUpdateSheetState extends State<BookingStatusUpdateSheet> {
   bool _isUpdating = false;
   String? _selectedStatus;
   String? _selectedPaymentStatus;
-  String? _note;
 
   // Available statuses
   final List<String> _availableStatuses = [
@@ -226,7 +225,6 @@ class _BookingStatusUpdateSheetState extends State<BookingStatusUpdateSheet> {
                 ),
               ),
               onChanged: (value) {
-                _note = value;
               },
             ),
           ),
@@ -442,7 +440,7 @@ class _BookingStatusUpdateSheetState extends State<BookingStatusUpdateSheet> {
 
     try {
       // Update booking status
-      final updatedBooking = await _bookingService.updateBookingStatus(
+      await _bookingService.updateBookingStatus(
         widget.booking.id,
       );
 
@@ -450,6 +448,7 @@ class _BookingStatusUpdateSheetState extends State<BookingStatusUpdateSheet> {
       if (_selectedPaymentStatus != widget.booking.paymentStatus) {
         // Note: You might need a separate API endpoint for payment status update
         // For now, we'll just show a message
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -472,6 +471,7 @@ class _BookingStatusUpdateSheetState extends State<BookingStatusUpdateSheet> {
         _isUpdating = false;
       });
 
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to update status: ${e.toString()}'),

@@ -3,6 +3,8 @@ import 'package:flutter_application_1/core/theme.dart';
 import 'package:flutter_application_1/routes/app_routes.dart';
 import 'package:flutter_application_1/features/Booking/Model/booking_model.dart';
 import 'package:flutter_application_1/features/Booking/Service/booking_service.dart';
+import 'package:flutter_application_1/features/SportClub/model/sport_club_model.dart';
+import 'package:flutter_application_1/features/SportClub/service/sport_club_service.dart';
 import 'package:flutter_application_1/core/di/service_locator.dart';
 
 class DashBoardScreen extends StatefulWidget {
@@ -14,50 +16,93 @@ class DashBoardScreen extends StatefulWidget {
 
 class _DashBoardScreenState extends State<DashBoardScreen> {
   final BookingService _bookingService = getIt<BookingService>();
+  final SportClubService _sportClubService = getIt<SportClubService>();
+
   bool _isLoading = false;
   List<BookingModel> _recentBookings = [];
+  List<SportClubModel> _sportClubs = [];
 
-  final List<StatCardData> _statsData = [
-    StatCardData(
-      title: "Today's Bookings",
-      value: '24',
-      description: '+3 vs yesterday',
-      desColor: Colors.green,
-    ),
-    StatCardData(
-      title: 'Revenue Today',
-      value: '\$480',
-      description: '+12%',
-      desColor: Colors.green,
-    ),
+  // Filter variables
+  int? _selectedSportClubId;
+  DateTime? _selectedDate;
+  String? _selectedStatus;
+  int _currentPage = 1;
+  final int _limit = 10;
+
+  // Statistics
+  int _totalBookings = 0;
+  double _totalRevenue = 0.0;
+  int _pendingBookings = 0;
+  int _confirmedBookings = 0;
+
+  final List<String> _statusOptions = [
+    'All',
+    'pending',
+    'confirmed',
+    'cancelled',
+    'completed',
   ];
 
   @override
   void initState() {
     super.initState();
-    _loadRecentBookings();
+    _loadSportClubs();
+  }
+
+  Future<void> _loadSportClubs() async {
+    try {
+      final clubs = await _sportClubService.getAllSportClub(1, 100, '');
+      if (mounted) {
+        setState(() {
+          _sportClubs = clubs;
+          if (_sportClubs.isNotEmpty) {
+            _selectedSportClubId = _sportClubs.first.id;
+            _loadRecentBookings();
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load sport clubs: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _loadRecentBookings() async {
+    if (_selectedSportClubId == null) return;
+
     setState(() {
       _isLoading = true;
     });
 
     try {
-      // Fetch bookings for a specific sport club (using ID 1 as example)
-      // You should replace this with the actual sport club ID
+      final status = _selectedStatus == 'All' ? null : _selectedStatus;
+
+      // Format date for API if selected
+      String? formattedDate;
+      if (_selectedDate != null) {
+        // Format as YYYY-MM-DD for API
+        formattedDate = _selectedDate!.toIso8601String().split('T').first;
+      }
+
       final bookings = await _bookingService.fetchBookingBySportClub(
-        1, // sportClubId
-        1, // page
-        5, // limit
-        null, // status
-        null, // date
+        _selectedSportClubId!,
+        _currentPage,
+        _limit,
+        status,
+        formattedDate, // Pass formatted date string instead of DateTime
       );
 
       if (mounted) {
         setState(() {
           _recentBookings = bookings;
           _isLoading = false;
+          _calculateStatistics(bookings);
         });
       }
     } catch (e) {
@@ -75,6 +120,20 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
     }
   }
 
+  void _calculateStatistics(List<BookingModel> bookings) {
+    _totalBookings = bookings.length;
+    _totalRevenue = bookings.fold(
+      0.0,
+      (sum, booking) => sum + booking.totalAmount,
+    );
+    _pendingBookings = bookings
+        .where((b) => b.status.toLowerCase() == 'pending')
+        .length;
+    _confirmedBookings = bookings
+        .where((b) => b.status.toLowerCase() == 'confirmed')
+        .length;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -87,13 +146,16 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
               // Header
               SliverToBoxAdapter(child: _buildHeader()),
 
+              // Filter Section
+              SliverToBoxAdapter(child: _buildFilterSection()),
+
               // Stats Grid
               SliverPadding(
                 padding: const EdgeInsets.all(8.0),
                 sliver: SliverGrid(
                   delegate: SliverChildBuilderDelegate(
-                    (context, index) => _buildStatCard(_statsData[index]),
-                    childCount: _statsData.length,
+                    (context, index) => _buildStatCard(_getStatsData()[index]),
+                    childCount: _getStatsData().length,
                   ),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
@@ -146,8 +208,283 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
     );
   }
 
+  // ── Filter Section ──────────────────────────────────────────────────────
+  Widget _buildFilterSection() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.all(12),
+      decoration: AppTheme.cardDecorationAdaptive(context),
+      child: Column(
+        children: [
+          // Sport Club Dropdown
+          Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: _buildDropdownField(
+                  value: _selectedSportClubId,
+                  items: _sportClubs.map((club) {
+                    return DropdownMenuItem<int>(
+                      value: club.id,
+                      child: Text(
+                        club.name,
+                        style: TextStyle(
+                          color: isDark ? Colors.white : AppTheme.kLightText,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedSportClubId = value;
+                      _currentPage = 1;
+                    });
+                    _loadRecentBookings();
+                  },
+                  hint: 'Select Sport Club',
+                  icon: Icons.sports,
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Date Picker
+              Expanded(child: _buildDatePickerButton(isDark)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // Status Dropdown and Clear Filters
+          Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: _buildDropdownField(
+                  value: _selectedStatus ?? 'All',
+                  items: _statusOptions.map((status) {
+                    return DropdownMenuItem<String>(
+                      value: status,
+                      child: Text(
+                        status.toUpperCase(),
+                        style: TextStyle(
+                          color: isDark ? Colors.white : AppTheme.kLightText,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedStatus = value == 'All' ? null : value;
+                      _currentPage = 1;
+                    });
+                    _loadRecentBookings();
+                  },
+                  hint: 'Status',
+                  icon: Icons.filter_list,
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Clear Filters Button
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _clearFilters,
+                  icon: const Icon(Icons.clear_all, size: 18),
+                  label: const Text('Clear'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    side: BorderSide(
+                      color: isDark
+                          ? Colors.grey.shade600
+                          : Colors.grey.shade300,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDropdownField<T>({
+    required T? value,
+    required List<DropdownMenuItem<T>> items,
+    required ValueChanged<T?> onChanged,
+    required String hint,
+    required IconData icon,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.kCardAlt : AppTheme.kLightCardAlt,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isDark ? AppTheme.kBorder : AppTheme.kLightBorder,
+          width: 1,
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<T>(
+          value: value,
+          isExpanded: true,
+          hint: Row(
+            children: [
+              Icon(icon, color: AppTheme.kAccent, size: 18),
+              const SizedBox(width: 8),
+              Text(
+                hint,
+                style: TextStyle(
+                  color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+          items: items,
+          onChanged: onChanged,
+          dropdownColor: isDark ? AppTheme.kBg : Colors.white,
+          style: TextStyle(
+            color: isDark ? Colors.white : AppTheme.kLightText,
+            fontSize: 13,
+          ),
+          icon: Icon(
+            Icons.arrow_drop_down,
+            color: isDark ? Colors.white70 : Colors.grey.shade600,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDatePickerButton(bool isDark) {
+    return InkWell(
+      onTap: () async {
+        final date = await showDatePicker(
+          context: context,
+          initialDate: _selectedDate ?? DateTime.now(),
+          firstDate: DateTime(2020),
+          lastDate: DateTime(2030),
+          builder: (context, child) {
+            return Theme(
+              data: Theme.of(context).copyWith(
+                colorScheme: ColorScheme.dark(
+                  primary: AppTheme.kAccent,
+                  onPrimary: Colors.white,
+                  surface: isDark ? AppTheme.kBg : Colors.white,
+                  onSurface: isDark ? Colors.white : AppTheme.kLightText,
+                ),
+              ),
+              child: child!,
+            );
+          },
+        );
+        if (date != null) {
+          setState(() {
+            _selectedDate = date;
+            _currentPage = 1;
+          });
+          _loadRecentBookings();
+        }
+      },
+      child: Container(
+        height: 48,
+        decoration: BoxDecoration(
+          color: isDark ? AppTheme.kCardAlt : AppTheme.kLightCardAlt,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isDark ? AppTheme.kBorder : AppTheme.kLightBorder,
+            width: 1,
+          ),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Row(
+          children: [
+            Icon(Icons.calendar_today, color: AppTheme.kAccent, size: 18),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                _selectedDate != null
+                    ? '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}'
+                    : 'Select Date',
+                style: TextStyle(
+                  color: _selectedDate != null
+                      ? (isDark ? Colors.white : AppTheme.kLightText)
+                      : (isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub),
+                  fontSize: 13,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            if (_selectedDate != null)
+              IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                icon: Icon(Icons.close, size: 16, color: Colors.grey.shade400),
+                onPressed: () {
+                  setState(() {
+                    _selectedDate = null;
+                  });
+                  _loadRecentBookings();
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _clearFilters() {
+    setState(() {
+      _selectedStatus = null;
+      _selectedDate = null;
+      _currentPage = 1;
+    });
+    _loadRecentBookings();
+  }
+
   // ── Stat Card ──────────────────────────────────────────────────────────
+  List<StatCardData> _getStatsData() {
+    return [
+      StatCardData(
+        title: "Total Bookings",
+        value: '$_totalBookings',
+        description: 'All bookings',
+        desColor: AppTheme.kAccent,
+        icon: Icons.bookmark,
+      ),
+      StatCardData(
+        title: 'Revenue',
+        value: '\$${_totalRevenue.toStringAsFixed(0)}',
+        description: 'Total revenue',
+        desColor: Colors.green,
+        icon: Icons.attach_money,
+      ),
+      StatCardData(
+        title: 'Pending',
+        value: '$_pendingBookings',
+        description: 'Waiting approval',
+        desColor: Colors.orange,
+        icon: Icons.pending_actions,
+      ),
+      StatCardData(
+        title: 'Confirmed',
+        value: '$_confirmedBookings',
+        description: 'Approved bookings',
+        desColor: Colors.blue,
+        icon: Icons.check_circle,
+      ),
+    ];
+  }
+
   Widget _buildStatCard(StatCardData data) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       decoration: AppTheme.cardDecorationAdaptive(context),
       child: Padding(
@@ -156,25 +493,34 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              data.title,
-              style: AppTheme.tsBodyAdaptive(
-                context,
-              ).copyWith(color: Colors.grey[600]),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  data.title,
+                  style: AppTheme.tsBodyAdaptive(context).copyWith(
+                    color: isDark ? Colors.grey.shade400 : Colors.grey[600],
+                    fontSize: 12,
+                  ),
+                ),
+                Icon(data.icon, color: data.desColor, size: 20),
+              ],
             ),
             const SizedBox(height: 8),
             Text(
               data.value,
               style: AppTheme.tsTitleAdaptive(
                 context,
-              ).copyWith(fontSize: 28, fontWeight: FontWeight.bold),
+              ).copyWith(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),
             Text(
               data.description,
-              style: AppTheme.tsSubAdaptive(
-                context,
-              ).copyWith(color: data.desColor, fontWeight: FontWeight.w500),
+              style: AppTheme.tsSubAdaptive(context).copyWith(
+                color: data.desColor,
+                fontWeight: FontWeight.w500,
+                fontSize: 11,
+              ),
             ),
           ],
         ),
@@ -340,7 +686,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
           Icon(Icons.calendar_today, size: 60, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
-            'No bookings yet',
+            'No bookings found',
             style: TextStyle(
               color: Colors.grey[600],
               fontSize: 16,
@@ -349,7 +695,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Bookings will appear here',
+            'Try adjusting your filters',
             style: TextStyle(color: Colors.grey[400], fontSize: 14),
           ),
         ],
@@ -417,6 +763,23 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
     ];
     return '${days[now.weekday - 1]}, ${now.day} ${months[now.month - 1]} ${now.year}';
   }
+}
+
+// ── Stat Card Data Class ──────────────────────────────────────────────────
+class StatCardData {
+  final String title;
+  final String value;
+  final String description;
+  final Color desColor;
+  final IconData icon;
+
+  StatCardData({
+    required this.title,
+    required this.value,
+    required this.description,
+    required this.desColor,
+    required this.icon,
+  });
 }
 
 // ── Booking Detail Sheet Widget ────────────────────────────────────────
@@ -892,21 +1255,7 @@ class _BookingDetailSheetState extends State<_BookingDetailSheet> {
     });
 
     try {
-      // Update booking status
-      final updatedBooking = await _bookingService.updateBookingStatus(
-        widget.booking.id,
-      );
-
-      // Update payment status if changed
-      if (_selectedPaymentStatus != widget.booking.paymentStatus) {
-        // Note: You might need a separate API endpoint for payment status
-        // For now, we'll just show a message
-      }
-
-      // Update note if changed
-      if (_noteController.text != widget.booking.note) {
-        // Note: You might need a separate API endpoint for updating note
-      }
+      await _bookingService.updateBookingStatus(widget.booking.id);
 
       if (mounted) {
         setState(() {
@@ -983,37 +1332,4 @@ class _BookingDetailSheetState extends State<_BookingDetailSheet> {
     final minutes = time.inMinutes.remainder(60).toString().padLeft(2, '0');
     return '$hours:$minutes';
   }
-}
-
-// ── Data Classes ──────────────────────────────────────────────────────
-class StatCardData {
-  final String title;
-  final String value;
-  final String description;
-  final Color desColor;
-
-  StatCardData({
-    required this.title,
-    required this.value,
-    required this.description,
-    required this.desColor,
-  });
-}
-
-class RecentBooking {
-  final String inital;
-  final String userName;
-  final String courtName;
-  final String time;
-  final String status;
-  final Color statusColor;
-
-  RecentBooking({
-    required this.inital,
-    required this.userName,
-    required this.courtName,
-    required this.time,
-    required this.status,
-    required this.statusColor,
-  });
 }

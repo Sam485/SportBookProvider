@@ -42,13 +42,10 @@ class CreatedSportClubsDto {
             imageFiles.add(
               await MultipartFile.fromFile(image.path, filename: fileName),
             );
-          } else {
-          }
-        } else {
-        }
-      // ignore: empty_catches
-      } catch (e) {
-      }
+          } else {}
+        } else {}
+        // ignore: empty_catches
+      } catch (e) {}
     }
 
     // Format duration
@@ -75,8 +72,7 @@ class CreatedSportClubsDto {
     // Add images if any exist
     if (imageFiles.isNotEmpty) {
       formData.files.addAll(imageFiles.map((file) => MapEntry('images', file)));
-    } else {
-    }
+    } else {}
 
     return formData;
   }

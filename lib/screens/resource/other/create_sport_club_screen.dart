@@ -6,11 +6,16 @@ import 'package:flutter_application_1/core/util/image_utils.dart';
 import 'package:flutter_application_1/features/Category/model/category_model.dart';
 import 'package:flutter_application_1/features/Category/service/category_service.dart';
 import 'package:flutter_application_1/features/SportClub/model/dto/created_sport_clubs_dto.dart';
+import 'package:flutter_application_1/features/SportClub/model/dto/update_sport_club_dto.dart';
+import 'package:flutter_application_1/features/SportClub/model/dto/update_sport_club_images.dart';
+import 'package:flutter_application_1/features/SportClub/model/sport_club_model.dart';
 import 'package:flutter_application_1/features/SportClub/service/sport_club_service.dart';
 import 'package:flutter_application_1/widgets/common/map_picker_screen.dart';
 
 class CreateSportClubScreen extends StatefulWidget {
-  const CreateSportClubScreen({super.key});
+  final SportClubModel? clubToEdit;
+
+  const CreateSportClubScreen({super.key, this.clubToEdit});
 
   @override
   State<CreateSportClubScreen> createState() => _CreateSportClubScreenState();
@@ -26,22 +31,64 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
   final _locationController = TextEditingController();
   final _descriptionController = TextEditingController();
   final CategoryService categoryService = getIt<CategoryService>();
+  final SportClubService sportClubService = getIt<SportClubService>();
+
   // Variables for other fields
   bool? _isOpen;
   TimeOfDay? _openTime;
   TimeOfDay? _closeTime;
   List<File> _images = [];
+  List<String> _keptImageUrls = [];
   bool _isSubmitting = false;
+  bool _isEditMode = false;
+  int? _editingClubId;
 
   // Category selection
   CategoriesModel? _selectedCategory;
   List<CategoriesModel> _categories = [];
   bool _isLoadingCategories = false;
 
+  // Original images for edit mode
+  List<String> _originalImageUrls = [];
+
   @override
   void initState() {
     super.initState();
     _loadCategories();
+    _initializeWithEditData();
+  }
+
+  void _initializeWithEditData() {
+    final club = widget.clubToEdit;
+    if (club != null) {
+      _isEditMode = true;
+      _editingClubId = club.id;
+
+      // Fill text fields
+      _nameController.text = club.name;
+      _latController.text = club.lat.toString();
+      _lngController.text = club.lng.toString();
+      _locationController.text = club.location;
+      _descriptionController.text = club.description;
+
+      // Fill other fields
+      _isOpen = club.isOpen;
+
+      // Convert Duration to TimeOfDay
+      _openTime = _durationToTimeOfDay(club.openTime);
+      _closeTime = _durationToTimeOfDay(club.closeTime);
+
+      // Store original image URLs
+      _originalImageUrls = club.imageUrls.map((img) => img).toList();
+      _keptImageUrls = List.from(_originalImageUrls);
+    }
+  }
+
+  // Helper to convert Duration to TimeOfDay
+  TimeOfDay _durationToTimeOfDay(Duration duration) {
+    final hours = duration.inHours.remainder(24);
+    final minutes = duration.inMinutes.remainder(60);
+    return TimeOfDay(hour: hours, minute: minutes);
   }
 
   @override
@@ -67,6 +114,18 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
         setState(() {
           _categories = categories;
           _isLoadingCategories = false;
+
+          // If in edit mode, select the category
+          if (_isEditMode && widget.clubToEdit != null) {
+            final clubCategories = widget.clubToEdit!.categories;
+            if (clubCategories.isNotEmpty) {
+              final categoryId = clubCategories.first.id;
+              _selectedCategory = _categories.firstWhere(
+                (cat) => cat.id == categoryId,
+                orElse: () => _categories.first,
+              );
+            }
+          }
         });
       }
     } catch (e) {
@@ -85,8 +144,11 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
   }
 
   // Convert TimeOfDay to Duration
+  Duration _timeToDuration(TimeOfDay time) {
+    return Duration(hours: time.hour, minutes: time.minute);
+  }
 
-  // Pick images from gallery with custom dialog
+  // Pick images from gallery
   Future<void> _pickImages() async {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -139,7 +201,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Select Images',
+                            _isEditMode ? 'Update Images' : 'Select Images',
                             style: TextStyle(
                               color: isDark
                                   ? Colors.white
@@ -222,26 +284,20 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
       },
     );
   }
-  
-  Future<void> _handleGalleryPick(BuildContext dialogContext) async {
-    // Close the dialog first
-    Navigator.pop(dialogContext, false);
 
-    // Check if widget is still mounted
+  Future<void> _handleGalleryPick(BuildContext dialogContext) async {
+    Navigator.pop(dialogContext, false);
     if (!mounted) return;
 
     try {
-      // Show loading indicator
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) => const Center(child: CircularProgressIndicator()),
       );
 
-      // Pick and save images
       final savedImages = await ImageUtils.pickMultipleImages(context);
 
-      // Close loading dialog
       if (mounted) {
         Navigator.pop(context);
       }
@@ -251,7 +307,6 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
           _images = savedImages;
         });
 
-        // Show success message
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -272,12 +327,8 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
         );
       }
     } catch (e) {
-      // Close loading dialog if still open
       if (mounted) {
         Navigator.pop(context);
-      }
-
-      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error selecting images: ${e.toString()}'),
@@ -289,14 +340,10 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
   }
 
   Future<void> _handleCameraPick(BuildContext dialogContext) async {
-    // Close the dialog first
     Navigator.pop(dialogContext, false);
-
-    // Check if widget is still mounted
     if (!mounted) return;
 
     try {
-      // Show loading indicator
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -305,7 +352,6 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
 
       final savedImage = await ImageUtils.pickImageFromCamera(context);
 
-      // Close loading dialog
       if (mounted) {
         Navigator.pop(context);
       }
@@ -315,7 +361,6 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
           _images.add(savedImage);
         });
 
-        // Show success message
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -327,12 +372,8 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
         }
       }
     } catch (e) {
-      // Close loading dialog if still open
       if (mounted) {
         Navigator.pop(context);
-      }
-
-      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error taking photo: ${e.toString()}'),
@@ -343,7 +384,6 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
     }
   }
 
-  // Helper widget for picker options
   Widget _buildPickerOption({
     required IconData icon,
     required String title,
@@ -410,14 +450,8 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
     );
   }
 
-  // Remove image
-  void _removeImage(int index) {
-    setState(() {
-      _images.removeAt(index);
-    });
-  }
 
-  // ── Open Map Picker ──────────────────────────────────────────────────────
+  // Open Map Picker
   Future<void> _openMapPicker() async {
     final result = await Navigator.push<Map<String, dynamic>>(
       context,
@@ -446,7 +480,6 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
   }
 
   // Submit form
-  // Submit form - Update this method
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
       // Validate location is selected
@@ -471,8 +504,8 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
         return;
       }
 
-      // Validate images
-      if (_images.isEmpty) {
+      // Validate images for create mode
+      if (!_isEditMode && _images.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Please upload at least one image'),
@@ -522,7 +555,17 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
         _isSubmitting = true;
       });
 
-      // Create DTO with all data
+      if (_isEditMode && _editingClubId != null) {
+        _updateSportClub(lat, lng);
+      } else {
+        _createSportClub(lat, lng);
+      }
+    }
+  }
+
+  // Create method
+  Future<void> _createSportClub(double lat, double lng) async {
+    try {
       final sportClubDto = CreatedSportClubsDto(
         name: _nameController.text,
         lat: lat,
@@ -536,20 +579,6 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
         images: _images,
       );
 
-      // Call the API
-      _createSportClub(sportClubDto);
-    }
-  }
-
-  // Add helper method to convert TimeOfDay to Duration
-  Duration _timeToDuration(TimeOfDay time) {
-    return Duration(hours: time.hour, minutes: time.minute);
-  }
-
-  // Add method to create sport club
-  Future<void> _createSportClub(CreatedSportClubsDto sportClubDto) async {
-    try {
-      final sportClubService = getIt<SportClubService>();
       final createdClub = await sportClubService.createSportClub(sportClubDto);
 
       if (mounted) {
@@ -566,7 +595,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
             duration: const Duration(seconds: 2),
           ),
         );
-        Navigator.pop(context, true); // Return true to indicate success
+        Navigator.pop(context, true);
       }
     } catch (e) {
       if (mounted) {
@@ -585,9 +614,192 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
     }
   }
 
+  // Update method - FIXED to use correct DTOs
+  Future<void> _updateSportClub(double lat, double lng) async {
+    try {
+      final clubId = _editingClubId!;
+
+      // Check if images were changed
+      final imagesChanged =
+          _images.isNotEmpty ||
+          _keptImageUrls.length != _originalImageUrls.length;
+
+      if (imagesChanged) {
+        // Update with images using UpdateSportClubImages
+        final updateImagesDto = UpdateSportClubImages(
+          name: _nameController.text,
+          isOpen: _isOpen!,
+          imagesChanged: true,
+          keptImageUrls: _keptImageUrls,
+          images: _images.isNotEmpty ? _images : null,
+        );
+
+        final updatedClub = await sportClubService.updateSportClubImages(
+          updateImagesDto,
+          clubId,
+        );
+
+        if (mounted) {
+          setState(() {
+            _isSubmitting = false;
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Club "${updatedClub.name}" updated successfully! ✏️',
+              ),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+          Navigator.pop(context, true);
+        }
+      } else {
+        // Update without images using UpdateSportClubDto
+        final updateDto = UpdateSportClubDto(
+          name: _nameController.text,
+          location: _locationController.text,
+          description: _descriptionController.text,
+          openTime: _timeToDuration(_openTime!),
+          closeTime: _timeToDuration(_closeTime!),
+          lat: lat,
+          lng: lng,
+          isOpen: _isOpen!,
+          categoryId: _selectedCategory!.id, // List of category IDs
+        );
+
+        final updatedClub = await sportClubService.updateSportClub(
+          updateDto,
+          clubId,
+        );
+
+        if (mounted) {
+          setState(() {
+            _isSubmitting = false;
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Club "${updatedClub.name}" updated successfully! ✏️',
+              ),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+          Navigator.pop(context, true);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update club: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
+  // Time picker helper
+  Future<void> _selectTime({required bool isOpen}) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: isOpen
+          ? (_openTime ?? TimeOfDay.now())
+          : (_closeTime ?? TimeOfDay.now()),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme(
+              primary: AppTheme.kAccent,
+              primaryContainer: AppTheme.kAccent.withValues(alpha: 0.1),
+              secondary: AppTheme.kAccent,
+              surface: isDark ? AppTheme.kBg : Colors.white,
+              error: Colors.red,
+              onPrimary: Colors.white,
+              onSecondary: Colors.white,
+              onSurface: isDark ? Colors.white : AppTheme.kLightText,
+              onError: Colors.white,
+              brightness: isDark ? Brightness.dark : Brightness.light,
+            ),
+            cardColor: isDark ? AppTheme.kCardAlt : Colors.white,
+            scaffoldBackgroundColor: isDark ? AppTheme.kBg : Colors.white,
+            timePickerTheme: TimePickerThemeData(
+              backgroundColor: isDark ? AppTheme.kBg : Colors.white,
+              dialBackgroundColor: isDark
+                  ? AppTheme.kCardAlt
+                  : Colors.grey.shade50,
+              dialHandColor: AppTheme.kAccent,
+              hourMinuteTextColor: isDark ? Colors.white : AppTheme.kLightText,
+              hourMinuteColor: isDark
+                  ? AppTheme.kCardAlt
+                  : Colors.grey.shade100,
+              dayPeriodTextColor: isDark ? Colors.white : AppTheme.kLightText,
+              dayPeriodColor: isDark ? AppTheme.kCardAlt : Colors.grey.shade100,
+              inputDecorationTheme: InputDecorationTheme(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: isDark ? AppTheme.kBorder : AppTheme.kLightBorder,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppTheme.kAccent, width: 2),
+                ),
+                hintStyle: TextStyle(
+                  color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
+                ),
+                labelStyle: TextStyle(
+                  color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
+                ),
+              ),
+              helpTextStyle: TextStyle(
+                color: isDark ? Colors.white : AppTheme.kLightText,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+              dialTextStyle: TextStyle(
+                color: isDark ? Colors.white : AppTheme.kLightText,
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+              ),
+              entryModeIconColor: AppTheme.kAccent,
+            ),
+            dialogTheme: DialogThemeData(
+              backgroundColor: isDark ? AppTheme.kBg : Colors.white,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() {
+        if (isOpen) {
+          _openTime = picked;
+        } else {
+          _closeTime = picked;
+        }
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final title = _isEditMode ? 'Edit Sport Club' : 'Create Sport Club';
 
     return Scaffold(
       backgroundColor: isDark ? AppTheme.kBg : AppTheme.kLightBg,
@@ -601,10 +813,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
             color: isDark ? Colors.white : AppTheme.kLightText,
           ),
         ),
-        title: Text(
-          'Create Sport Club',
-          style: AppTheme.tsTitleAdaptive(context),
-        ),
+        title: Text(title, style: AppTheme.tsTitleAdaptive(context)),
       ),
       body: SafeArea(
         child: Form(
@@ -996,6 +1205,148 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
 
   // ── Image Section ──────────────────────────────────────────────────────
   Widget _buildImageSection(bool isDark) {
+    // Combine original images and new images for display
+    List<Widget> imageWidgets = [];
+
+    // Display original images if in edit mode
+    if (_isEditMode) {
+      for (int i = 0; i < _originalImageUrls.length; i++) {
+        final url = _originalImageUrls[i];
+        // Check if this image is being kept
+        final isKept = _keptImageUrls.contains(url);
+        if (isKept) {
+          imageWidgets.add(
+            Stack(
+              children: [
+                Container(
+                  width: 100,
+                  height: 100,
+                  margin: const EdgeInsets.only(right: 8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    image: DecorationImage(
+                      image: NetworkImage(url),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 4,
+                  right: 12,
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _keptImageUrls.remove(url);
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: Colors.black54,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 14,
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: 4,
+                  right: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withValues(alpha: 0.8),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Text(
+                      'Existing',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 8,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+      }
+    }
+
+    // Display new images
+    for (int i = 0; i < _images.length; i++) {
+      final index = i;
+      imageWidgets.add(
+        Stack(
+          children: [
+            Container(
+              width: 100,
+              height: 100,
+              margin: const EdgeInsets.only(right: 8),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                image: DecorationImage(
+                  image: FileImage(_images[i]),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            Positioned(
+              top: 4,
+              right: 12,
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _images.removeAt(index);
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    color: Colors.black54,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.close, color: Colors.white, size: 14),
+                ),
+              ),
+            ),
+            if (_isEditMode)
+              Positioned(
+                bottom: 4,
+                right: 12,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withValues(alpha: 0.8),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Text(
+                    'New',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 8,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -1014,7 +1365,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
               Icon(Icons.photo_library, color: AppTheme.kAccent, size: 20),
               const SizedBox(width: 8),
               Text(
-                'Club Images',
+                _isEditMode ? 'Update Images' : 'Club Images',
                 style: TextStyle(
                   color: isDark ? Colors.white : AppTheme.kLightText,
                   fontSize: 16,
@@ -1023,7 +1374,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
               ),
               const Spacer(),
               Text(
-                '${_images.length}/5',
+                '${_keptImageUrls.length + _images.length}/5',
                 style: TextStyle(
                   color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                   fontSize: 12,
@@ -1034,99 +1385,67 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
           const SizedBox(height: 12),
 
           // Image grid
-          if (_images.isNotEmpty)
+          if (imageWidgets.isNotEmpty)
             SizedBox(
               height: 100,
-              child: ListView.builder(
+              child: ListView(
                 scrollDirection: Axis.horizontal,
-                itemCount: _images.length,
-                itemBuilder: (context, index) {
-                  return Stack(
-                    children: [
-                      Container(
-                        width: 100,
-                        height: 100,
-                        margin: const EdgeInsets.only(right: 8),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          image: DecorationImage(
-                            image: FileImage(_images[index]),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        top: 4,
-                        right: 12,
-                        child: GestureDetector(
-                          onTap: () => _removeImage(index),
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(
-                              color: Colors.black54,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.close,
-                              color: Colors.white,
-                              size: 14,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                },
+                children: imageWidgets,
               ),
             ),
 
-          if (_images.isNotEmpty) const SizedBox(height: 12),
+          if (imageWidgets.isNotEmpty) const SizedBox(height: 12),
 
           // Upload button
-          GestureDetector(
-            onTap: _images.length < 5 ? _pickImages : null,
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                color: isDark ? Colors.white10 : Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: AppTheme.kAccent.withValues(alpha: 0.3),
-                  style: BorderStyle.solid,
-                  width: 2,
+          if (_keptImageUrls.length + _images.length < 5)
+            GestureDetector(
+              onTap: _pickImages,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.white10 : Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppTheme.kAccent.withValues(alpha: 0.3),
+                    style: BorderStyle.solid,
+                    width: 2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.kAccent.withValues(alpha: 0.1),
+                      blurRadius: 8,
+                    ),
+                  ],
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.kAccent.withValues(alpha: 0.1),
-                    blurRadius: 8,
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.cloud_upload,
-                    color: _images.length < 5 ? AppTheme.kAccent : Colors.grey,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    _images.isEmpty
-                        ? 'Tap to upload images'
-                        : 'Add more images (${5 - _images.length} remaining)',
-                    style: TextStyle(
-                      color: _images.length < 5
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.cloud_upload,
+                      color: _keptImageUrls.length + _images.length < 5
                           ? AppTheme.kAccent
                           : Colors.grey,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    Text(
+                      _images.isEmpty && _keptImageUrls.isEmpty
+                          ? (_isEditMode
+                                ? 'Add new images'
+                                : 'Tap to upload images')
+                          : 'Add more images (${5 - (_keptImageUrls.length + _images.length)} remaining)',
+                      style: TextStyle(
+                        color: _keptImageUrls.length + _images.length < 5
+                            ? AppTheme.kAccent
+                            : Colors.grey,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -1318,94 +1637,11 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
     );
   }
 
-  // ── Select Time (Updated with Theme) ─────────────────────────────────
-  Future<void> _selectTime({required bool isOpen}) async {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme(
-              primary: AppTheme.kAccent,
-              primaryContainer: AppTheme.kAccent.withValues(alpha: 0.1),
-              secondary: AppTheme.kAccent,
-              surface: isDark ? AppTheme.kBg : Colors.white,
-              error: Colors.red,
-              onPrimary: Colors.white,
-              onSecondary: Colors.white,
-              onSurface: isDark ? Colors.white : AppTheme.kLightText,
-              onError: Colors.white,
-              brightness: isDark ? Brightness.dark : Brightness.light,
-            ),
-            cardColor: isDark ? AppTheme.kCardAlt : Colors.white,
-            scaffoldBackgroundColor: isDark ? AppTheme.kBg : Colors.white,
-            timePickerTheme: TimePickerThemeData(
-              backgroundColor: isDark ? AppTheme.kBg : Colors.white,
-              dialBackgroundColor: isDark
-                  ? AppTheme.kCardAlt
-                  : Colors.grey.shade50,
-              dialHandColor: AppTheme.kAccent,
-              hourMinuteTextColor: isDark ? Colors.white : AppTheme.kLightText,
-              hourMinuteColor: isDark
-                  ? AppTheme.kCardAlt
-                  : Colors.grey.shade100,
-              dayPeriodTextColor: isDark ? Colors.white : AppTheme.kLightText,
-              dayPeriodColor: isDark ? AppTheme.kCardAlt : Colors.grey.shade100,
-              inputDecorationTheme: InputDecorationTheme(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: isDark ? AppTheme.kBorder : AppTheme.kLightBorder,
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: AppTheme.kAccent, width: 2),
-                ),
-                hintStyle: TextStyle(
-                  color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
-                ),
-                labelStyle: TextStyle(
-                  color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
-                ),
-              ),
-              helpTextStyle: TextStyle(
-                color: isDark ? Colors.white : AppTheme.kLightText,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-              dialTextStyle: TextStyle(
-                color: isDark ? Colors.white : AppTheme.kLightText,
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-              ),
-              entryModeIconColor: AppTheme.kAccent,
-            ),
-            dialogTheme: DialogThemeData(
-              backgroundColor: isDark ? AppTheme.kBg : Colors.white,
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (picked != null) {
-      setState(() {
-        if (isOpen) {
-          _openTime = picked;
-        } else {
-          _closeTime = picked;
-        }
-      });
-    }
-  }
-
   // ── Submit Button ──────────────────────────────────────────────────────
   Widget _buildSubmitButton(bool isDark) {
+    final buttonText = _isEditMode ? 'Update Club' : 'Create Club';
+    final icon = _isEditMode ? Icons.edit : Icons.check_circle_outline;
+
     return Container(
       width: double.infinity,
       height: 56,
@@ -1445,14 +1681,10 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.check_circle_outline,
-                    color: Colors.white,
-                    size: 24,
-                  ),
+                  Icon(icon, color: Colors.white, size: 24),
                   const SizedBox(width: 12),
                   Text(
-                    'Create Club',
+                    buttonText,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 18,

@@ -1,29 +1,17 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/core/theme.dart';
+import 'package:flutter_application_1/features/Slot/model/dto/create_slot_dto.dart';
+import 'package:flutter_application_1/features/Slot/service/slot_service.dart';
+import 'package:flutter_application_1/features/SportClub/model/dto/category_dto.dart';
+import 'package:flutter_application_1/features/SportClub/model/sport_club_model.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:get_it/get_it.dart';
 
 class AdjustSlotScreen extends StatefulWidget {
-  final int? sportClubId;
-  final String? name;
-  final String? description;
-  final double? price;
-  final int? capacity;
-  final bool? isAvailable;
-  final int? categoryId;
-  final File? image;
+  final SportClubModel sportClub;
 
-  const AdjustSlotScreen({
-    super.key,
-    this.sportClubId,
-    this.name,
-    this.description,
-    this.price,
-    this.capacity,
-    this.isAvailable,
-    this.categoryId,
-    this.image,
-  });
+  const AdjustSlotScreen({super.key, required this.sportClub});
 
   @override
   State<AdjustSlotScreen> createState() => _AdjustSlotScreenState();
@@ -36,31 +24,24 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
   final _descriptionController = TextEditingController();
   final _priceController = TextEditingController();
   final _capacityController = TextEditingController();
-  final _categoryIdController = TextEditingController();
 
   // ── State variables ──────────────────────────────────────────────────
   bool _isAvailable = true;
   File? _imageFile;
   bool _isSubmitting = false;
-  bool _isEditing = false;
+
+  // Category related - using categories from SportClubModel
+  CategoryDto? _selectedCategory;
+
+  // ── Services ──────────────────────────────────────────────────────────
+  SlotService get _slotService => GetIt.instance<SlotService>();
 
   @override
   void initState() {
     super.initState();
-    _initializeData();
-  }
-
-  void _initializeData() {
-    // Populate fields with existing data if editing
-    if (widget.name != null) {
-      _isEditing = true;
-      _nameController.text = widget.name!;
-      _descriptionController.text = widget.description ?? '';
-      _priceController.text = widget.price?.toString() ?? '';
-      _capacityController.text = widget.capacity?.toString() ?? '';
-      _categoryIdController.text = widget.categoryId?.toString() ?? '';
-      _isAvailable = widget.isAvailable ?? true;
-      _imageFile = widget.image;
+    // Auto-select first category if available
+    if (widget.sportClub.categories.isNotEmpty) {
+      _selectedCategory = widget.sportClub.categories.first;
     }
   }
 
@@ -70,7 +51,6 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
     _descriptionController.dispose();
     _priceController.dispose();
     _capacityController.dispose();
-    _categoryIdController.dispose();
     super.dispose();
   }
 
@@ -98,35 +78,72 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
   }
 
   // ── Submit Form ──────────────────────────────────────────────────────
-  void _submitForm() {
+  Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
+      if (_imageFile == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please select an image for the slot'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+
+      if (_selectedCategory == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please select a category'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+
       setState(() {
         _isSubmitting = true;
       });
 
-      // Collect all data
+      try {
+        final createDto = CreateSlotDto(
+          sportClubId: widget.sportClub.id!,
+          name: _nameController.text.trim(),
+          description: _descriptionController.text.trim(),
+          price: double.parse(_priceController.text),
+          capacity: int.parse(_capacityController.text),
+          isAvailable: _isAvailable,
+          categoryId: _selectedCategory!.id,
+          image: _imageFile!,
+        );
 
-      // Simulate API call
-      Future.delayed(const Duration(seconds: 2), () {
+        await _slotService.createSlot(createDto);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Slot created successfully! 🎉'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+          Navigator.pop(context, true);
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } finally {
         if (mounted) {
           setState(() {
             _isSubmitting = false;
           });
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                _isEditing
-                    ? 'Slot updated successfully! ✨'
-                    : 'Slot created successfully! 🎉',
-              ),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 2),
-            ),
-          );
-          Navigator.pop(context);
         }
-      });
+      }
     }
   }
 
@@ -146,10 +163,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
             color: isDark ? Colors.white : AppTheme.kLightText,
           ),
         ),
-        title: Text(
-          _isEditing ? 'Edit Slot' : 'Create Slot',
-          style: AppTheme.tsTitleAdaptive(context),
-        ),
+        title: Text('Create Slot', style: AppTheme.tsTitleAdaptive(context)),
       ),
       body: SafeArea(
         child: Form(
@@ -245,13 +259,8 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    _buildTextField(
-                      controller: _categoryIdController,
-                      label: 'Category ID',
-                      hint: 'Enter category ID',
-                      icon: Icons.category,
-                      keyboardType: TextInputType.number,
-                    ),
+                    // ── Category Dropdown ─────────────────────────────────
+                    _buildCategoryDropdown(isDark),
                     const SizedBox(height: 24),
 
                     // ── Availability ───────────────────────────────────────
@@ -265,88 +274,9 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                     _buildAvailabilityToggle(isDark),
                     const SizedBox(height: 24),
 
-                    // ── Sport Club ID (Read-only) ─────────────────────────
-                    if (widget.sportClubId != null) ...[
-                      _buildSectionTitle('Sport Club', Icons.sports, isDark),
-                      const SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? AppTheme.kCardAlt
-                              : AppTheme.kLightCardAlt,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: isDark
-                                ? AppTheme.kBorder
-                                : AppTheme.kLightBorder,
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: AppTheme.kAccent.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Icon(
-                                Icons.sports,
-                                color: AppTheme.kAccent,
-                                size: 20,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Club ID',
-                                    style: TextStyle(
-                                      color: isDark
-                                          ? AppTheme.kTextSub
-                                          : AppTheme.kLightTextSub,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                  Text(
-                                    '#${widget.sportClubId}',
-                                    style: TextStyle(
-                                      color: isDark
-                                          ? Colors.white
-                                          : AppTheme.kLightText,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.green.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                'Active',
-                                style: TextStyle(
-                                  color: Colors.green,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                    ],
+                    // ── Sport Club Info ────────────────────────────────────
+                    _buildSportClubInfo(isDark),
+                    const SizedBox(height: 24),
 
                     // ── Submit Button ─────────────────────────────────────
                     _buildSubmitButton(isDark),
@@ -356,6 +286,129 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  // ── Category Dropdown ──────────────────────────────────────────────────
+  Widget _buildCategoryDropdown(bool isDark) {
+    final categories = widget.sportClub.categories;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.kCardAlt : AppTheme.kLightCardAlt,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? AppTheme.kBorder : AppTheme.kLightBorder,
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Icon(Icons.category, color: AppTheme.kAccent, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  'Category',
+                  style: TextStyle(
+                    color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+            if (categories.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Text(
+                  'No categories available for this club',
+                  style: TextStyle(color: Colors.orange, fontSize: 14),
+                ),
+              )
+            else
+              DropdownButtonFormField<CategoryDto>(
+                initialValue: _selectedCategory,
+                isExpanded: true,
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                  hintText: 'Select a category',
+                  hintStyle: TextStyle(
+                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  ),
+                ),
+                style: TextStyle(
+                  color: isDark ? Colors.white : AppTheme.kLightText,
+                  fontSize: 16,
+                ),
+                dropdownColor: isDark ? AppTheme.kCardAlt : Colors.white,
+                items: categories.map((category) {
+                  return DropdownMenuItem<CategoryDto>(
+                    value: category,
+                    child: Row(
+                      children: [
+                        // Category image thumbnail if available
+                        if (category.imageUrl.isNotEmpty)
+                          Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(6),
+                              image: DecorationImage(
+                                image: NetworkImage(category.imageUrl),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          )
+                        else
+                          Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              color: AppTheme.kAccent.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Icon(
+                              Icons.category,
+                              color: AppTheme.kAccent,
+                              size: 16,
+                            ),
+                          ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            category.name,
+                            style: TextStyle(
+                              color: isDark
+                                  ? Colors.white
+                                  : AppTheme.kLightText,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedCategory = value;
+                  });
+                },
+                validator: (value) {
+                  if (value == null) {
+                    return 'Please select a category';
+                  }
+                  return null;
+                },
+              ),
+            const SizedBox(height: 4),
+          ],
         ),
       ),
     );
@@ -390,8 +443,8 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
               ),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              _isEditing ? Icons.edit_note : Icons.add_circle_outline,
+            child: const Icon(
+              Icons.add_circle_outline,
               color: Colors.white,
               size: 28,
             ),
@@ -402,7 +455,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _isEditing ? 'Edit Slot Details' : 'Create New Slot',
+                  'Create New Slot',
                   style: TextStyle(
                     color: isDark ? Colors.white : AppTheme.kLightText,
                     fontSize: 18,
@@ -410,15 +463,80 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                   ),
                 ),
                 Text(
-                  _isEditing
-                      ? 'Update the slot information below'
-                      : 'Fill in the details to create a new slot',
+                  'Fill in the details to create a new slot',
                   style: TextStyle(
                     color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                     fontSize: 13,
                   ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Sport Club Info ──────────────────────────────────────────────────
+  Widget _buildSportClubInfo(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.kCardAlt : AppTheme.kLightCardAlt,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? AppTheme.kBorder : AppTheme.kLightBorder,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppTheme.kAccent.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(Icons.sports, color: AppTheme.kAccent, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Sport Club',
+                  style: TextStyle(
+                    color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
+                    fontSize: 12,
+                  ),
+                ),
+                Text(
+                  widget.sportClub.name,
+                  style: TextStyle(
+                    color: isDark ? Colors.white : AppTheme.kLightText,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: widget.sportClub.isOpen
+                  ? Colors.green.withValues(alpha: 0.15)
+                  : Colors.red.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              widget.sportClub.isOpen ? 'Open' : 'Closed',
+              style: TextStyle(
+                color: widget.sportClub.isOpen ? Colors.green : Colors.red,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
@@ -446,7 +564,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
               Icon(Icons.image, color: AppTheme.kAccent, size: 20),
               const SizedBox(width: 8),
               Text(
-                'Slot Image',
+                'Slot Image *',
                 style: TextStyle(
                   color: isDark ? Colors.white : AppTheme.kLightText,
                   fontSize: 16,
@@ -739,18 +857,14 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                   strokeWidth: 2,
                 ),
               )
-            : Row(
+            : const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    _isEditing ? Icons.update : Icons.add_circle_outline,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                  const SizedBox(width: 12),
+                  Icon(Icons.add_circle_outline, color: Colors.white, size: 24),
+                  SizedBox(width: 12),
                   Text(
-                    _isEditing ? 'Update Slot' : 'Create Slot',
-                    style: const TextStyle(
+                    'Create Slot',
+                    style: TextStyle(
                       color: Colors.white,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,

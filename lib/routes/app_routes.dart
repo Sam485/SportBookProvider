@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/features/Slot/model/slot_model.dart';
+import 'package:flutter_application_1/features/SportClub/model/sport_club_model.dart';
 import 'package:flutter_application_1/screens/DashBoard/Notification/notification_screen.dart';
 import 'package:flutter_application_1/screens/auth/landing_screen.dart';
 import 'package:flutter_application_1/screens/auth/login_screen.dart';
 import 'package:flutter_application_1/screens/auth/signup_screen.dart';
+import 'package:flutter_application_1/screens/auth/verify_screen.dart'; // ✅ Import VerifyScreen
 import 'package:flutter_application_1/screens/main_screen.dart';
 import 'package:flutter_application_1/screens/resource/other/adjust_slot_screen.dart';
 import 'package:flutter_application_1/screens/resource/other/slot_screen.dart';
@@ -14,6 +17,7 @@ import 'package:flutter_application_1/screens/settings/Features/password_securit
 import 'package:flutter_application_1/screens/settings/Features/reviews_screen.dart';
 import 'package:flutter_application_1/screens/settings/Features/settings_screen.dart';
 import 'package:flutter_application_1/screens/splash/splash_screen.dart';
+import 'package:flutter_application_1/screens/resource/other/update_slot_screen.dart';
 
 class AppRoutes {
   static const home = '/mainScreen';
@@ -29,6 +33,7 @@ class AppRoutes {
   static const editSportClub = '/sportClub';
   static const slot = '/addSlot';
   static const adjustSlot = '/createEditSlot';
+  static const updateSlot = '/updateSlot';
 
   // Settings and Profile routes
   static const setting = '/settings';
@@ -41,17 +46,13 @@ class AppRoutes {
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
-      case adjustSlot:
-        return MaterialPageRoute(builder: (_) => const AdjustSlotScreen());
-      case slot:
-        final target = settings.arguments as int;
-        return MaterialPageRoute(builder: (_) => SlotScreen(clubId: target));
-      case editSportClub:
-        return MaterialPageRoute(builder: (_) => const CreateSportClubScreen());
+      // ── Auth Routes ──────────────────────────────────────────────
       case splash:
         return MaterialPageRoute(builder: (_) => const SplashScreen());
+
       case landing:
         return MaterialPageRoute(builder: (_) => const LandingScreen());
+
       case home:
         return MaterialPageRoute(builder: (_) => const MainScreen());
 
@@ -61,6 +62,70 @@ class AppRoutes {
       case signUp:
         return MaterialPageRoute(builder: (_) => const SignUpScreen());
 
+      case verify:
+        // ✅ Handle VerifyScreen with arguments
+        final args = settings.arguments;
+        if (args is Map<String, dynamic>) {
+          return MaterialPageRoute(
+            builder: (_) => const VerifyScreen(),
+            settings: RouteSettings(arguments: args),
+          );
+        } else {
+          // If no arguments, return VerifyScreen with default values
+          return MaterialPageRoute(builder: (_) => const VerifyScreen());
+        }
+
+      // ── Slot Routes ──────────────────────────────────────────────
+      case adjustSlot:
+        final args = settings.arguments;
+        if (args is SportClubModel) {
+          return MaterialPageRoute(
+            builder: (_) => AdjustSlotScreen(sportClub: args),
+          );
+        } else {
+          return MaterialPageRoute(
+            builder: (_) => Scaffold(
+              body: Center(
+                child: Text(
+                  'Error: Sport Club data required',
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
+            ),
+          );
+        }
+
+      case updateSlot:
+        final args = settings.arguments;
+        if (args is SlotModel) {
+          return MaterialPageRoute(
+            builder: (_) => UpdateSlotScreen(slot: args),
+          );
+        } else {
+          return MaterialPageRoute(
+            builder: (_) => Scaffold(
+              body: Center(
+                child: Text(
+                  'Error: Slot data required',
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
+            ),
+          );
+        }
+
+      case slot:
+        final target = settings.arguments as SportClubModel;
+        return MaterialPageRoute(builder: (_) => SlotScreen(club: target));
+
+      // ── Sport Club Routes ────────────────────────────────────────
+      case editSportClub:
+        final clubToEdit = settings.arguments as SportClubModel?;
+        return MaterialPageRoute(
+          builder: (_) => CreateSportClubScreen(clubToEdit: clubToEdit),
+        );
+
+      // ── Settings Routes ──────────────────────────────────────────
       case operatingHours:
         return MaterialPageRoute(builder: (_) => const OperatingHourScreen());
 

@@ -34,6 +34,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
   bool _isFetchingGps = false;
   String _resolvedLabel = '';
   bool _isDisposed = false;
+  bool _isNavigating = false; // ✅ Add navigation lock
 
   // ── Search state ────────────────────────────────────────────────────────────
   final TextEditingController _searchCtrl = TextEditingController();
@@ -299,14 +300,31 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
   // ── Confirm ──────────────────────────────────────────────────────────────────
 
   void _confirm() {
-    if (!_isDisposed && mounted) {
+    // ✅ Prevent multiple navigation calls
+    if (_isDisposed || !mounted || _isNavigating) return;
+
+    // ✅ Set navigation lock
+    _isNavigating = true;
+
+    // Use WidgetsBinding to ensure navigation happens after the current frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_isDisposed || !mounted) {
+        _isNavigating = false;
+        return;
+      }
+
       // Return a map with both label and coordinates
       Navigator.pop(context, {
         'label': _resolvedLabel,
         'lat': _pinLocation.latitude,
         'lng': _pinLocation.longitude,
       });
-    }
+
+      // Reset navigation lock after a delay
+      Future.delayed(const Duration(milliseconds: 300), () {
+        _isNavigating = false;
+      });
+    });
   }
 
   // ── Build ────────────────────────────────────────────────────────────────────
@@ -383,8 +401,15 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                           _CircleButton(
                             isDark: isDark,
                             onTap: () {
-                              if (!_isDisposed && mounted) {
+                              if (!_isDisposed && mounted && !_isNavigating) {
+                                _isNavigating = true;
                                 Navigator.pop(context);
+                                Future.delayed(
+                                  const Duration(milliseconds: 300),
+                                  () {
+                                    _isNavigating = false;
+                                  },
+                                );
                               }
                             },
                             child: Icon(
@@ -663,7 +688,9 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: _isResolving ? null : _confirm,
+                          onPressed: _isResolving || _isNavigating
+                              ? null
+                              : _confirm,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppTheme.kAccent,
                             foregroundColor: isDark

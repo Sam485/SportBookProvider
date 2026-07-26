@@ -15,6 +15,7 @@ class BookingServiceImp implements BookingService {
   String get error => _error;
   @override
   bool get isLoading => _isLoading;
+
   BookingServiceImp(this.bookingRepository);
 
   @override
@@ -23,7 +24,7 @@ class BookingServiceImp implements BookingService {
     int page,
     int limit,
     String? status,
-    DateTime? date,
+    String? date, // Changed from DateTime? to String?
   ) async {
     _isLoading = true;
     _error = '';
@@ -33,7 +34,7 @@ class BookingServiceImp implements BookingService {
         page,
         limit,
         status,
-        date,
+        date, // Pass the formatted date string
       );
       var data = dto.data;
       _bookings = data;
@@ -69,7 +70,7 @@ class BookingServiceImp implements BookingService {
 
   @override
   Future<BookingModel> updateBookingStatus(int bookingId) async {
-    _isLoading = false;
+    _isLoading = true; // Fixed: was false
     _error = '';
     try {
       final data = await bookingRepository.updateBookingStatus(bookingId);

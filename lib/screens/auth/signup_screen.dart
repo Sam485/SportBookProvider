@@ -1,8 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/core/di/service_locator.dart';
 import 'package:flutter_application_1/core/theme.dart';
 import 'package:flutter_application_1/core/util/phone_utils.dart';
-import 'package:flutter_application_1/features/Token/service/token_service.dart';
+import 'package:flutter_application_1/features/Auth/firebase_otp_service.dart';
 import 'package:flutter_application_1/features/User/Model/register_user_model.dart';
 import 'package:flutter_application_1/features/User/Service/user_service.dart';
 import 'package:flutter_application_1/routes/app_routes.dart';
@@ -27,10 +28,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   bool _agreeToTerms = false;
+  bool _isLoading = false;
   String? _errorMessage;
 
   final _userService = getIt<UserService>();
-  final _tokenService = getIt<TokenService>();
+  final _firebaseOtpService = getIt<FirebaseOtpService>();
 
   @override
   void initState() {
@@ -50,16 +52,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   void _onUserServiceChanged() {
-    if (mounted) {
-      setState(() {
-        if (_userService.error.isNotEmpty) {
-          _errorMessage = _userService.error;
-        }
-      });
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {
+          if (_userService.error.isNotEmpty) {
+            _errorMessage = _userService.error;
+          }
+        });
+      }
+    });
   }
 
-  // ✅ Get user-friendly error message
   String _getUserFriendlyErrorMessage(String error) {
     final msg = error.toLowerCase();
 
@@ -107,6 +110,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     // Clear previous error
     setState(() {
       _errorMessage = null;
+      _isLoading = true;
     });
 
     try {
@@ -114,53 +118,147 @@ class _SignUpScreenState extends State<SignUpScreen> {
         _phoneController.text.trim(),
       );
 
-      // Create registration request with all required fields
+      // Validate phone number format
+      if (formattedPhone.isEmpty || formattedPhone.length < 10) {
+        throw Exception('Please enter a valid phone number');
+      }
+
+      debugPrint('📱 Formatted phone: $formattedPhone');
+
+      // Create registration data with all required fields
       final registerData = RegisterUserModel(
         fullName: _fullNameController.text.trim(),
         email: _emailController.text.trim(),
         phoneNumber: formattedPhone,
         password: _passwordController.text.trim(),
-        role: 'partner', // Default role as specified in the model
+        role: 'partner',
       );
 
-      // Call register API
-      final response = await _userService.registerUser(registerData);
-
-      // Save tokens
-      await _tokenService.saveTokens(response.token);
-
-      if (mounted) {
-        // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Account created successfully!'),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
-          ),
-        );
-
-        // Navigate to home
-        Navigator.pushReplacementNamed(context, AppRoutes.home);
-      }
+      // Step 1: Send OTP via Firebase
+      await _sendOtpAndNavigate(registerData);
     } catch (e) {
+      debugPrint('❌ Error in _handleSignUp: $e');
       if (mounted) {
         final errorMsg = _getUserFriendlyErrorMessage(e.toString());
         setState(() {
           _errorMessage = errorMsg;
+          _isLoading = false;
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMsg),
             backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
+            duration: const Duration(seconds: 4),
           ),
         );
       }
     }
   }
 
-  // ✅ Navigate to Privacy Policy
+  Future<void> _sendOtpAndNavigate(RegisterUserModel registerData) async {
+    try {
+      debugPrint('🔵 Sending OTP to: ${registerData.phoneNumber}');
+
+      // Show a loading message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Sending OTP...'),
+          backgroundColor: Colors.blue,
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      // Send OTP using Firebase with a timeout
+      await _firebaseOtpService.sendOtp(
+        phoneNumber: registerData.phoneNumber,
+        isResend: false,
+        onCodeSent: (verificationId) {
+          debugPrint(
+            '✅ OTP sent successfully. Verification ID: $verificationId',
+          );
+
+          if (!mounted) return;
+
+          // Reset loading state before navigating
+          setState(() => _isLoading = false);
+
+          // Remove previous snackbar
+          ScaffoldMessenger.of(context).clearSnackBars();
+
+          // Navigate to VerifyScreen
+          Navigator.pushNamed(
+            context,
+            AppRoutes.verify,
+            arguments: {
+              'phoneNumber': registerData.phoneNumber,
+              'verificationId': verificationId,
+              'userData': registerData,
+            },
+          );
+        },
+        onFailed: (FirebaseAuthException e) {
+          debugPrint('❌ OTP send failed: ${e.code} - ${e.message}');
+
+          if (!mounted) return;
+
+          setState(() => _isLoading = false);
+
+          // Remove previous snackbar
+          ScaffoldMessenger.of(context).clearSnackBars();
+
+          // Show error message
+          String errorMessage = _getFirebaseErrorMessage(e);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMessage),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      debugPrint('❌ Error sending OTP: $e');
+
+      if (mounted) {
+        setState(() => _isLoading = false);
+
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to send OTP: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    }
+  }
+
+  String _getFirebaseErrorMessage(FirebaseAuthException e) {
+    debugPrint('🔴 Firebase error code: ${e.code}');
+
+    switch (e.code) {
+      case 'invalid-phone-number':
+        return 'Invalid phone number. Please check and try again.';
+      case 'too-many-requests':
+        return 'Too many requests. Please try again later.';
+      case 'network-request-failed':
+        return 'Network error. Please check your internet connection.';
+      case 'quota-exceeded':
+        return 'SMS quota exceeded. Please try again later.';
+      case 'app-not-authorized':
+        return 'Firebase app not authorized. Please contact support.';
+      case 'firebase-app-not-initialized':
+        return 'Firebase initialization error. Please restart the app.';
+      case 'internal-error':
+        return 'Internal error occurred. Please try again.';
+      default:
+        return e.message ?? 'Failed to send OTP. Please try again.';
+    }
+  }
+
   void _navigateToPrivacyPolicy() {
     Navigator.push(
       context,
@@ -179,7 +277,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
             child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: 420),
+              constraints: const BoxConstraints(maxWidth: 420),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -223,8 +321,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   Widget _buildFormCard(bool isDark) {
-    final isLoading = _userService.isLoading;
-
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -257,11 +353,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 fontSize: 15,
               ),
               onChanged: (_) {
-                // Clear error when user types
                 if (_errorMessage != null && mounted) {
-                  setState(() {
-                    _errorMessage = null;
-                  });
+                  setState(() => _errorMessage = null);
                 }
               },
               validator: (value) {
@@ -292,18 +385,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 fontSize: 15,
               ),
               onChanged: (_) {
-                // Clear error when user types
                 if (_errorMessage != null && mounted) {
-                  setState(() {
-                    _errorMessage = null;
-                  });
+                  setState(() => _errorMessage = null);
                 }
               },
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return 'Please enter your email address';
                 }
-                // Email validation regex
                 final emailRegex = RegExp(
                   r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
                 );
@@ -331,11 +420,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 fontSize: 15,
               ),
               onChanged: (_) {
-                // Clear error when user types
                 if (_errorMessage != null && mounted) {
-                  setState(() {
-                    _errorMessage = null;
-                  });
+                  setState(() => _errorMessage = null);
                 }
               },
               validator: (value) {
@@ -367,11 +453,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 fontSize: 15,
               ),
               onChanged: (_) {
-                // Clear error when user types
                 if (_errorMessage != null && mounted) {
-                  setState(() {
-                    _errorMessage = null;
-                  });
+                  setState(() => _errorMessage = null);
                 }
               },
               validator: (value) {
@@ -381,7 +464,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 if (value.length < 6) {
                   return 'Password must be at least 6 characters';
                 }
-                // Optional: Add password strength validation
                 if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)').hasMatch(value)) {
                   return 'Password must contain at least one letter and one number';
                 }
@@ -452,11 +534,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 fontSize: 15,
               ),
               onChanged: (_) {
-                // Clear error when user types
                 if (_errorMessage != null && mounted) {
-                  setState(() {
-                    _errorMessage = null;
-                  });
+                  setState(() => _errorMessage = null);
                 }
               },
               validator: (value) {
@@ -524,7 +603,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             ),
             const SizedBox(height: 16),
 
-            // ✅ Terms and Conditions with clickable links
+            // Terms and Conditions
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -580,7 +659,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               height: 52,
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: isLoading ? null : _handleSignUp,
+                onPressed: _isLoading ? null : _handleSignUp,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.kAccent,
                   foregroundColor: const Color(0xFF0A1828),
@@ -592,7 +671,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ? Colors.grey[800]
                       : Colors.grey[300],
                 ),
-                child: isLoading
+                child: _isLoading
                     ? const SizedBox(
                         width: 24,
                         height: 24,
