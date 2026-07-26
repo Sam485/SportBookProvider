@@ -6,6 +6,7 @@ import 'package:flutter_application_1/features/User/Model/user_model.dart';
 import 'package:flutter_application_1/features/User/Service/user_service.dart';
 import 'package:flutter_application_1/routes/app_routes.dart';
 import 'package:flutter_application_1/screens/settings/Features/personal_info_screen.dart';
+import 'package:flutter_application_1/translations/app_translations.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -75,7 +76,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           backgroundColor: isDark ? AppTheme.kBg : AppTheme.kLightBg,
           elevation: 0,
           title: Text(
-            'Edit Profile',
+            'edit_profile'.tr(context),
             style: TextStyle(
               color: isDark ? Colors.white : AppTheme.kLightText,
               fontSize: 18,
@@ -104,7 +105,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         backgroundColor: isDark ? AppTheme.kBg : AppTheme.kLightBg,
         elevation: 0,
         title: Text(
-          'Edit Profile',
+          'edit_profile'.tr(context),
           style: TextStyle(
             color: isDark ? Colors.white : AppTheme.kLightText,
             fontSize: 18,
@@ -128,7 +129,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             // ── PROFILE INFO SECTION HEADER ──
             Text(
-              'PROFILE INFO',
+              'profile_info'.tr(context).toUpperCase(),
               style: TextStyle(
                 color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                 fontSize: 13,
@@ -177,7 +178,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Name',
+                            'name'.tr(context),
                             style: TextStyle(
                               color: isDark
                                   ? AppTheme.kTextSub
@@ -247,7 +248,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Email',
+                            'email'.tr(context),
                             style: TextStyle(
                               color: isDark
                                   ? AppTheme.kTextSub
@@ -319,7 +320,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Phone',
+                            'phone'.tr(context),
                             style: TextStyle(
                               color: isDark
                                   ? AppTheme.kTextSub
@@ -357,7 +358,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             // ── SECURITY SECTION HEADER ──
             Text(
-              'SECURITY',
+              'security'.tr(context),
               style: TextStyle(
                 color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                 fontSize: 13,
@@ -403,7 +404,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Change Password',
+                            'change_password'.tr(context),
                             style: TextStyle(
                               color: isDark
                                   ? Colors.white

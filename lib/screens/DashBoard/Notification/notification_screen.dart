@@ -861,9 +861,12 @@ class NotificationDetailDialog extends StatelessWidget {
                     elevation: 0,
                     textStyle: const TextStyle(fontWeight: FontWeight.w700),
                   ),
-                  child: const Text(
+                  child: Text(
                     'OK',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ),

@@ -5,6 +5,7 @@ import 'package:flutter_application_1/features/Slot/model/dto/create_slot_dto.da
 import 'package:flutter_application_1/features/Slot/service/slot_service.dart';
 import 'package:flutter_application_1/features/SportClub/model/dto/category_dto.dart';
 import 'package:flutter_application_1/features/SportClub/model/sport_club_model.dart';
+import 'package:flutter_application_1/translations/app_translations.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:get_it/get_it.dart';
 
@@ -82,8 +83,8 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
     if (_formKey.currentState!.validate()) {
       if (_imageFile == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please select an image for the slot'),
+          SnackBar(
+            content: Text('please_select_slot_image'.tr(context)),
             backgroundColor: Colors.orange,
           ),
         );
@@ -92,8 +93,8 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
 
       if (_selectedCategory == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please select a category'),
+          SnackBar(
+            content: Text('please_select_category'.tr(context)),
             backgroundColor: Colors.orange,
           ),
         );
@@ -120,10 +121,10 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Slot created successfully! 🎉'),
+            SnackBar(
+              content: Text('slot_created_success'.tr(context)),
               backgroundColor: Colors.green,
-              duration: Duration(seconds: 2),
+              duration: const Duration(seconds: 2),
             ),
           );
           Navigator.pop(context, true);
@@ -163,7 +164,10 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
             color: isDark ? Colors.white : AppTheme.kLightText,
           ),
         ),
-        title: Text('Create Slot', style: AppTheme.tsTitleAdaptive(context)),
+        title: Text(
+          'create_slot'.tr(context),
+          style: AppTheme.tsTitleAdaptive(context),
+        ),
       ),
       body: SafeArea(
         child: Form(
@@ -184,7 +188,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
 
                     // ── Basic Information ─────────────────────────────────
                     _buildSectionTitle(
-                      'Basic Information',
+                      'basic_information'.tr(context),
                       Icons.info_outline,
                       isDark,
                     ),
@@ -192,12 +196,12 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
 
                     _buildTextField(
                       controller: _nameController,
-                      label: 'Slot Name',
-                      hint: 'Enter slot name',
+                      label: 'slot_name'.tr(context),
+                      hint: 'enter_slot_name'.tr(context),
                       icon: Icons.label,
                       validator: (value) {
                         if (value?.isEmpty ?? true) {
-                          return 'Please enter slot name';
+                          return 'please_enter_slot_name'.tr(context);
                         }
                         return null;
                       },
@@ -206,8 +210,8 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
 
                     _buildTextField(
                       controller: _descriptionController,
-                      label: 'Description',
-                      hint: 'Enter slot description',
+                      label: 'description'.tr(context),
+                      hint: 'enter_slot_description'.tr(context),
                       icon: Icons.description,
                       maxLines: 3,
                     ),
@@ -219,7 +223,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                         Expanded(
                           child: _buildTextField(
                             controller: _priceController,
-                            label: 'Price (\$)',
+                            label: 'price_label'.tr(context),
                             hint: '0.00',
                             icon: Icons.attach_money,
                             keyboardType: TextInputType.numberWithOptions(
@@ -227,10 +231,10 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                             ),
                             validator: (value) {
                               if (value?.isEmpty ?? true) {
-                                return 'Enter price';
+                                return 'enter_price'.tr(context);
                               }
                               if (double.tryParse(value!) == null) {
-                                return 'Invalid price';
+                                return 'invalid_price'.tr(context);
                               }
                               return null;
                             },
@@ -240,16 +244,16 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                         Expanded(
                           child: _buildTextField(
                             controller: _capacityController,
-                            label: 'Capacity',
+                            label: 'capacity'.tr(context),
                             hint: '0',
                             icon: Icons.people,
                             keyboardType: TextInputType.number,
                             validator: (value) {
                               if (value?.isEmpty ?? true) {
-                                return 'Enter capacity';
+                                return 'enter_capacity'.tr(context);
                               }
                               if (int.tryParse(value!) == null) {
-                                return 'Invalid number';
+                                return 'invalid_number'.tr(context);
                               }
                               return null;
                             },
@@ -265,7 +269,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
 
                     // ── Availability ───────────────────────────────────────
                     _buildSectionTitle(
-                      'Availability',
+                      'availability'.tr(context),
                       Icons.check_circle_outline,
                       isDark,
                     ),
@@ -315,7 +319,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                 Icon(Icons.category, color: AppTheme.kAccent, size: 20),
                 const SizedBox(width: 8),
                 Text(
-                  'Category',
+                  'category'.tr(context),
                   style: TextStyle(
                     color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                     fontSize: 12,
@@ -324,11 +328,11 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
               ],
             ),
             if (categories.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 child: Text(
-                  'No categories available for this club',
-                  style: TextStyle(color: Colors.orange, fontSize: 14),
+                  'no_categories_available'.tr(context),
+                  style: const TextStyle(color: Colors.orange, fontSize: 14),
                 ),
               )
             else
@@ -338,7 +342,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                 decoration: InputDecoration(
                   border: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(vertical: 8),
-                  hintText: 'Select a category',
+                  hintText: 'select_category'.tr(context),
                   hintStyle: TextStyle(
                     color: isDark ? Colors.grey[400] : Colors.grey[600],
                   ),
@@ -402,7 +406,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                 },
                 validator: (value) {
                   if (value == null) {
-                    return 'Please select a category';
+                    return 'please_select_category'.tr(context);
                   }
                   return null;
                 },
@@ -455,7 +459,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Create New Slot',
+                  'create_new_slot'.tr(context),
                   style: TextStyle(
                     color: isDark ? Colors.white : AppTheme.kLightText,
                     fontSize: 18,
@@ -463,7 +467,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                   ),
                 ),
                 Text(
-                  'Fill in the details to create a new slot',
+                  'fill_slot_details'.tr(context),
                   style: TextStyle(
                     color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                     fontSize: 13,
@@ -505,7 +509,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Sport Club',
+                  'sport_club'.tr(context),
                   style: TextStyle(
                     color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                     fontSize: 12,
@@ -531,7 +535,9 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
-              widget.sportClub.isOpen ? 'Open' : 'Closed',
+              widget.sportClub.isOpen
+                  ? 'open'.tr(context)
+                  : 'closed'.tr(context),
               style: TextStyle(
                 color: widget.sportClub.isOpen ? Colors.green : Colors.red,
                 fontSize: 11,
@@ -564,7 +570,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
               Icon(Icons.image, color: AppTheme.kAccent, size: 20),
               const SizedBox(width: 8),
               Text(
-                'Slot Image *',
+                'slot_image_required'.tr(context),
                 style: TextStyle(
                   color: isDark ? Colors.white : AppTheme.kLightText,
                   fontSize: 16,
@@ -581,7 +587,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
-                  child: const Text('Remove'),
+                  child: Text('remove'.tr(context)),
                 ),
             ],
           ),
@@ -622,9 +628,12 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                             size: 14,
                           ),
                           const SizedBox(width: 4),
-                          const Text(
-                            'Image loaded',
-                            style: TextStyle(color: Colors.white, fontSize: 10),
+                          Text(
+                            'image_loaded'.tr(context),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                            ),
                           ),
                         ],
                       ),
@@ -655,7 +664,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                     Icon(Icons.cloud_upload, color: AppTheme.kAccent, size: 40),
                     const SizedBox(height: 8),
                     Text(
-                      'Tap to upload image',
+                      'tap_to_upload_image'.tr(context),
                       style: TextStyle(
                         color: AppTheme.kAccent,
                         fontSize: 14,
@@ -663,7 +672,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                       ),
                     ),
                     Text(
-                      'JPG, PNG, GIF supported',
+                      'image_formats'.tr(context),
                       style: TextStyle(
                         color: isDark
                             ? AppTheme.kTextSub
@@ -785,14 +794,16 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Slot Status',
+                  'slot_status'.tr(context),
                   style: TextStyle(
                     color: isDark ? Colors.white70 : AppTheme.kLightTextSub,
                     fontSize: 12,
                   ),
                 ),
                 Text(
-                  _isAvailable ? 'Available 🟢' : 'Unavailable 🔴',
+                  _isAvailable
+                      ? 'available_emoji'.tr(context)
+                      : 'unavailable_emoji'.tr(context),
                   style: TextStyle(
                     color: isDark ? Colors.white : AppTheme.kLightText,
                     fontSize: 16,
@@ -857,14 +868,18 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                   strokeWidth: 2,
                 ),
               )
-            : const Row(
+            : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.add_circle_outline, color: Colors.white, size: 24),
-                  SizedBox(width: 12),
+                  const Icon(
+                    Icons.add_circle_outline,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                  const SizedBox(width: 12),
                   Text(
-                    'Create Slot',
-                    style: TextStyle(
+                    'create_slot'.tr(context),
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,

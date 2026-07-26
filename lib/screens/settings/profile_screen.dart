@@ -8,6 +8,7 @@ import 'package:flutter_application_1/features/User/Service/user_service.dart';
 import 'package:flutter_application_1/routes/app_routes.dart';
 import 'package:flutter_application_1/providers/language_provider.dart';
 import 'package:flutter_application_1/providers/theme_provider.dart';
+import 'package:flutter_application_1/translations/app_translations.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -41,10 +42,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _initializeData();
-    // Listen for user service changes
+    // Don't call _initializeData() here with context
     userService.addListener(_onUserServiceChanged);
-    // Load user data on init
     _loadUserData();
     _loadNotificationSettings();
   }
@@ -74,19 +73,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
-  void _initializeData() {
-    accountData = [
+  // ✅ FIXED: Move initialization to build time or use a getter
+  List<FeaturesData> _getAccountData() {
+    return [
       FeaturesData(
         icon: Icons.payment,
-        title: 'Payout & Banking',
+        title: 'payout_and_banking'.tr(context),
         des: 'ABA *****4251',
         color: Colors.green,
         route: AppRoutes.payment,
       ),
       FeaturesData(
         icon: Icons.notifications_outlined,
-        title: 'Notifications',
-        des: 'Booking alerts & reminders',
+        title: 'notifications'.tr(context),
+        des: 'booking_reminders'.tr(context),
         color: Colors.amber,
         label: '$newNotification new',
         route: AppRoutes.notifications,
@@ -165,7 +165,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _isLoading = false;
           _isFirstLoad = false;
         });
-        _showErrorSnackbar('Failed to load profile: $e');
+        _showErrorSnackbar('${'failed_to_load_profile'.tr(context)}: $e');
       }
     }
   }
@@ -178,7 +178,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         content: Text(message),
         backgroundColor: Colors.red,
         action: SnackBarAction(
-          label: 'Retry',
+          label: 'retry'.tr(context),
           onPressed: _loadUserData,
           textColor: Colors.white,
         ),
@@ -234,7 +234,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Profile', style: AppTheme.tsTitleAdaptive(context)),
+        title: Text(
+          'profile'.tr(context),
+          style: AppTheme.tsTitleAdaptive(context),
+        ),
         actions: [
           IconButton(
             onPressed: () {
@@ -266,12 +269,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Icon(Icons.error_outline, size: 64, color: Colors.red),
             const SizedBox(height: 16),
             Text(
-              'Failed to load profile',
+              'failed_to_load_profile'.tr(context),
               style: AppTheme.tsTitleAdaptive(context),
             ),
             const SizedBox(height: 8),
             Text(
-              _error ?? 'Unknown error',
+              _error ?? 'unknown_error'.tr(context),
               style: AppTheme.tsBodyAdaptive(context),
               textAlign: TextAlign.center,
             ),
@@ -279,7 +282,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ElevatedButton(
               onPressed: _loadUserData,
               style: AppTheme.elevatedButtonStyle(),
-              child: const Text('Retry'),
+              child: Text('retry'.tr(context)),
             ),
           ],
         ),
@@ -304,8 +307,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
               enabled: _isLoading && _isFirstLoad,
               enableSwitchAnimation: true,
               child: _isLoading && _isFirstLoad
-                  ? _buildSkeletonButtonSection(isDark, 'Account', 2)
-                  : _buildButtonSection('Account', accountData),
+                  ? _buildSkeletonButtonSection(
+                      isDark,
+                      'account'.tr(context),
+                      2,
+                    )
+                  : _buildButtonSection(
+                      'account'.tr(context),
+                      _getAccountData(),
+                    ),
             ),
           ),
           // ============================================================
@@ -350,32 +360,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final settingsData = [
       SettingsData(
         icon: Icons.notifications_outlined,
-        title: 'Notifications',
-        des: 'Booking alerts & reminders',
+        title: 'notifications'.tr(context),
+        des: 'booking_reminders'.tr(context),
         color: Colors.amber,
         type: SettingsType.switchToggle,
       ),
       SettingsData(
         icon: Icons.language_outlined,
-        title: 'Language',
-        des: languageProvider.currentLanguage == 'en' ? 'English' : 'Khmer',
+        title: 'language'.tr(context),
+        des: languageProvider.currentLanguage == 'en'
+            ? 'english'.tr(context)
+            : 'khmer'.tr(context),
         color: Colors.blue,
         type: SettingsType.selector,
         badge: languageProvider.currentLanguage == 'en' ? 'EN' : 'KM',
       ),
       SettingsData(
         icon: Icons.dark_mode_outlined,
-        title: 'Appearance',
+        title: 'appearance'.tr(context),
         des: themeProvider.currentTheme == 'dark'
-            ? 'Dark Mode'
+            ? 'dark_mode'.tr(context)
             : (themeProvider.currentTheme == 'light'
-                  ? 'Light Mode'
-                  : 'System Default'),
+                  ? 'light_mode'.tr(context)
+                  : 'system_default'.tr(context)),
         color: Colors.purple,
         type: SettingsType.selector,
         badge: themeProvider.currentTheme == 'dark'
-            ? 'Dark'
-            : (themeProvider.currentTheme == 'light' ? 'Light' : 'System'),
+            ? 'dark'.tr(context)
+            : (themeProvider.currentTheme == 'light'
+                  ? 'light'.tr(context)
+                  : 'system'.tr(context)),
       ),
     ];
 
@@ -384,7 +398,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Settings', style: AppTheme.tsLabelAdaptive(context)),
+          Text(
+            'settings'.tr(context),
+            style: AppTheme.tsLabelAdaptive(context),
+          ),
           const SizedBox(height: 10),
           Container(
             width: double.infinity,
@@ -399,9 +416,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   onTap: data.type == SettingsType.switchToggle
                       ? null
                       : () {
-                          if (data.title == 'Language') {
+                          if (data.title == 'language'.tr(context)) {
                             _showLanguageSelector();
-                          } else if (data.title == 'Appearance') {
+                          } else if (data.title == 'appearance'.tr(context)) {
                             _showAppearanceSelector();
                           }
                         },
@@ -874,6 +891,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return const SizedBox.shrink();
     }
 
+
     return Padding(
       padding: const EdgeInsets.all(10),
       child: Container(
@@ -904,7 +922,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        user?.fullName ?? 'User Name',
+                        user?.fullName ?? 'user_name'.tr(context),
                         style: AppTheme.tsLabelAdaptive(context),
                       ),
                       Text(
@@ -919,7 +937,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ],
                       ),
                       const SizedBox(height: 5),
-                      _buildBadge('Verified venue', Colors.green),
+                      _buildBadge('verified_venue'.tr(context), Colors.green),
                     ],
                   ),
                 ),
@@ -935,7 +953,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Column(
                       children: [
                         Text('8', style: AppTheme.tsTitleAdaptive(context)),
-                        Text('Courts', style: AppTheme.tsSubAdaptive(context)),
+                        Text(
+                          'courts'.tr(context),
+                          style: AppTheme.tsSubAdaptive(context),
+                        ),
                       ],
                     ),
                   ),
@@ -949,7 +970,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         Text('1.2k', style: AppTheme.tsTitleAdaptive(context)),
                         Text(
-                          'Bookings',
+                          'bookings'.tr(context),
                           style: AppTheme.tsSubAdaptive(context),
                         ),
                       ],
@@ -965,7 +986,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         Text('98%', style: AppTheme.tsTitleAdaptive(context)),
                         Text(
-                          'Approval',
+                          'approval'.tr(context),
                           style: AppTheme.tsSubAdaptive(context),
                         ),
                       ],
@@ -1117,7 +1138,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             backgroundColor: Colors.red.withValues(alpha: 0.3),
             foregroundColor: Colors.red,
           ),
-          child: const Text('Sign Out'),
+          child: Text('sign_out'.tr(context)),
         ),
       ),
     );
@@ -1129,35 +1150,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+
         return AlertDialog(
-          backgroundColor: Theme.of(context).brightness == Brightness.dark
-              ? AppTheme.kCard
-              : AppTheme.kLightCard,
+          backgroundColor: isDark ? AppTheme.kCard : AppTheme.kLightCard,
           title: Text(
-            'Sign Out',
+            'sign_out'.tr(context),
             style: TextStyle(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white
-                  : AppTheme.kLightText,
+              color: isDark ? Colors.white : AppTheme.kLightText,
             ),
           ),
           content: Text(
-            'Are you sure you want to sign out?',
+            'sign_out_confirmation'.tr(context),
             style: TextStyle(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? AppTheme.kTextSub
-                  : AppTheme.kLightTextSub,
+              color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text(
-                'Cancel',
+                'sign_out_cancel'.tr(context),
                 style: TextStyle(
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? AppTheme.kTextSub
-                      : AppTheme.kLightTextSub,
+                  color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                 ),
               ),
             ),
@@ -1172,12 +1187,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   }
                 } catch (e) {
                   if (mounted && !_isDisposed) {
-                    _showErrorSnackbar('Failed to sign out: $e');
+                    _showErrorSnackbar(
+                      // ignore: use_build_context_synchronously
+                      '${'failed_to_sign_out'.tr(context)}: $e',
+                    );
                   }
                 }
               },
               style: AppTheme.elevatedButtonStyle(backgroundColor: Colors.red),
-              child: const Text('Sign Out'),
+              child: Text('sign_out_confirm'.tr(context)),
             ),
           ],
         );
@@ -1257,7 +1275,7 @@ class LanguageSelector extends StatelessWidget {
             ),
           ),
           Text(
-            'Select Language',
+            'select_language'.tr(context),
             style: TextStyle(
               color: isDark ? Colors.white : AppTheme.kLightText,
               fontSize: 18,
@@ -1267,7 +1285,7 @@ class LanguageSelector extends StatelessWidget {
           const SizedBox(height: 16),
           _buildLanguageOption(
             context,
-            'English',
+            'english'.tr(context),
             'EN',
             currentLanguage == 'EN',
             isDark,
@@ -1282,7 +1300,7 @@ class LanguageSelector extends StatelessWidget {
           ),
           _buildLanguageOption(
             context,
-            'Khmer',
+            'khmer'.tr(context),
             'KM',
             currentLanguage == 'KM',
             isDark,
@@ -1380,7 +1398,7 @@ class AppearanceSelector extends StatelessWidget {
             ),
           ),
           Text(
-            'Select Theme',
+            'select_theme'.tr(context),
             style: TextStyle(
               color: isDark ? Colors.white : AppTheme.kLightText,
               fontSize: 18,
@@ -1390,7 +1408,7 @@ class AppearanceSelector extends StatelessWidget {
           const SizedBox(height: 16),
           _buildThemeOption(
             context,
-            'Light Mode',
+            'light_mode'.tr(context),
             'light',
             Icons.wb_sunny,
             currentTheme == 'light',
@@ -1406,7 +1424,7 @@ class AppearanceSelector extends StatelessWidget {
           ),
           _buildThemeOption(
             context,
-            'Dark Mode',
+            'dark_mode'.tr(context),
             'dark',
             Icons.nightlight_round,
             currentTheme == 'dark',
@@ -1422,7 +1440,7 @@ class AppearanceSelector extends StatelessWidget {
           ),
           _buildThemeOption(
             context,
-            'System Default',
+            'system_default'.tr(context),
             'system',
             Icons.settings_suggest,
             currentTheme == 'system',

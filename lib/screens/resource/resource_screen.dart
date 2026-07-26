@@ -4,6 +4,7 @@ import 'package:flutter_application_1/core/theme.dart';
 import 'package:flutter_application_1/features/SportClub/model/sport_club_model.dart';
 import 'package:flutter_application_1/features/SportClub/service/sport_club_service.dart';
 import 'package:flutter_application_1/routes/app_routes.dart';
+import 'package:flutter_application_1/translations/app_translations.dart';
 import 'package:flutter_application_1/widgets/cards/club_card.dart';
 import 'package:flutter_application_1/widgets/cards/club_card_skeleton.dart';
 
@@ -109,7 +110,7 @@ class _ResourceScreenState extends State<ResourceScreen> {
                     ),
                     const SizedBox(width: 10),
                     Text(
-                      'Sport Clubs',
+                      'sport_clubs'.tr(context),
                       style: AppTheme.tsLabelAdaptive(context),
                     ),
                   ],
@@ -124,7 +125,9 @@ class _ResourceScreenState extends State<ResourceScreen> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    '${clubs.length} clubs',
+                    'club_count'
+                        .tr(context)
+                        .replaceAll('{count}', '${clubs.length}'),
                     style: TextStyle(
                       color: AppTheme.kAccent,
                       fontSize: 12,
@@ -167,12 +170,12 @@ class _ResourceScreenState extends State<ResourceScreen> {
             Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
             const SizedBox(height: 16),
             Text(
-              'Something went wrong',
+              'error_occurred'.tr(context),
               style: AppTheme.tsTitleAdaptive(context),
             ),
             const SizedBox(height: 8),
             Text(
-              _error ?? 'Failed to load clubs',
+              _error ?? 'failed_to_load_clubs'.tr(context),
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: isDark ? Colors.grey[400] : Colors.grey[700],
@@ -194,7 +197,7 @@ class _ResourceScreenState extends State<ResourceScreen> {
                 ),
               ),
               icon: const Icon(Icons.refresh),
-              label: const Text('Try Again'),
+              label: Text('try_again'.tr(context)),
             ),
           ],
         ),
@@ -217,14 +220,14 @@ class _ResourceScreenState extends State<ResourceScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'No clubs found',
+            'no_clubs_found'.tr(context),
             style: AppTheme.tsTitleAdaptive(
               context,
             ).copyWith(color: isDark ? Colors.grey[400] : Colors.grey[600]),
           ),
           const SizedBox(height: 8),
           Text(
-            'Tap the "Add Club" button to create one',
+            'add_club_message'.tr(context),
             style: TextStyle(
               color: isDark ? Colors.grey[500] : Colors.grey[500],
               fontSize: 14,
@@ -253,7 +256,10 @@ class _ResourceScreenState extends State<ResourceScreen> {
             child: const Icon(Icons.dashboard, color: Colors.white, size: 24),
           ),
           const SizedBox(width: 12),
-          Text('Resources', style: AppTheme.tsTitleAdaptive(context)),
+          Text(
+            'resource'.tr(context),
+            style: AppTheme.tsTitleAdaptive(context),
+          ),
           const Spacer(),
           ElevatedButton.icon(
             onPressed: () {
@@ -272,9 +278,9 @@ class _ResourceScreenState extends State<ResourceScreen> {
               ),
             ),
             icon: const Icon(Icons.add_circle_outline, size: 18),
-            label: const Text(
-              'Add Club',
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+            label: Text(
+              'add_club'.tr(context),
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
             ),
           ),
         ],

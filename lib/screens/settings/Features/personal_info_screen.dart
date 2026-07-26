@@ -138,7 +138,10 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
       if (!_isDisposed && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to pick image: $e', style: const TextStyle()),
+            content: Text(
+              '${'failed_to_pick_image'.tr(context)}: $e',
+              style: const TextStyle(),
+            ),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 2),
           ),
@@ -166,7 +169,10 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
       if (!_isDisposed && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to take photo: $e', style: const TextStyle()),
+            content: Text(
+              '${'failed_to_take_photo'.tr(context)}: $e',
+              style: const TextStyle(),
+            ),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 2),
           ),
@@ -295,7 +301,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Remove avatar feature coming soon',
+          'remove_avatar_coming_soon'.tr(context),
           style: const TextStyle(),
         ),
         backgroundColor: Colors.grey,

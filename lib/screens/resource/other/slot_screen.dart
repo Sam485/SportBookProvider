@@ -5,6 +5,7 @@ import 'package:flutter_application_1/features/Slot/model/slot_model.dart';
 import 'package:flutter_application_1/features/Slot/service/slot_service.dart';
 import 'package:flutter_application_1/features/SportClub/model/sport_club_model.dart';
 import 'package:flutter_application_1/routes/app_routes.dart';
+import 'package:flutter_application_1/translations/app_translations.dart';
 
 class SlotScreen extends StatefulWidget {
   final SportClubModel club;
@@ -46,10 +47,6 @@ class _SlotScreenState extends State<SlotScreen> {
         _selectedCategoryId,
       );
 
-      // Debug: Print slot data to check image URLs
-      // ignore: unused_local_variable
-      for (var slot in fetchedSlots) {}
-
       setState(() {
         slots = fetchedSlots;
         _loading = false;
@@ -75,7 +72,7 @@ class _SlotScreenState extends State<SlotScreen> {
     final result = await Navigator.pushNamed(
       context,
       AppRoutes.adjustSlot,
-      arguments: widget.club, // Pass the full club model
+      arguments: widget.club,
     );
 
     if (result == true) {
@@ -99,17 +96,19 @@ class _SlotScreenState extends State<SlotScreen> {
     final confirmDelete = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Court'),
-        content: Text('Are you sure you want to delete "$slotName"?'),
+        title: Text('delete_confirmation'.tr(context)),
+        content: Text(
+          'delete_confirm_message'.tr(context).replaceAll('{name}', slotName),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text('cancel'.tr(context)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+            child: Text('delete'.tr(context)),
           ),
         ],
       ),
@@ -130,7 +129,11 @@ class _SlotScreenState extends State<SlotScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('$slotName deleted successfully'),
+              content: Text(
+                'slot_deleted_success'
+                    .tr(context)
+                    .replaceAll('{name}', slotName),
+              ),
               backgroundColor: Colors.green,
             ),
           );
@@ -178,7 +181,7 @@ class _SlotScreenState extends State<SlotScreen> {
               Icons.refresh,
               color: isDark ? Colors.white : AppTheme.kLightText,
             ),
-            tooltip: 'Refresh',
+            tooltip: 'refresh'.tr(context),
           ),
         ],
       ),
@@ -218,7 +221,7 @@ class _SlotScreenState extends State<SlotScreen> {
         backgroundColor: AppTheme.kAccent,
         icon: const Icon(Icons.add, color: Color(0xFF0A1828)),
         label: Text(
-          'Add Court',
+          'add_court'.tr(context),
           style: TextStyle(
             color: const Color(0xFF0A1828),
             fontWeight: FontWeight.bold,
@@ -292,7 +295,7 @@ class _SlotScreenState extends State<SlotScreen> {
             Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
             const SizedBox(height: 16),
             Text(
-              'Failed to load courts',
+              'failed_to_load_courts'.tr(context),
               style: AppTheme.tsTitleAdaptive(context),
             ),
             const SizedBox(height: 8),
@@ -319,7 +322,7 @@ class _SlotScreenState extends State<SlotScreen> {
                 ),
               ),
               icon: const Icon(Icons.refresh),
-              label: const Text('Try Again'),
+              label: Text('try_again'.tr(context)),
             ),
           ],
         ),
@@ -339,14 +342,14 @@ class _SlotScreenState extends State<SlotScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'No courts available',
+            'no_courts_available'.tr(context),
             style: AppTheme.tsTitleAdaptive(
               context,
             ).copyWith(color: isDark ? Colors.grey[400] : Colors.grey[600]),
           ),
           const SizedBox(height: 8),
           Text(
-            'Tap the "Add Court" button to create one',
+            'no_courts_message'.tr(context),
             style: TextStyle(
               color: isDark ? Colors.grey[500] : Colors.grey[500],
               fontSize: 14,
@@ -388,7 +391,7 @@ class _SlotScreenState extends State<SlotScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Manage Courts',
+                      'manage_courts'.tr(context),
                       style: TextStyle(
                         color: isDark ? Colors.white : AppTheme.kLightText,
                         fontSize: 20,
@@ -396,7 +399,9 @@ class _SlotScreenState extends State<SlotScreen> {
                       ),
                     ),
                     Text(
-                      '${slots.length} courts available',
+                      'courts_available'
+                          .tr(context)
+                          .replaceAll('{count}', '${slots.length}'),
                       style: TextStyle(
                         color: isDark
                             ? AppTheme.kTextSub
@@ -417,7 +422,9 @@ class _SlotScreenState extends State<SlotScreen> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  'Total: ${slots.length}',
+                  'total_courts'
+                      .tr(context)
+                      .replaceAll('{count}', '${slots.length}'),
                   style: TextStyle(
                     color: AppTheme.kAccent,
                     fontWeight: FontWeight.w600,
@@ -441,8 +448,16 @@ class _SlotScreenState extends State<SlotScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildStatusChip('Available', Colors.green, openCount),
-                _buildStatusChip('Unavailable', Colors.red, closedCount),
+                _buildStatusChip(
+                  'available'.tr(context),
+                  Colors.green,
+                  openCount,
+                ),
+                _buildStatusChip(
+                  'unavailable'.tr(context),
+                  Colors.red,
+                  closedCount,
+                ),
               ],
             ),
           ),
@@ -471,7 +486,9 @@ class _SlotScreenState extends State<SlotScreen> {
   Widget _buildSlotCard(SlotModel slot, bool isDark) {
     final isAvailable = slot.isAvailable;
     final statusColor = isAvailable ? Colors.green : Colors.red;
-    final statusText = isAvailable ? 'Available' : 'Unavailable';
+    final statusText = isAvailable
+        ? 'available'.tr(context)
+        : 'unavailable'.tr(context);
 
     return Container(
       width: MediaQuery.of(context).size.width,
@@ -511,7 +528,7 @@ class _SlotScreenState extends State<SlotScreen> {
                       Text(
                         slot.description.isNotEmpty
                             ? slot.description
-                            : '${slot.category?.name ?? 'Unknown'} court',
+                            : '${slot.category?.name ?? 'category_uncategorized'.tr(context)} court',
                         style: TextStyle(
                           color: isDark
                               ? AppTheme.kTextSub
@@ -528,7 +545,7 @@ class _SlotScreenState extends State<SlotScreen> {
                       onPressed: () => _navigateToUpdateSlot(slot),
                       icon: const Icon(Icons.edit, color: Colors.blue),
                       iconSize: 20,
-                      tooltip: 'Edit',
+                      tooltip: 'edit'.tr(context),
                       constraints: const BoxConstraints(),
                       padding: const EdgeInsets.all(4),
                     ),
@@ -536,7 +553,7 @@ class _SlotScreenState extends State<SlotScreen> {
                       onPressed: () => _deleteSlot(slot.id, slot.name),
                       icon: const Icon(Icons.delete, color: Colors.red),
                       iconSize: 20,
-                      tooltip: 'Delete',
+                      tooltip: 'delete'.tr(context),
                       constraints: const BoxConstraints(),
                       padding: const EdgeInsets.all(4),
                     ),
@@ -577,7 +594,7 @@ class _SlotScreenState extends State<SlotScreen> {
                     horizontal: 10,
                   ),
                   child: Text(
-                    '${slot.capacity} players',
+                    '${slot.capacity} ${'players'.tr(context)}',
                     style: const TextStyle(
                       color: Colors.blue,
                       fontSize: 11,
@@ -595,7 +612,7 @@ class _SlotScreenState extends State<SlotScreen> {
                     horizontal: 10,
                   ),
                   child: Text(
-                    slot.category?.name ?? 'Uncategorized',
+                    slot.category?.name ?? 'category_uncategorized'.tr(context),
                     style: const TextStyle(
                       color: Colors.purple,
                       fontSize: 11,
@@ -616,7 +633,7 @@ class _SlotScreenState extends State<SlotScreen> {
                     Icon(Icons.attach_money, color: AppTheme.kAccent, size: 16),
                     const SizedBox(width: 8),
                     Text(
-                      'Price per hour',
+                      'price_per_hour'.tr(context),
                       style: TextStyle(
                         color: isDark ? Colors.white70 : AppTheme.kLightTextSub,
                         fontSize: 13,
