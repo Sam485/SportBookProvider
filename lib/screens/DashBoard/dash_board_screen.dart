@@ -67,7 +67,10 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to load sport clubs: ${e.toString()}'),
+            content: Text(
+              'Failed to load sport clubs: ${e.toString()}',
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -85,10 +88,8 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
     try {
       final status = _selectedStatus == 'All' ? null : _selectedStatus;
 
-      // Format date for API if selected
       String? formattedDate;
       if (_selectedDate != null) {
-        // Format as YYYY-MM-DD for API
         formattedDate = _selectedDate!.toIso8601String().split('T').first;
       }
 
@@ -97,7 +98,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
         _currentPage,
         _limit,
         status,
-        formattedDate, // Pass formatted date string instead of DateTime
+        formattedDate,
       );
 
       if (mounted) {
@@ -114,7 +115,10 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to load bookings: ${e.toString()}'),
+            content: Text(
+              'Failed to load bookings: ${e.toString()}',
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -145,13 +149,8 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: <Widget>[
-              // Header
               SliverToBoxAdapter(child: _buildHeader()),
-
-              // Filter Section
               SliverToBoxAdapter(child: _buildFilterSection()),
-
-              // Stats Grid
               SliverPadding(
                 padding: const EdgeInsets.all(8.0),
                 sliver: SliverGrid(
@@ -167,10 +166,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                   ),
                 ),
               ),
-
-              // Recent Bookings
               SliverToBoxAdapter(child: _buildRecentBookingSection()),
-
               const SliverToBoxAdapter(child: SizedBox(height: 20)),
             ],
           ),
@@ -223,7 +219,6 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
       decoration: AppTheme.cardDecorationAdaptive(context),
       child: Column(
         children: [
-          // Sport Club Dropdown
           Row(
             children: [
               Expanded(
@@ -236,6 +231,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                       child: Text(
                         club.name,
                         style: TextStyle(
+                          fontFamily: AppTheme.fontFamily,
                           color: isDark ? Colors.white : AppTheme.kLightText,
                         ),
                         overflow: TextOverflow.ellipsis,
@@ -254,12 +250,10 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                 ),
               ),
               const SizedBox(width: 8),
-              // Date Picker
               Expanded(child: _buildDatePickerButton(isDark)),
             ],
           ),
           const SizedBox(height: 8),
-          // Status Dropdown and Clear Filters
           Row(
             children: [
               Expanded(
@@ -272,6 +266,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                       child: Text(
                         status.toUpperCase(),
                         style: TextStyle(
+                          fontFamily: AppTheme.fontFamily,
                           color: isDark ? Colors.white : AppTheme.kLightText,
                         ),
                       ),
@@ -289,12 +284,14 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                 ),
               ),
               const SizedBox(width: 8),
-              // Clear Filters Button
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: _clearFilters,
                   icon: const Icon(Icons.clear_all, size: 18),
-                  label: Text('clear_filters'.tr(context)),
+                  label: Text(
+                    'clear_filters'.tr(context),
+                    style: const TextStyle(fontFamily: AppTheme.fontFamily),
+                  ),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     shape: RoundedRectangleBorder(
@@ -305,6 +302,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                           ? Colors.grey.shade600
                           : Colors.grey.shade300,
                     ),
+                    textStyle: const TextStyle(fontFamily: AppTheme.fontFamily),
                   ),
                 ),
               ),
@@ -345,6 +343,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
               Text(
                 hint,
                 style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
                   color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                   fontSize: 13,
                 ),
@@ -355,6 +354,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
           onChanged: onChanged,
           dropdownColor: isDark ? AppTheme.kBg : Colors.white,
           style: TextStyle(
+            fontFamily: AppTheme.fontFamily,
             color: isDark ? Colors.white : AppTheme.kLightText,
             fontSize: 13,
           ),
@@ -418,6 +418,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                     ? '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}'
                     : 'select_date'.tr(context),
                 style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
                   color: _selectedDate != null
                       ? (isDark ? Colors.white : AppTheme.kLightText)
                       : (isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub),
@@ -504,6 +505,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                 Text(
                   data.title,
                   style: AppTheme.tsBodyAdaptive(context).copyWith(
+                    fontFamily: AppTheme.fontFamily,
                     color: isDark ? Colors.grey.shade400 : Colors.grey[600],
                     fontSize: 12,
                   ),
@@ -522,6 +524,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
             Text(
               data.description,
               style: AppTheme.tsSubAdaptive(context).copyWith(
+                fontFamily: AppTheme.fontFamily,
                 color: data.desColor,
                 fontWeight: FontWeight.w500,
                 fontSize: 11,
@@ -613,7 +616,10 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
               child: Center(
                 child: Text(
                   initial,
-                  style: AppTheme.tsLabel.copyWith(color: statusColor),
+                  style: AppTheme.tsLabel.copyWith(
+                    fontFamily: AppTheme.fontFamily,
+                    color: statusColor,
+                  ),
                 ),
               ),
             ),
@@ -657,6 +663,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                     child: Text(
                       booking.status.toUpperCase(),
                       style: AppTheme.tsBody.copyWith(
+                        fontFamily: AppTheme.fontFamily,
                         color: statusColor,
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
@@ -687,6 +694,8 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
 
   // ── Empty State ──────────────────────────────────────────────────────
   Widget _buildEmptyState() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 40),
       child: Column(
@@ -696,7 +705,8 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
           Text(
             'no_bookings_found'.tr(context),
             style: TextStyle(
-              color: Colors.grey[600],
+              fontFamily: AppTheme.fontFamily,
+              color: isDark ? Colors.grey[400] : Colors.grey[600],
               fontSize: 16,
               fontWeight: FontWeight.w500,
             ),
@@ -704,7 +714,11 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
           const SizedBox(height: 8),
           Text(
             'try_adjusting_filters'.tr(context),
-            style: TextStyle(color: Colors.grey[400], fontSize: 14),
+            style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
+              color: isDark ? Colors.grey[500] : Colors.grey[400],
+              fontSize: 14,
+            ),
           ),
         ],
       ),
@@ -789,7 +803,3 @@ class StatCardData {
     required this.icon,
   });
 }
-
-// Add these translations to the AppTranslations class:
-// 'waiting_approval': 'Waiting approval',
-// 'approved_bookings': 'Approved bookings',

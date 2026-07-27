@@ -130,7 +130,10 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('slot_updated_success'.tr(context)),
+              content: Text(
+                'slot_updated_success'.tr(context),
+                style: const TextStyle(fontFamily: AppTheme.fontFamily),
+              ),
               backgroundColor: Colors.green,
               duration: const Duration(seconds: 2),
             ),
@@ -141,7 +144,10 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Error: ${e.toString()}'),
+              content: Text(
+                'Error: ${e.toString()}',
+                style: const TextStyle(fontFamily: AppTheme.fontFamily),
+              ),
               backgroundColor: Colors.red,
             ),
           );
@@ -327,6 +333,7 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
               Text(
                 'slot_image'.tr(context),
                 style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
                   color: isDark ? Colors.white : AppTheme.kLightText,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -341,8 +348,12 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    textStyle: const TextStyle(fontFamily: AppTheme.fontFamily),
                   ),
-                  child: Text('keep_existing'.tr(context)),
+                  child: Text(
+                    'keep_existing'.tr(context),
+                    style: const TextStyle(fontFamily: AppTheme.fontFamily),
+                  ),
                 ),
             ],
           ),
@@ -364,7 +375,11 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
                   const SizedBox(width: 8),
                   Text(
                     'no_image'.tr(context),
-                    style: TextStyle(color: Colors.orange, fontSize: 12),
+                    style: TextStyle(
+                      fontFamily: AppTheme.fontFamily,
+                      color: Colors.orange,
+                      fontSize: 12,
+                    ),
                   ),
                 ],
               ),
@@ -404,7 +419,11 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
                   const SizedBox(width: 4),
                   Text(
                     'new_image'.tr(context),
-                    style: const TextStyle(color: Colors.white, fontSize: 10),
+                    style: const TextStyle(
+                      fontFamily: AppTheme.fontFamily,
+                      color: Colors.white,
+                      fontSize: 10,
+                    ),
                   ),
                 ],
               ),
@@ -452,7 +471,10 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
                             color: Colors.grey,
                           ),
                           SizedBox(height: 8),
-                          Text('Failed to load image'),
+                          Text(
+                            'Failed to load image',
+                            style: TextStyle(fontFamily: AppTheme.fontFamily),
+                          ),
                         ],
                       ),
                     ),
@@ -483,7 +505,11 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
                     const SizedBox(width: 4),
                     Text(
                       'current_image'.tr(context),
-                      style: const TextStyle(color: Colors.white, fontSize: 10),
+                      style: const TextStyle(
+                        fontFamily: AppTheme.fontFamily,
+                        color: Colors.white,
+                        fontSize: 10,
+                      ),
                     ),
                   ],
                 ),
@@ -531,6 +557,7 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
             Text(
               'upload_new_image'.tr(context),
               style: TextStyle(
+                fontFamily: AppTheme.fontFamily,
                 color: AppTheme.kAccent,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -539,6 +566,7 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
             Text(
               'image_formats'.tr(context),
               style: TextStyle(
+                fontFamily: AppTheme.fontFamily,
                 color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                 fontSize: 11,
               ),
@@ -567,6 +595,7 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
           Text(
             'Additional Information',
             style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
               color: isDark ? Colors.white : AppTheme.kLightText,
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -606,6 +635,7 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
         Text(
           '$label:',
           style: TextStyle(
+            fontFamily: AppTheme.fontFamily,
             color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
             fontSize: 13,
           ),
@@ -615,6 +645,7 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
           child: Text(
             value,
             style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
               color: isDark ? Colors.white : AppTheme.kLightText,
               fontSize: 13,
               fontWeight: FontWeight.w500,
@@ -644,6 +675,7 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
         Text(
           title,
           style: TextStyle(
+            fontFamily: AppTheme.fontFamily,
             color: isDark ? Colors.white : AppTheme.kLightText,
             fontSize: 18,
             fontWeight: FontWeight.w700,
@@ -676,17 +708,22 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
       ),
       child: TextFormField(
         controller: controller,
-        style: TextStyle(color: isDark ? Colors.white : AppTheme.kLightText),
+        style: TextStyle(
+          fontFamily: AppTheme.fontFamily,
+          color: isDark ? Colors.white : AppTheme.kLightText,
+        ),
         keyboardType: keyboardType,
         maxLines: maxLines ?? 1,
         validator: validator,
         decoration: InputDecoration(
           labelText: label,
           labelStyle: TextStyle(
+            fontFamily: AppTheme.fontFamily,
             color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
           ),
           hintText: hint,
           hintStyle: TextStyle(
+            fontFamily: AppTheme.fontFamily,
             color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
           ),
           prefixIcon: Icon(icon, color: AppTheme.kAccent, size: 20),
@@ -733,6 +770,7 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
                 Text(
                   'availability'.tr(context),
                   style: TextStyle(
+                    fontFamily: AppTheme.fontFamily,
                     color: isDark ? Colors.white70 : AppTheme.kLightTextSub,
                     fontSize: 12,
                   ),
@@ -742,6 +780,7 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
                       ? 'available'.tr(context)
                       : 'unavailable'.tr(context),
                   style: TextStyle(
+                    fontFamily: AppTheme.fontFamily,
                     color: isDark ? Colors.white : AppTheme.kLightText,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -795,6 +834,7 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
+          textStyle: const TextStyle(fontFamily: AppTheme.fontFamily),
         ),
         child: _isSubmitting
             ? const SizedBox(
@@ -813,6 +853,7 @@ class _UpdateSlotScreenState extends State<UpdateSlotScreen> {
                   Text(
                     'update_slot'.tr(context),
                     style: const TextStyle(
+                      fontFamily: AppTheme.fontFamily,
                       color: Colors.white,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,

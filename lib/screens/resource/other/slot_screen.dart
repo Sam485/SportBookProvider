@@ -96,19 +96,32 @@ class _SlotScreenState extends State<SlotScreen> {
     final confirmDelete = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('delete_confirmation'.tr(context)),
+        title: Text(
+          'delete_confirmation'.tr(context),
+          style: const TextStyle(fontFamily: AppTheme.fontFamily),
+        ),
         content: Text(
           'delete_confirm_message'.tr(context).replaceAll('{name}', slotName),
+          style: const TextStyle(fontFamily: AppTheme.fontFamily),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text('cancel'.tr(context)),
+            child: Text(
+              'cancel'.tr(context),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: Text('delete'.tr(context)),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
+              textStyle: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
+            child: Text(
+              'delete'.tr(context),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
           ),
         ],
       ),
@@ -133,6 +146,7 @@ class _SlotScreenState extends State<SlotScreen> {
                 'slot_deleted_success'
                     .tr(context)
                     .replaceAll('{name}', slotName),
+                style: const TextStyle(fontFamily: AppTheme.fontFamily),
               ),
               backgroundColor: Colors.green,
             ),
@@ -145,7 +159,10 @@ class _SlotScreenState extends State<SlotScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Failed to delete: ${e.toString()}'),
+              content: Text(
+                'Failed to delete: ${e.toString()}',
+                style: const TextStyle(fontFamily: AppTheme.fontFamily),
+              ),
               backgroundColor: Colors.red,
             ),
           );
@@ -223,6 +240,7 @@ class _SlotScreenState extends State<SlotScreen> {
         label: Text(
           'add_court'.tr(context),
           style: TextStyle(
+            fontFamily: AppTheme.fontFamily,
             color: const Color(0xFF0A1828),
             fontWeight: FontWeight.bold,
           ),
@@ -303,6 +321,7 @@ class _SlotScreenState extends State<SlotScreen> {
               _error ?? 'Something went wrong',
               textAlign: TextAlign.center,
               style: TextStyle(
+                fontFamily: AppTheme.fontFamily,
                 color: isDark ? Colors.grey[400] : Colors.grey[700],
                 fontSize: 14,
               ),
@@ -320,9 +339,13 @@ class _SlotScreenState extends State<SlotScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
+                textStyle: const TextStyle(fontFamily: AppTheme.fontFamily),
               ),
               icon: const Icon(Icons.refresh),
-              label: Text('try_again'.tr(context)),
+              label: Text(
+                'try_again'.tr(context),
+                style: const TextStyle(fontFamily: AppTheme.fontFamily),
+              ),
             ),
           ],
         ),
@@ -343,14 +366,16 @@ class _SlotScreenState extends State<SlotScreen> {
           const SizedBox(height: 16),
           Text(
             'no_courts_available'.tr(context),
-            style: AppTheme.tsTitleAdaptive(
-              context,
-            ).copyWith(color: isDark ? Colors.grey[400] : Colors.grey[600]),
+            style: AppTheme.tsTitleAdaptive(context).copyWith(
+              fontFamily: AppTheme.fontFamily,
+              color: isDark ? Colors.grey[400] : Colors.grey[600],
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             'no_courts_message'.tr(context),
             style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
               color: isDark ? Colors.grey[500] : Colors.grey[500],
               fontSize: 14,
             ),
@@ -393,6 +418,7 @@ class _SlotScreenState extends State<SlotScreen> {
                     Text(
                       'manage_courts'.tr(context),
                       style: TextStyle(
+                        fontFamily: AppTheme.fontFamily,
                         color: isDark ? Colors.white : AppTheme.kLightText,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -403,6 +429,7 @@ class _SlotScreenState extends State<SlotScreen> {
                           .tr(context)
                           .replaceAll('{count}', '${slots.length}'),
                       style: TextStyle(
+                        fontFamily: AppTheme.fontFamily,
                         color: isDark
                             ? AppTheme.kTextSub
                             : AppTheme.kLightTextSub,
@@ -426,6 +453,7 @@ class _SlotScreenState extends State<SlotScreen> {
                       .tr(context)
                       .replaceAll('{count}', '${slots.length}'),
                   style: TextStyle(
+                    fontFamily: AppTheme.fontFamily,
                     color: AppTheme.kAccent,
                     fontWeight: FontWeight.w600,
                     fontSize: 12,
@@ -477,7 +505,11 @@ class _SlotScreenState extends State<SlotScreen> {
         const SizedBox(width: 6),
         Text(
           '$label ($count)',
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+          style: TextStyle(
+            fontFamily: AppTheme.fontFamily,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ],
     );
@@ -519,6 +551,7 @@ class _SlotScreenState extends State<SlotScreen> {
                       Text(
                         slot.name,
                         style: TextStyle(
+                          fontFamily: AppTheme.fontFamily,
                           color: isDark ? Colors.white : AppTheme.kLightText,
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
@@ -530,6 +563,7 @@ class _SlotScreenState extends State<SlotScreen> {
                             ? slot.description
                             : '${slot.category?.name ?? 'category_uncategorized'.tr(context)} court',
                         style: TextStyle(
+                          fontFamily: AppTheme.fontFamily,
                           color: isDark
                               ? AppTheme.kTextSub
                               : AppTheme.kLightTextSub,
@@ -578,6 +612,7 @@ class _SlotScreenState extends State<SlotScreen> {
                   child: Text(
                     statusText,
                     style: TextStyle(
+                      fontFamily: AppTheme.fontFamily,
                       color: statusColor,
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
@@ -596,6 +631,7 @@ class _SlotScreenState extends State<SlotScreen> {
                   child: Text(
                     '${slot.capacity} ${'players'.tr(context)}',
                     style: const TextStyle(
+                      fontFamily: AppTheme.fontFamily,
                       color: Colors.blue,
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
@@ -614,6 +650,7 @@ class _SlotScreenState extends State<SlotScreen> {
                   child: Text(
                     slot.category?.name ?? 'category_uncategorized'.tr(context),
                     style: const TextStyle(
+                      fontFamily: AppTheme.fontFamily,
                       color: Colors.purple,
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
@@ -635,6 +672,7 @@ class _SlotScreenState extends State<SlotScreen> {
                     Text(
                       'price_per_hour'.tr(context),
                       style: TextStyle(
+                        fontFamily: AppTheme.fontFamily,
                         color: isDark ? Colors.white70 : AppTheme.kLightTextSub,
                         fontSize: 13,
                       ),
@@ -655,6 +693,7 @@ class _SlotScreenState extends State<SlotScreen> {
                   child: Text(
                     '\$${slot.price}/hr',
                     style: const TextStyle(
+                      fontFamily: AppTheme.fontFamily,
                       color: Color(0xFF0A1828),
                       fontSize: 14,
                       fontWeight: FontWeight.w700,

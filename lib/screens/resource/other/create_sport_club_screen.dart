@@ -136,7 +136,10 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to load categories: ${e.toString()}'),
+            content: Text(
+              'Failed to load categories: ${e.toString()}',
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -206,6 +209,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                                 ? 'update_images'.tr(context)
                                 : 'select_images'.tr(context),
                             style: TextStyle(
+                              fontFamily: AppTheme.fontFamily,
                               color: isDark
                                   ? Colors.white
                                   : AppTheme.kLightText,
@@ -230,6 +234,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                             .tr(context)
                             .replaceAll('{count}', '${5 - _images.length}'),
                         style: TextStyle(
+                          fontFamily: AppTheme.fontFamily,
                           color: isDark
                               ? AppTheme.kTextSub
                               : AppTheme.kLightTextSub,
@@ -319,6 +324,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                 'images_selected_success'
                     .tr(context)
                     .replaceAll('{count}', '${savedImages.length}'),
+                style: const TextStyle(fontFamily: AppTheme.fontFamily),
               ),
               backgroundColor: Colors.green,
               duration: const Duration(seconds: 2),
@@ -328,7 +334,10 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('no_images_selected'.tr(context)),
+            content: Text(
+              'no_images_selected'.tr(context),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             backgroundColor: Colors.orange,
           ),
         );
@@ -342,6 +351,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
               'error_selecting_images'
                   .tr(context)
                   .replaceAll('{error}', e.toString()),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
             ),
             backgroundColor: Colors.red,
           ),
@@ -375,7 +385,10 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('photo_captured_success'.tr(context)),
+              content: Text(
+                'photo_captured_success'.tr(context),
+                style: const TextStyle(fontFamily: AppTheme.fontFamily),
+              ),
               backgroundColor: Colors.green,
               duration: const Duration(seconds: 2),
             ),
@@ -391,6 +404,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
               'error_taking_photo'
                   .tr(context)
                   .replaceAll('{error}', e.toString()),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
             ),
             backgroundColor: Colors.red,
           ),
@@ -437,6 +451,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                   Text(
                     title,
                     style: TextStyle(
+                      fontFamily: AppTheme.fontFamily,
                       color: isDark ? Colors.white : AppTheme.kLightText,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -445,6 +460,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                   Text(
                     subtitle,
                     style: TextStyle(
+                      fontFamily: AppTheme.fontFamily,
                       color: isDark
                           ? AppTheme.kTextSub
                           : AppTheme.kLightTextSub,
@@ -500,7 +516,10 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
       if (_locationController.text.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('please_select_location'.tr(context)),
+            content: Text(
+              'please_select_location'.tr(context),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             backgroundColor: Colors.orange,
           ),
         );
@@ -511,7 +530,10 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
       if (_selectedCategory == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('category_required'.tr(context)),
+            content: Text(
+              'category_required'.tr(context),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             backgroundColor: Colors.orange,
           ),
         );
@@ -522,7 +544,10 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
       if (!_isEditMode && _images.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('image_required'.tr(context)),
+            content: Text(
+              'image_required'.tr(context),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             backgroundColor: Colors.orange,
           ),
         );
@@ -533,7 +558,10 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
       if (_isOpen == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('status_required'.tr(context)),
+            content: Text(
+              'status_required'.tr(context),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             backgroundColor: Colors.orange,
           ),
         );
@@ -544,7 +572,10 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
       if (_openTime == null || _closeTime == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('times_required'.tr(context)),
+            content: Text(
+              'times_required'.tr(context),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             backgroundColor: Colors.orange,
           ),
         );
@@ -558,7 +589,10 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
       if (lat == null || lng == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('invalid_location_coordinates'.tr(context)),
+            content: Text(
+              'invalid_location_coordinates'.tr(context),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             backgroundColor: Colors.orange,
           ),
         );
@@ -606,6 +640,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
               'club_created_success'
                   .tr(context)
                   .replaceAll('{name}', createdClub.name),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
             ),
             backgroundColor: Colors.green,
             duration: const Duration(seconds: 2),
@@ -625,6 +660,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
               'club_created_failed'
                   .tr(context)
                   .replaceAll('{error}', e.toString()),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
             ),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 3),
@@ -670,6 +706,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                 'club_updated_success'
                     .tr(context)
                     .replaceAll('{name}', updatedClub.name),
+                style: const TextStyle(fontFamily: AppTheme.fontFamily),
               ),
               backgroundColor: Colors.green,
               duration: const Duration(seconds: 2),
@@ -688,7 +725,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
           lat: lat,
           lng: lng,
           isOpen: _isOpen!,
-          categoryId: _selectedCategory!.id, // List of category IDs
+          categoryId: _selectedCategory!.id,
         );
 
         final updatedClub = await sportClubService.updateSportClub(
@@ -707,6 +744,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                 'club_updated_no_images'
                     .tr(context)
                     .replaceAll('{name}', updatedClub.name),
+                style: const TextStyle(fontFamily: AppTheme.fontFamily),
               ),
               backgroundColor: Colors.green,
               duration: const Duration(seconds: 2),
@@ -727,6 +765,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
               'club_updated_failed'
                   .tr(context)
                   .replaceAll('{error}', e.toString()),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
             ),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 3),
@@ -786,18 +825,22 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                   borderSide: BorderSide(color: AppTheme.kAccent, width: 2),
                 ),
                 hintStyle: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
                   color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                 ),
                 labelStyle: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
                   color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                 ),
               ),
               helpTextStyle: TextStyle(
+                fontFamily: AppTheme.fontFamily,
                 color: isDark ? Colors.white : AppTheme.kLightText,
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
               dialTextStyle: TextStyle(
+                fontFamily: AppTheme.fontFamily,
                 color: isDark ? Colors.white : AppTheme.kLightText,
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
@@ -949,11 +992,13 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                         controller: _descriptionController,
                         maxLines: 4,
                         style: TextStyle(
+                          fontFamily: AppTheme.fontFamily,
                           color: isDark ? Colors.white : AppTheme.kLightText,
                         ),
                         decoration: InputDecoration(
                           hintText: 'describe_club'.tr(context),
                           hintStyle: TextStyle(
+                            fontFamily: AppTheme.fontFamily,
                             color: isDark
                                 ? AppTheme.kTextSub
                                 : AppTheme.kLightTextSub,
@@ -1015,6 +1060,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                   Text(
                     'loading_categories'.tr(context),
                     style: TextStyle(
+                      fontFamily: AppTheme.fontFamily,
                       color: isDark
                           ? AppTheme.kTextSub
                           : AppTheme.kLightTextSub,
@@ -1036,6 +1082,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                       Text(
                         'select_category'.tr(context),
                         style: TextStyle(
+                          fontFamily: AppTheme.fontFamily,
                           color: isDark
                               ? Colors.white70
                               : AppTheme.kLightTextSub,
@@ -1092,6 +1139,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                             child: Text(
                               category.name,
                               style: TextStyle(
+                                fontFamily: AppTheme.fontFamily,
                                 color: isDark
                                     ? Colors.white
                                     : AppTheme.kLightText,
@@ -1118,6 +1166,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                   ),
                 ),
                 style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
                   color: isDark ? Colors.white : AppTheme.kLightText,
                   fontSize: 14,
                 ),
@@ -1184,6 +1233,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                           ? 'location_selected'.tr(context)
                           : 'select_location'.tr(context),
                       style: TextStyle(
+                        fontFamily: AppTheme.fontFamily,
                         color: isDark ? Colors.white : AppTheme.kLightText,
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -1195,6 +1245,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                           ? _locationController.text
                           : 'tap_to_pick_location'.tr(context),
                       style: TextStyle(
+                        fontFamily: AppTheme.fontFamily,
                         color: _locationController.text.isNotEmpty
                             ? (isDark ? Colors.white70 : AppTheme.kLightText)
                             : (isDark
@@ -1298,6 +1349,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                     child: Text(
                       'existing_image'.tr(context),
                       style: const TextStyle(
+                        fontFamily: AppTheme.fontFamily,
                         color: Colors.white,
                         fontSize: 8,
                         fontWeight: FontWeight.w500,
@@ -1365,6 +1417,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                   child: Text(
                     'new_image'.tr(context),
                     style: const TextStyle(
+                      fontFamily: AppTheme.fontFamily,
                       color: Colors.white,
                       fontSize: 8,
                       fontWeight: FontWeight.w500,
@@ -1399,6 +1452,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                     ? 'update_images'.tr(context)
                     : 'club_images'.tr(context),
                 style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
                   color: isDark ? Colors.white : AppTheme.kLightText,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -1408,6 +1462,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
               Text(
                 '${_keptImageUrls.length + _images.length}/5',
                 style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
                   color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                   fontSize: 12,
                 ),
@@ -1472,6 +1527,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                                   '${5 - (_keptImageUrls.length + _images.length)}',
                                 ),
                       style: TextStyle(
+                        fontFamily: AppTheme.fontFamily,
                         color: _keptImageUrls.length + _images.length < 5
                             ? AppTheme.kAccent
                             : Colors.grey,
@@ -1506,6 +1562,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
         Text(
           title,
           style: TextStyle(
+            fontFamily: AppTheme.fontFamily,
             color: isDark ? Colors.white : AppTheme.kLightText,
             fontSize: 18,
             fontWeight: FontWeight.w700,
@@ -1538,17 +1595,22 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
       ),
       child: TextFormField(
         controller: controller,
-        style: TextStyle(color: isDark ? Colors.white : AppTheme.kLightText),
+        style: TextStyle(
+          fontFamily: AppTheme.fontFamily,
+          color: isDark ? Colors.white : AppTheme.kLightText,
+        ),
         keyboardType: keyboardType,
         validator: validator,
         enabled: enabled,
         decoration: InputDecoration(
           labelText: label,
           labelStyle: TextStyle(
+            fontFamily: AppTheme.fontFamily,
             color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
           ),
           hintText: hint,
           hintStyle: TextStyle(
+            fontFamily: AppTheme.fontFamily,
             color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
           ),
           prefixIcon: Icon(icon, color: AppTheme.kAccent, size: 20),
@@ -1586,6 +1648,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                 Text(
                   'club_status'.tr(context),
                   style: TextStyle(
+                    fontFamily: AppTheme.fontFamily,
                     color: isDark ? Colors.white70 : AppTheme.kLightTextSub,
                     fontSize: 12,
                   ),
@@ -1597,6 +1660,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                             ? 'currently_open'.tr(context)
                             : 'currently_closed'.tr(context)),
                   style: TextStyle(
+                    fontFamily: AppTheme.fontFamily,
                     color: isDark ? Colors.white : AppTheme.kLightText,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -1651,6 +1715,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                 Text(
                   label,
                   style: TextStyle(
+                    fontFamily: AppTheme.fontFamily,
                     color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                     fontSize: 12,
                   ),
@@ -1661,6 +1726,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
             Text(
               time?.format(context) ?? 'select_time'.tr(context),
               style: TextStyle(
+                fontFamily: AppTheme.fontFamily,
                 color: time != null
                     ? (isDark ? Colors.white : AppTheme.kLightText)
                     : (isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub),
@@ -1707,6 +1773,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
+          textStyle: const TextStyle(fontFamily: AppTheme.fontFamily),
         ),
         child: _isSubmitting
             ? const SizedBox(
@@ -1725,6 +1792,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                   Text(
                     buttonText,
                     style: TextStyle(
+                      fontFamily: AppTheme.fontFamily,
                       color: Colors.white,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,

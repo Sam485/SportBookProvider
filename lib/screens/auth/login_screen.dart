@@ -103,7 +103,10 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Login successful!'),
+            content: Text(
+              'Login successful!',
+              style: TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             backgroundColor: Colors.green,
             duration: Duration(seconds: 2),
           ),
@@ -120,7 +123,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(errorMsg),
+            content: Text(
+              errorMsg,
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 3),
           ),
@@ -165,6 +171,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Text(
           'Welcome Back',
           style: TextStyle(
+            fontFamily: AppTheme.fontFamily,
             color: isDark ? Colors.white : AppTheme.kLightText,
             fontSize: 28,
             fontWeight: FontWeight.w800,
@@ -204,6 +211,7 @@ class _LoginScreenState extends State<LoginScreen> {
             Text(
               'Email',
               style: TextStyle(
+                fontFamily: AppTheme.fontFamily,
                 color: isDark ? Colors.white : AppTheme.kLightText,
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -213,6 +221,7 @@ class _LoginScreenState extends State<LoginScreen> {
             TextFormField(
               controller: _identifierController,
               style: TextStyle(
+                fontFamily: AppTheme.fontFamily,
                 color: isDark ? Colors.white : AppTheme.kLightText,
                 fontSize: 15,
               ),
@@ -233,6 +242,7 @@ class _LoginScreenState extends State<LoginScreen> {
               decoration: InputDecoration(
                 hintText: 'Enter your email',
                 hintStyle: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
                   color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                   fontSize: 14,
                 ),
@@ -269,6 +279,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   horizontal: 16,
                   vertical: 16,
                 ),
+                errorStyle: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
+                  color: Colors.red.shade300,
+                ),
               ),
             ),
             const SizedBox(height: 18),
@@ -277,6 +291,7 @@ class _LoginScreenState extends State<LoginScreen> {
             Text(
               'Password',
               style: TextStyle(
+                fontFamily: AppTheme.fontFamily,
                 color: isDark ? Colors.white : AppTheme.kLightText,
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -287,6 +302,7 @@ class _LoginScreenState extends State<LoginScreen> {
               controller: _passwordController,
               obscureText: !_isPasswordVisible,
               style: TextStyle(
+                fontFamily: AppTheme.fontFamily,
                 color: isDark ? Colors.white : AppTheme.kLightText,
                 fontSize: 15,
               ),
@@ -310,6 +326,7 @@ class _LoginScreenState extends State<LoginScreen> {
               decoration: InputDecoration(
                 hintText: 'Enter your password',
                 hintStyle: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
                   color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                   fontSize: 14,
                 ),
@@ -357,6 +374,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   horizontal: 16,
                   vertical: 16,
                 ),
+                errorStyle: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
+                  color: Colors.red.shade300,
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -386,6 +407,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Text(
                       'Remember Me',
                       style: TextStyle(
+                        fontFamily: AppTheme.fontFamily,
                         color: isDark ? Colors.white70 : AppTheme.kLightTextSub,
                         fontSize: 13,
                       ),
@@ -412,6 +434,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   disabledBackgroundColor: isDark
                       ? Colors.grey[800]
                       : Colors.grey[300],
+                  textStyle: const TextStyle(fontFamily: AppTheme.fontFamily),
                 ),
                 child: isLoading
                     ? const SizedBox(
@@ -428,6 +451,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           Text(
                             'Sign In',
                             style: TextStyle(
+                              fontFamily: AppTheme.fontFamily,
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
                               color: isDark ? Colors.black : Colors.white,
@@ -459,6 +483,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Text(
                     'or continue with',
                     style: TextStyle(
+                      fontFamily: AppTheme.fontFamily,
                       color: isDark ? Colors.grey[500] : Colors.grey[600],
                       fontSize: 12,
                     ),
@@ -486,6 +511,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Text(
           "Don't have an account?",
           style: TextStyle(
+            fontFamily: AppTheme.fontFamily,
             color: isDark ? Colors.white70 : AppTheme.kLightTextSub,
             fontSize: 14,
           ),
@@ -497,6 +523,7 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Text(
             'Sign Up',
             style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
               color: AppTheme.kAccent,
               fontSize: 14,
               fontWeight: FontWeight.w700,

@@ -46,11 +46,13 @@ class AppBottomNavBar extends StatelessWidget {
             type: BottomNavigationBarType.fixed,
             selectedItemColor: AppTheme.kAccent,
             unselectedItemColor: isDark ? Colors.grey[400] : Colors.grey[600],
-            selectedLabelStyle: const TextStyle(
+            selectedLabelStyle: TextStyle(
+              fontFamily: AppTheme.fontFamily,
               fontWeight: FontWeight.w600,
               fontSize: 12,
             ),
-            unselectedLabelStyle: const TextStyle(
+            unselectedLabelStyle: TextStyle(
+              fontFamily: AppTheme.fontFamily,
               fontWeight: FontWeight.normal,
               fontSize: 12,
             ),

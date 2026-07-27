@@ -78,6 +78,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           title: Text(
             'edit_profile'.tr(context),
             style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
               color: isDark ? Colors.white : AppTheme.kLightText,
               fontSize: 18,
               fontWeight: FontWeight.w800,
@@ -107,6 +108,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         title: Text(
           'edit_profile'.tr(context),
           style: TextStyle(
+            fontFamily: AppTheme.fontFamily,
             color: isDark ? Colors.white : AppTheme.kLightText,
             fontSize: 18,
             fontWeight: FontWeight.w800,
@@ -131,6 +133,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Text(
               'profile_info'.tr(context).toUpperCase(),
               style: TextStyle(
+                fontFamily: AppTheme.fontFamily,
                 color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -180,6 +183,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           Text(
                             'name'.tr(context),
                             style: TextStyle(
+                              fontFamily: AppTheme.fontFamily,
                               color: isDark
                                   ? AppTheme.kTextSub
                                   : AppTheme.kLightTextSub,
@@ -191,6 +195,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           Text(
                             _user?.fullName ?? 'SILAEND',
                             style: TextStyle(
+                              fontFamily: AppTheme.fontFamily,
                               color: isDark
                                   ? Colors.white
                                   : AppTheme.kLightText,
@@ -250,6 +255,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           Text(
                             'email'.tr(context),
                             style: TextStyle(
+                              fontFamily: AppTheme.fontFamily,
                               color: isDark
                                   ? AppTheme.kTextSub
                                   : AppTheme.kLightTextSub,
@@ -261,6 +267,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           Text(
                             _user?.email ?? 'phone_855968877203@phone.local',
                             style: TextStyle(
+                              fontFamily: AppTheme.fontFamily,
                               color: isDark
                                   ? Colors.white
                                   : AppTheme.kLightText,
@@ -322,6 +329,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           Text(
                             'phone'.tr(context),
                             style: TextStyle(
+                              fontFamily: AppTheme.fontFamily,
                               color: isDark
                                   ? AppTheme.kTextSub
                                   : AppTheme.kLightTextSub,
@@ -333,6 +341,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           Text(
                             _user?.phone ?? '+855968877203',
                             style: TextStyle(
+                              fontFamily: AppTheme.fontFamily,
                               color: isDark
                                   ? Colors.white
                                   : AppTheme.kLightText,
@@ -360,6 +369,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Text(
               'security'.tr(context),
               style: TextStyle(
+                fontFamily: AppTheme.fontFamily,
                 color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -406,6 +416,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           Text(
                             'change_password'.tr(context),
                             style: TextStyle(
+                              fontFamily: AppTheme.fontFamily,
                               color: isDark
                                   ? Colors.white
                                   : AppTheme.kLightText,

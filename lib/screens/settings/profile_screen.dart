@@ -76,13 +76,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // ✅ FIXED: Move initialization to build time or use a getter
   List<FeaturesData> _getAccountData() {
     return [
-      FeaturesData(
-        icon: Icons.payment,
-        title: 'payout_and_banking'.tr(context),
-        des: 'ABA *****4251',
-        color: Colors.green,
-        route: AppRoutes.payment,
-      ),
+      // FeaturesData(
+      //   icon: Icons.payment,
+      //   title: 'payout_and_banking'.tr(context),
+      //   des: 'ABA *****4251',
+      //   color: Colors.green,
+      //   route: AppRoutes.payment,
+      // ),
       FeaturesData(
         icon: Icons.notifications_outlined,
         title: 'notifications'.tr(context),
@@ -175,7 +175,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Text(
+          message,
+          style: const TextStyle(fontFamily: AppTheme.fontFamily),
+        ),
         backgroundColor: Colors.red,
         action: SnackBarAction(
           label: 'retry'.tr(context),
@@ -233,7 +236,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
+      backgroundColor: isDark ? AppTheme.kBg : AppTheme.kLightBg,
       appBar: AppBar(
+        backgroundColor: isDark ? AppTheme.kBg : AppTheme.kLightBg,
+        elevation: 0,
         title: Text(
           'profile'.tr(context),
           style: AppTheme.tsTitleAdaptive(context),
@@ -243,7 +249,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             onPressed: () {
               Navigator.pushNamed(context, AppRoutes.setting);
             },
-            icon: const Icon(Icons.settings),
+            icon: Icon(
+              Icons.settings,
+              color: isDark ? Colors.white : AppTheme.kLightText,
+            ),
           ),
         ],
       ),
@@ -281,8 +290,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _loadUserData,
-              style: AppTheme.elevatedButtonStyle(),
-              child: Text('retry'.tr(context)),
+              style: AppTheme.elevatedButtonStyle().copyWith(
+                textStyle: const WidgetStatePropertyAll(
+                  TextStyle(fontFamily: AppTheme.fontFamily),
+                ),
+              ),
+              child: Text(
+                'retry'.tr(context),
+                style: const TextStyle(fontFamily: AppTheme.fontFamily),
+              ),
             ),
           ],
         ),
@@ -465,7 +481,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ).copyWith(fontSize: 14),
                               ),
                               const SizedBox(height: 5),
-                              Text(data.des, style: AppTheme.tsBody),
+                              Text(
+                                data.des,
+                                style: AppTheme.tsBodyAdaptive(context),
+                              ),
                             ],
                           ),
                         ),
@@ -891,7 +910,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return const SizedBox.shrink();
     }
 
-
     return Padding(
       padding: const EdgeInsets.all(10),
       child: Container(
@@ -933,7 +951,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         children: [
                           Text('4.7', style: AppTheme.tsAccent),
                           const SizedBox(width: 5),
-                          Text('(128 reviews)', style: AppTheme.tsBody),
+                          Text(
+                            '(128 reviews)',
+                            style: AppTheme.tsBodyAdaptive(context),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 5),
@@ -1029,7 +1050,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Center(
         child: Text(
           initials,
-          style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            fontFamily: AppTheme.fontFamily,
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );
@@ -1105,7 +1130,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ).copyWith(fontSize: 14),
                               ),
                               const SizedBox(height: 5),
-                              Text(data[index].des, style: AppTheme.tsBody),
+                              Text(
+                                data[index].des,
+                                style: AppTheme.tsBodyAdaptive(context),
+                              ),
                             ],
                           ),
                         ),
@@ -1127,6 +1155,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildSignOutButton() {
     if (_isDisposed) return const SizedBox.shrink();
 
+
     return Padding(
       padding: const EdgeInsets.all(10),
       child: SizedBox(
@@ -1134,11 +1163,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
         height: 50,
         child: ElevatedButton(
           onPressed: _showSignOutDialog,
-          style: AppTheme.elevatedButtonStyle(
-            backgroundColor: Colors.red.withValues(alpha: 0.3),
-            foregroundColor: Colors.red,
+          style:
+              AppTheme.elevatedButtonStyle(
+                backgroundColor: Colors.red.withValues(alpha: 0.3),
+                foregroundColor: Colors.red,
+              ).copyWith(
+                textStyle: const WidgetStatePropertyAll(
+                  TextStyle(fontFamily: AppTheme.fontFamily),
+                ),
+              ),
+          child: Text(
+            'sign_out'.tr(context),
+            style: const TextStyle(fontFamily: AppTheme.fontFamily),
           ),
-          child: Text('sign_out'.tr(context)),
         ),
       ),
     );
@@ -1157,12 +1194,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
           title: Text(
             'sign_out'.tr(context),
             style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
               color: isDark ? Colors.white : AppTheme.kLightText,
             ),
           ),
           content: Text(
             'sign_out_confirmation'.tr(context),
             style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
               color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
             ),
           ),
@@ -1172,6 +1211,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Text(
                 'sign_out_cancel'.tr(context),
                 style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
                   color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                 ),
               ),
@@ -1194,8 +1234,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   }
                 }
               },
-              style: AppTheme.elevatedButtonStyle(backgroundColor: Colors.red),
-              child: Text('sign_out_confirm'.tr(context)),
+              style: AppTheme.elevatedButtonStyle(backgroundColor: Colors.red)
+                  .copyWith(
+                    textStyle: const WidgetStatePropertyAll(
+                      TextStyle(fontFamily: AppTheme.fontFamily),
+                    ),
+                  ),
+              child: Text(
+                'sign_out_confirm'.tr(context),
+                style: const TextStyle(fontFamily: AppTheme.fontFamily),
+              ),
             ),
           ],
         );
@@ -1212,7 +1260,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         color: color.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Text(title, style: AppTheme.tsBody.copyWith(color: color)),
+      child: Text(
+        title,
+        style: AppTheme.tsBodyAdaptive(
+          context,
+        ).copyWith(fontFamily: AppTheme.fontFamily, color: color),
+      ),
     );
   }
 
@@ -1277,6 +1330,7 @@ class LanguageSelector extends StatelessWidget {
           Text(
             'select_language'.tr(context),
             style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
               color: isDark ? Colors.white : AppTheme.kLightText,
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -1346,6 +1400,7 @@ class LanguageSelector extends StatelessWidget {
           child: Text(
             code,
             style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
               color: isSelected ? AppTheme.kAccent : Colors.grey,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               fontSize: 12,
@@ -1355,7 +1410,10 @@ class LanguageSelector extends StatelessWidget {
       ),
       title: Text(
         label,
-        style: TextStyle(color: isDark ? Colors.white : AppTheme.kLightText),
+        style: TextStyle(
+          fontFamily: AppTheme.fontFamily,
+          color: isDark ? Colors.white : AppTheme.kLightText,
+        ),
       ),
       trailing: isSelected
           ? Icon(Icons.check_circle, color: AppTheme.kAccent)
@@ -1400,6 +1458,7 @@ class AppearanceSelector extends StatelessWidget {
           Text(
             'select_theme'.tr(context),
             style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
               color: isDark ? Colors.white : AppTheme.kLightText,
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -1492,7 +1551,10 @@ class AppearanceSelector extends StatelessWidget {
       ),
       title: Text(
         label,
-        style: TextStyle(color: isDark ? Colors.white : AppTheme.kLightText),
+        style: TextStyle(
+          fontFamily: AppTheme.fontFamily,
+          color: isDark ? Colors.white : AppTheme.kLightText,
+        ),
       ),
       trailing: isSelected
           ? Icon(Icons.check_circle, color: AppTheme.kAccent)

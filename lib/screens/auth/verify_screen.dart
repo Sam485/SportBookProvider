@@ -222,7 +222,10 @@ class _VerifyScreenState extends State<VerifyScreen> {
 
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('OTP sent successfully'),
+              content: Text(
+                'OTP sent successfully',
+                style: TextStyle(fontFamily: AppTheme.fontFamily),
+              ),
               backgroundColor: Colors.green,
             ),
           );
@@ -374,6 +377,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
         SnackBar(
           content: Text(
             'Account created successfully! Welcome ${response.user.fullName}',
+            style: const TextStyle(fontFamily: AppTheme.fontFamily),
           ),
           backgroundColor: Colors.green,
           duration: const Duration(seconds: 3),
@@ -423,7 +427,10 @@ class _VerifyScreenState extends State<VerifyScreen> {
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Text(
+          message,
+          style: const TextStyle(fontFamily: AppTheme.fontFamily),
+        ),
         backgroundColor: Colors.red.shade600,
         duration: const Duration(seconds: 4),
       ),
@@ -450,6 +457,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
               Text(
                 'Initializing...',
                 style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
                   color: isDark ? Colors.white : AppTheme.kLightText,
                 ),
               ),
@@ -515,6 +523,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
         Text(
           'Create Account',
           style: TextStyle(
+            fontFamily: AppTheme.fontFamily,
             color: isDark ? Colors.white : AppTheme.kLightText,
             fontSize: 28,
             fontWeight: FontWeight.w800,
@@ -526,6 +535,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
           'Enter the 6-digit code sent to verify your account',
           textAlign: TextAlign.center,
           style: TextStyle(
+            fontFamily: AppTheme.fontFamily,
             color: isDark ? Colors.white60 : AppTheme.kLightTextSub,
             fontSize: 14,
           ),
@@ -541,6 +551,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
           child: Text(
             phoneNumber,
             style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
               color: AppTheme.kAccent,
               fontSize: 15,
               fontWeight: FontWeight.w700,
@@ -553,6 +564,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
             child: Text(
               'Welcome, ${_userData!.fullName}!',
               style: TextStyle(
+                fontFamily: AppTheme.fontFamily,
                 color: isDark ? Colors.white70 : AppTheme.kLightTextSub,
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
@@ -605,7 +617,10 @@ class _VerifyScreenState extends State<VerifyScreen> {
                 disabledBackgroundColor: isDark
                     ? Colors.grey[800]
                     : Colors.grey[300],
-                textStyle: const TextStyle(fontWeight: FontWeight.w700),
+                textStyle: const TextStyle(
+                  fontFamily: AppTheme.fontFamily,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               child: _isLoading
                   ? const SizedBox(
@@ -624,6 +639,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
                               ? 'Requesting OTP...'
                               : 'Verify & Create Account',
                           style: TextStyle(
+                            fontFamily: AppTheme.fontFamily,
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                             color: isDark ? Colors.black : Colors.white,
@@ -666,6 +682,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               enabled: _verificationId != null,
               style: TextStyle(
+                fontFamily: AppTheme.fontFamily,
                 color: isDark ? Colors.white : AppTheme.kLightText,
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
@@ -719,6 +736,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
         Text(
           'Didn\'t receive the code?',
           style: TextStyle(
+            fontFamily: AppTheme.fontFamily,
             color: isDark ? Colors.white70 : AppTheme.kLightTextSub,
             fontSize: 14,
           ),
@@ -739,6 +757,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
                   child: Text(
                     'Resend',
                     style: TextStyle(
+                      fontFamily: AppTheme.fontFamily,
                       color: isDark ? Colors.black : Colors.white,
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -749,6 +768,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
             : Text(
                 '${_secondsLeft}s',
                 style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
                   color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
@@ -765,6 +785,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
         Text(
           'Already have an account?',
           style: TextStyle(
+            fontFamily: AppTheme.fontFamily,
             color: isDark ? Colors.white70 : AppTheme.kLightTextSub,
             fontSize: 14,
           ),
@@ -775,6 +796,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
           child: Text(
             'Sign In',
             style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
               color: AppTheme.kAccent,
               fontSize: 14,
               fontWeight: FontWeight.w700,

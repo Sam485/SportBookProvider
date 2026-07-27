@@ -129,6 +129,7 @@ class _ResourceScreenState extends State<ResourceScreen> {
                         .tr(context)
                         .replaceAll('{count}', '${clubs.length}'),
                     style: TextStyle(
+                      fontFamily: AppTheme.fontFamily,
                       color: AppTheme.kAccent,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -178,6 +179,7 @@ class _ResourceScreenState extends State<ResourceScreen> {
               _error ?? 'failed_to_load_clubs'.tr(context),
               textAlign: TextAlign.center,
               style: TextStyle(
+                fontFamily: AppTheme.fontFamily,
                 color: isDark ? Colors.grey[400] : Colors.grey[700],
                 fontSize: 14,
               ),
@@ -195,9 +197,13 @@ class _ResourceScreenState extends State<ResourceScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
+                textStyle: const TextStyle(fontFamily: AppTheme.fontFamily),
               ),
               icon: const Icon(Icons.refresh),
-              label: Text('try_again'.tr(context)),
+              label: Text(
+                'try_again'.tr(context),
+                style: const TextStyle(fontFamily: AppTheme.fontFamily),
+              ),
             ),
           ],
         ),
@@ -221,14 +227,16 @@ class _ResourceScreenState extends State<ResourceScreen> {
           const SizedBox(height: 16),
           Text(
             'no_clubs_found'.tr(context),
-            style: AppTheme.tsTitleAdaptive(
-              context,
-            ).copyWith(color: isDark ? Colors.grey[400] : Colors.grey[600]),
+            style: AppTheme.tsTitleAdaptive(context).copyWith(
+              fontFamily: AppTheme.fontFamily,
+              color: isDark ? Colors.grey[400] : Colors.grey[600],
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             'add_club_message'.tr(context),
             style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
               color: isDark ? Colors.grey[500] : Colors.grey[500],
               fontSize: 14,
             ),
@@ -276,11 +284,16 @@ class _ResourceScreenState extends State<ResourceScreen> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
+              textStyle: const TextStyle(fontFamily: AppTheme.fontFamily),
             ),
             icon: const Icon(Icons.add_circle_outline, size: 18),
             label: Text(
               'add_club'.tr(context),
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+              style: const TextStyle(
+                fontFamily: AppTheme.fontFamily,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
             ),
           ),
         ],

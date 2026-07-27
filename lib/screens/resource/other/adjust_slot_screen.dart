@@ -84,7 +84,10 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
       if (_imageFile == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('please_select_slot_image'.tr(context)),
+            content: Text(
+              'please_select_slot_image'.tr(context),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             backgroundColor: Colors.orange,
           ),
         );
@@ -94,7 +97,10 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
       if (_selectedCategory == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('please_select_category'.tr(context)),
+            content: Text(
+              'please_select_category'.tr(context),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             backgroundColor: Colors.orange,
           ),
         );
@@ -122,7 +128,10 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('slot_created_success'.tr(context)),
+              content: Text(
+                'slot_created_success'.tr(context),
+                style: const TextStyle(fontFamily: AppTheme.fontFamily),
+              ),
               backgroundColor: Colors.green,
               duration: const Duration(seconds: 2),
             ),
@@ -133,7 +142,10 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Error: ${e.toString()}'),
+              content: Text(
+                'Error: ${e.toString()}',
+                style: const TextStyle(fontFamily: AppTheme.fontFamily),
+              ),
               backgroundColor: Colors.red,
             ),
           );
@@ -321,6 +333,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                 Text(
                   'category'.tr(context),
                   style: TextStyle(
+                    fontFamily: AppTheme.fontFamily,
                     color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                     fontSize: 12,
                   ),
@@ -332,7 +345,11 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 child: Text(
                   'no_categories_available'.tr(context),
-                  style: const TextStyle(color: Colors.orange, fontSize: 14),
+                  style: const TextStyle(
+                    fontFamily: AppTheme.fontFamily,
+                    color: Colors.orange,
+                    fontSize: 14,
+                  ),
                 ),
               )
             else
@@ -344,10 +361,12 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                   contentPadding: const EdgeInsets.symmetric(vertical: 8),
                   hintText: 'select_category'.tr(context),
                   hintStyle: TextStyle(
+                    fontFamily: AppTheme.fontFamily,
                     color: isDark ? Colors.grey[400] : Colors.grey[600],
                   ),
                 ),
                 style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
                   color: isDark ? Colors.white : AppTheme.kLightText,
                   fontSize: 16,
                 ),
@@ -389,6 +408,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                           child: Text(
                             category.name,
                             style: TextStyle(
+                              fontFamily: AppTheme.fontFamily,
                               color: isDark
                                   ? Colors.white
                                   : AppTheme.kLightText,
@@ -461,6 +481,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                 Text(
                   'create_new_slot'.tr(context),
                   style: TextStyle(
+                    fontFamily: AppTheme.fontFamily,
                     color: isDark ? Colors.white : AppTheme.kLightText,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -469,6 +490,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                 Text(
                   'fill_slot_details'.tr(context),
                   style: TextStyle(
+                    fontFamily: AppTheme.fontFamily,
                     color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                     fontSize: 13,
                   ),
@@ -511,6 +533,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                 Text(
                   'sport_club'.tr(context),
                   style: TextStyle(
+                    fontFamily: AppTheme.fontFamily,
                     color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                     fontSize: 12,
                   ),
@@ -518,6 +541,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                 Text(
                   widget.sportClub.name,
                   style: TextStyle(
+                    fontFamily: AppTheme.fontFamily,
                     color: isDark ? Colors.white : AppTheme.kLightText,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -539,6 +563,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                   ? 'open'.tr(context)
                   : 'closed'.tr(context),
               style: TextStyle(
+                fontFamily: AppTheme.fontFamily,
                 color: widget.sportClub.isOpen ? Colors.green : Colors.red,
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
@@ -572,6 +597,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
               Text(
                 'slot_image_required'.tr(context),
                 style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
                   color: isDark ? Colors.white : AppTheme.kLightText,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -586,8 +612,12 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    textStyle: const TextStyle(fontFamily: AppTheme.fontFamily),
                   ),
-                  child: Text('remove'.tr(context)),
+                  child: Text(
+                    'remove'.tr(context),
+                    style: const TextStyle(fontFamily: AppTheme.fontFamily),
+                  ),
                 ),
             ],
           ),
@@ -631,6 +661,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                           Text(
                             'image_loaded'.tr(context),
                             style: const TextStyle(
+                              fontFamily: AppTheme.fontFamily,
                               color: Colors.white,
                               fontSize: 10,
                             ),
@@ -666,6 +697,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                     Text(
                       'tap_to_upload_image'.tr(context),
                       style: TextStyle(
+                        fontFamily: AppTheme.fontFamily,
                         color: AppTheme.kAccent,
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -674,6 +706,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                     Text(
                       'image_formats'.tr(context),
                       style: TextStyle(
+                        fontFamily: AppTheme.fontFamily,
                         color: isDark
                             ? AppTheme.kTextSub
                             : AppTheme.kLightTextSub,
@@ -707,6 +740,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
         Text(
           title,
           style: TextStyle(
+            fontFamily: AppTheme.fontFamily,
             color: isDark ? Colors.white : AppTheme.kLightText,
             fontSize: 18,
             fontWeight: FontWeight.w700,
@@ -739,17 +773,22 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
       ),
       child: TextFormField(
         controller: controller,
-        style: TextStyle(color: isDark ? Colors.white : AppTheme.kLightText),
+        style: TextStyle(
+          fontFamily: AppTheme.fontFamily,
+          color: isDark ? Colors.white : AppTheme.kLightText,
+        ),
         keyboardType: keyboardType,
         validator: validator,
         maxLines: maxLines,
         decoration: InputDecoration(
           labelText: label,
           labelStyle: TextStyle(
+            fontFamily: AppTheme.fontFamily,
             color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
           ),
           hintText: hint,
           hintStyle: TextStyle(
+            fontFamily: AppTheme.fontFamily,
             color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
           ),
           prefixIcon: Icon(icon, color: AppTheme.kAccent, size: 20),
@@ -796,6 +835,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                 Text(
                   'slot_status'.tr(context),
                   style: TextStyle(
+                    fontFamily: AppTheme.fontFamily,
                     color: isDark ? Colors.white70 : AppTheme.kLightTextSub,
                     fontSize: 12,
                   ),
@@ -805,6 +845,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                       ? 'available_emoji'.tr(context)
                       : 'unavailable_emoji'.tr(context),
                   style: TextStyle(
+                    fontFamily: AppTheme.fontFamily,
                     color: isDark ? Colors.white : AppTheme.kLightText,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -858,6 +899,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
+          textStyle: const TextStyle(fontFamily: AppTheme.fontFamily),
         ),
         child: _isSubmitting
             ? const SizedBox(
@@ -880,6 +922,7 @@ class _AdjustSlotScreenState extends State<AdjustSlotScreen> {
                   Text(
                     'create_slot'.tr(context),
                     style: const TextStyle(
+                      fontFamily: AppTheme.fontFamily,
                       color: Colors.white,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,

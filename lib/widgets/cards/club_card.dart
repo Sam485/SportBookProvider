@@ -75,7 +75,7 @@ class _ClubCardState extends State<ClubCard> {
   }
 
   void _navigateToAddSlot(int id) {
-     Navigator.pushNamed(
+    Navigator.pushNamed(
       context,
       AppRoutes.slot,
       arguments: widget.club, // Pass the entire club model
@@ -83,7 +83,7 @@ class _ClubCardState extends State<ClubCard> {
   }
 
   void _navigateToEditSportClub() {
-    Navigator.pushNamed(context, AppRoutes.editSportClub,arguments: c);
+    Navigator.pushNamed(context, AppRoutes.editSportClub, arguments: c);
   }
 
   @override
@@ -175,6 +175,7 @@ class _ClubCardState extends State<ClubCard> {
                                   Text(
                                     'no_images'.tr(context),
                                     style: TextStyle(
+                                      fontFamily: AppTheme.fontFamily,
                                       color: isDark
                                           ? Colors.white38
                                           : AppTheme.kLightTextSub,
@@ -252,6 +253,7 @@ class _ClubCardState extends State<ClubCard> {
                                 child: Text(
                                   '${_page + 1}/${urls.length}',
                                   style: const TextStyle(
+                                    fontFamily: AppTheme.fontFamily,
                                     color: Colors.white70,
                                     fontSize: 10,
                                     fontWeight: FontWeight.w600,
@@ -320,6 +322,7 @@ class _ClubCardState extends State<ClubCard> {
                             child: Text(
                               initials,
                               style: TextStyle(
+                                fontFamily: AppTheme.fontFamily,
                                 color: isDark
                                     ? Colors.white
                                     : AppTheme.kLightText,
@@ -336,6 +339,7 @@ class _ClubCardState extends State<ClubCard> {
                                 Text(
                                   c.name,
                                   style: TextStyle(
+                                    fontFamily: AppTheme.fontFamily,
                                     color: isDark
                                         ? Colors.white
                                         : AppTheme.kLightText,
@@ -356,6 +360,7 @@ class _ClubCardState extends State<ClubCard> {
                                     Text(
                                       formatDurationToTimeString(c.openTime),
                                       style: const TextStyle(
+                                        fontFamily: AppTheme.fontFamily,
                                         color: AppTheme.kAccent,
                                         fontSize: 10,
                                         fontWeight: FontWeight.w600,
@@ -382,6 +387,7 @@ class _ClubCardState extends State<ClubCard> {
                                     Text(
                                       formatDurationToTimeString(c.closeTime),
                                       style: TextStyle(
+                                        fontFamily: AppTheme.fontFamily,
                                         color: isDark
                                             ? AppTheme.kTextSub
                                             : AppTheme.kLightTextSub,
@@ -418,6 +424,7 @@ class _ClubCardState extends State<ClubCard> {
                             child: Text(
                               c.location,
                               style: TextStyle(
+                                fontFamily: AppTheme.fontFamily,
                                 color: isDark
                                     ? Colors.white70
                                     : AppTheme.kLightTextSub,
@@ -445,6 +452,7 @@ class _ClubCardState extends State<ClubCard> {
                               child: Text(
                                 c.categories.map((cat) => cat.name).join(', '),
                                 style: TextStyle(
+                                  fontFamily: AppTheme.fontFamily,
                                   color: isDark
                                       ? AppTheme.kTextSub
                                       : AppTheme.kLightTextSub,
@@ -473,6 +481,7 @@ class _ClubCardState extends State<ClubCard> {
                                 Text(
                                   '${c.favoriteCount}',
                                   style: TextStyle(
+                                    fontFamily: AppTheme.fontFamily,
                                     color: isDark
                                         ? AppTheme.kTextSub
                                         : AppTheme.kLightTextSub,
@@ -514,6 +523,7 @@ class _ClubCardState extends State<ClubCard> {
                               child: Text(
                                 'Add slot',
                                 style: const TextStyle(
+                                  fontFamily: AppTheme.fontFamily,
                                   color: Color(0xFF0A1828),
                                   fontSize: 11,
                                   fontWeight: FontWeight.w800,
@@ -593,6 +603,7 @@ class _ClubCardState extends State<ClubCard> {
           Text(
             isOpen ? 'open'.tr(context) : 'closed'.tr(context),
             style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
               color: isOpen ? Colors.greenAccent : Colors.redAccent,
               fontSize: 9,
               fontWeight: FontWeight.w700,

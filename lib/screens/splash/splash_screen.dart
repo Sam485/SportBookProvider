@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/core/di/service_locator.dart';
+import 'package:flutter_application_1/core/theme.dart';
 import 'package:flutter_application_1/features/Auth/auth_service.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -106,9 +107,10 @@ class _SplashScreenState extends State<SplashScreen>
         ),
         const SizedBox(height: 30),
         // App Name
-        const Text(
+        Text(
           'SportMate',
-          style: TextStyle(
+          style: const TextStyle(
+            fontFamily: AppTheme.fontFamily,
             fontSize: 40,
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -116,9 +118,10 @@ class _SplashScreenState extends State<SplashScreen>
           ),
         ),
         const SizedBox(height: 10),
-        const Text(
+        Text(
           'Your Sports Partner',
-          style: TextStyle(
+          style: const TextStyle(
+            fontFamily: AppTheme.fontFamily,
             fontSize: 16,
             color: Colors.white70,
             letterSpacing: 1,
@@ -143,7 +146,11 @@ class _SplashScreenState extends State<SplashScreen>
         const SizedBox(height: 20),
         Text(
           _errorMessage!,
-          style: const TextStyle(fontSize: 16, color: Colors.white),
+          style: const TextStyle(
+            fontFamily: AppTheme.fontFamily,
+            fontSize: 16,
+            color: Colors.white,
+          ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 30),
@@ -162,10 +169,15 @@ class _SplashScreenState extends State<SplashScreen>
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(30),
             ),
+            textStyle: const TextStyle(fontFamily: AppTheme.fontFamily),
           ),
           child: const Text(
             'Retry',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ],
