@@ -169,6 +169,7 @@ class AppTranslations {
       'tap_to_upload_images': 'Tap to upload images',
       'add_more_images': 'Add more images ({remaining} remaining)',
       'club_images': 'Club Images',
+      'read_only': 'Read Only',
 
       // ---------------------- Sport Club Management ----------------------------
       'edit_sport_club': 'Edit Sport Club',
@@ -204,6 +205,11 @@ class AppTranslations {
       'no_clubs_found': 'No clubs found',
       'add_club_message': 'Tap the "Add Club" button to create one',
       'failed_to_load_clubs': 'Failed to load clubs',
+      'club_deleted_success': 'Club "{name}" deleted successfully',
+      'club_delete_failed': 'Failed to delete club: {error}',
+      'delete_club': 'Delete Club',
+      'delete_club_confirmation':
+          'Are you sure you want to delete "{name}"? This action cannot be undone.',
 
       // ---------------------- Profile & Settings ----------------------------
       'edit_profile': 'Edit Profile',
@@ -540,6 +546,7 @@ class AppTranslations {
       'tap_to_upload_images': 'ចុចដើម្បីបង្ហោះរូបភាព',
       'add_more_images': 'បន្ថែមរូបភាពបន្ថែម (នៅសល់ {remaining})',
       'club_images': 'រូបភាពក្លឹប',
+      'read_only': 'អានតែប៉ុណ្ណោះ',
 
       // ---------------------- Sport Club Management ----------------------------
       'edit_sport_club': 'កែក្លឹបកីឡា',
@@ -577,6 +584,11 @@ class AppTranslations {
       'no_clubs_found': 'រកមិនឃើញក្លឹប',
       'add_club_message': 'ចុចប៊ូតុង "បន្ថែមក្លឹប" ដើម្បីបង្កើតមួយ',
       'failed_to_load_clubs': 'បរាជ័យក្នុងការផ្ទុកក្លឹប',
+      'club_deleted_success': 'បានលុបក្លឹប "{name}" ដោយជោគជ័យ',
+      'club_delete_failed': 'បរាជ័យក្នុងការលុបក្លឹប: {error}',
+      'delete_club': 'លុបក្លឹប',
+      'delete_club_confirmation':
+          'តើអ្នកប្រាកដថាចង់លុប "{name}"? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។',
 
       // ---------------------- Profile & Settings ----------------------------
       'edit_profile': 'កែប្រវត្តិរូប',

@@ -27,11 +27,12 @@ void main() async {
   );
   runApp(const SportMateApp());
   runApp(
-    DevicePreview(
-      enabled: true,
-      tools: const [...DevicePreview.defaultTools],
-      builder: (context) => const SportMateApp(),
-    ),
+    SportMateApp(),
+    // DevicePreview(                           
+    //   enabled: true,
+    //   tools: const [...DevicePreview.defaultTools],
+    //   builder: (context) => const SportMateApp(),
+    // ),
   );
 }
 

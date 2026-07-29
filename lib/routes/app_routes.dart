@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/features/Slot/model/slot_model.dart';
 import 'package:flutter_application_1/features/SportClub/model/sport_club_model.dart';
 import 'package:flutter_application_1/screens/DashBoard/Notification/notification_screen.dart';
+import 'package:flutter_application_1/screens/auth/forget_password_screen.dart';
 import 'package:flutter_application_1/screens/auth/landing_screen.dart';
 import 'package:flutter_application_1/screens/auth/login_screen.dart';
+import 'package:flutter_application_1/screens/auth/reset_password_screen.dart';
 import 'package:flutter_application_1/screens/auth/signup_screen.dart';
 import 'package:flutter_application_1/screens/auth/verify_screen.dart'; // ✅ Import VerifyScreen
 import 'package:flutter_application_1/screens/main_screen.dart';
@@ -41,13 +43,17 @@ class AppRoutes {
   static const passAndSecurity = '/password-security';
   static const operatingHours = '/operating-hours';
   static const reviews = '/reviews';
+  static const resetPassword = '/resetPassword';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       // ── Auth Routes ──────────────────────────────────────────────
+      case forget:
+        return MaterialPageRoute(builder: (_) => const ForgetPasswordScreen());
       case splash:
         return MaterialPageRoute(builder: (_) => const SplashScreen());
-
+      case resetPassword:
+        return MaterialPageRoute(builder: (_) => const ResetPasswordScreen());
       case landing:
         return MaterialPageRoute(builder: (_) => const LandingScreen());
 

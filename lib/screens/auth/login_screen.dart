@@ -135,6 +135,10 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  void _navigateToForgetPassword() {
+    Navigator.pushNamed(context, AppRoutes.forget);
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -413,6 +417,19 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ],
+                ),
+                // ✅ Added Forgot Password button
+                GestureDetector(
+                  onTap: _navigateToForgetPassword,
+                  child: Text(
+                    'Forgot Password?',
+                    style: TextStyle(
+                      fontFamily: AppTheme.fontFamily,
+                      color: AppTheme.kAccent,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ],
             ),

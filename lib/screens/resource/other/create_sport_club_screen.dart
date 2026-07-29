@@ -611,7 +611,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
     }
   }
 
-  // Create method
+  // In CreateSportClubScreen.dart - modify the submit methods
   Future<void> _createSportClub(double lat, double lng) async {
     try {
       final sportClubDto = CreatedSportClubsDto(
@@ -623,7 +623,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
         openTime: _timeToDuration(_openTime!),
         closeTime: _timeToDuration(_closeTime!),
         description: _descriptionController.text,
-        categoryId: _selectedCategory!.id,
+        categoryIds: _selectedCategory!.id,
         images: _images,
       );
 
@@ -646,6 +646,8 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
             duration: const Duration(seconds: 2),
           ),
         );
+
+        // Return true to indicate success
         Navigator.pop(context, true);
       }
     } catch (e) {
@@ -666,11 +668,14 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
             duration: const Duration(seconds: 3),
           ),
         );
+
+        // Return false to indicate failure
+        Navigator.pop(context, false);
       }
     }
   }
 
-  // Update method - FIXED to use correct DTOs
+  // Similarly update _updateSportClub method:
   Future<void> _updateSportClub(double lat, double lng) async {
     try {
       final clubId = _editingClubId!;
@@ -771,6 +776,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
             duration: const Duration(seconds: 3),
           ),
         );
+        Navigator.pop(context, false);
       }
     }
   }
@@ -1037,6 +1043,111 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
 
   // ── Category Dropdown ─────────────────────────────────────────────────
   Widget _buildCategoryDropdown(bool isDark) {
+    // If in edit mode, show category as a read-only field
+    if (_isEditMode && _selectedCategory != null) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isDark ? AppTheme.kCardAlt : AppTheme.kLightCardAlt,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark ? AppTheme.kBorder : AppTheme.kLightBorder,
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.category, color: AppTheme.kAccent, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'category'.tr(context),
+                    style: TextStyle(
+                      fontFamily: AppTheme.fontFamily,
+                      color: isDark
+                          ? AppTheme.kTextSub
+                          : AppTheme.kLightTextSub,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      if (_selectedCategory!.imageUrl.isNotEmpty)
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: Image.network(
+                            _selectedCategory!.imageUrl,
+                            width: 20,
+                            height: 20,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                width: 20,
+                                height: 20,
+                                color: Colors.grey.shade300,
+                                child: const Icon(
+                                  Icons.error_outline,
+                                  size: 12,
+                                ),
+                              );
+                            },
+                          ),
+                        )
+                      else
+                        Container(
+                          width: 20,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            color: AppTheme.kAccent.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Icon(
+                            Icons.category,
+                            color: AppTheme.kAccent,
+                            size: 12,
+                          ),
+                        ),
+                      const SizedBox(width: 8),
+                      Text(
+                        _selectedCategory!.name,
+                        style: TextStyle(
+                          fontFamily: AppTheme.fontFamily,
+                          color: isDark ? Colors.white : AppTheme.kLightText,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.grey.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                'read_only'.tr(context),
+                style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
+                  color: isDark ? Colors.white70 : AppTheme.kLightTextSub,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Create mode - show dropdown
     return Container(
       decoration: BoxDecoration(
         color: isDark ? AppTheme.kCardAlt : AppTheme.kLightCardAlt,
@@ -1152,17 +1263,23 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                     ),
                   );
                 }).toList(),
-                onChanged: (CategoriesModel? newValue) {
-                  setState(() {
-                    _selectedCategory = newValue;
-                  });
-                },
+                onChanged: _isEditMode
+                    ? null // Disable in edit mode
+                    : (CategoriesModel? newValue) {
+                        setState(() {
+                          _selectedCategory = newValue;
+                        });
+                      },
                 dropdownColor: isDark ? AppTheme.kBg : Colors.white,
                 icon: Padding(
                   padding: const EdgeInsets.only(right: 16),
                   child: Icon(
-                    Icons.arrow_drop_down,
-                    color: isDark ? Colors.white70 : AppTheme.kLightText,
+                    _isEditMode ? Icons.lock_outline : Icons.arrow_drop_down,
+                    color: isDark
+                        ? (_isEditMode ? Colors.white38 : Colors.white70)
+                        : (_isEditMode
+                              ? AppTheme.kLightTextSub
+                              : AppTheme.kLightText),
                   ),
                 ),
                 style: TextStyle(

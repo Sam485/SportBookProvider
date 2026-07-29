@@ -4,6 +4,7 @@ import 'package:flutter_application_1/core/theme.dart';
 import 'package:flutter_application_1/features/SportClub/model/sport_club_model.dart';
 import 'package:flutter_application_1/features/SportClub/service/sport_club_service.dart';
 import 'package:flutter_application_1/routes/app_routes.dart';
+import 'package:flutter_application_1/screens/resource/other/create_sport_club_screen.dart';
 import 'package:flutter_application_1/translations/app_translations.dart';
 import 'package:flutter_application_1/widgets/cards/club_card.dart';
 import 'package:flutter_application_1/widgets/cards/club_card_skeleton.dart';
@@ -57,6 +58,31 @@ class _ResourceScreenState extends State<ResourceScreen> {
   // Refresh function for pull-to-refresh
   Future<void> _onRefresh() async {
     await loadingData();
+  }
+
+  // Navigate to create/edit screen and refresh on success
+  void _navigateToCreateClub() {
+    Navigator.pushNamed(context, AppRoutes.editSportClub).then((result) {
+      // Refresh if the operation was successful
+      if (result == true) {
+        loadingData();
+      }
+    });
+  }
+
+  // Navigate to edit screen from ClubCard and refresh on success
+  void _navigateToEditClub(SportClubModel club) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CreateSportClubScreen(clubToEdit: club),
+      ),
+    ).then((result) {
+      // Refresh if the operation was successful
+      if (result == true) {
+        loadingData();
+      }
+    });
   }
 
   @override
@@ -148,7 +174,11 @@ class _ResourceScreenState extends State<ResourceScreen> {
                   delegate: SliverChildBuilderDelegate((context, index) {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
-                      child: ClubCard(club: clubs[index]),
+                      child: ClubCard(
+                        club: clubs[index],
+                        onEdit: () => _navigateToEditClub(clubs[index]),
+                        onDelete: loadingData, // Refresh after delete
+                      ),
                     );
                   }, childCount: clubs.length),
                 ),
@@ -270,12 +300,7 @@ class _ResourceScreenState extends State<ResourceScreen> {
           ),
           const Spacer(),
           ElevatedButton.icon(
-            onPressed: () {
-              Navigator.pushNamed(context, AppRoutes.editSportClub).then((_) {
-                // Refresh when returning from create/edit screen
-                loadingData();
-              });
-            },
+            onPressed: _navigateToCreateClub, // Use the new method
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.kAccent,
               foregroundColor: const Color(0xFF0A1828),

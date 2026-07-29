@@ -40,6 +40,9 @@ class _VerifyScreenState extends State<VerifyScreen> {
   String? _verificationId;
   RegisterUserModel? _userData;
 
+  // Flow type: 'register' or 'resetPassword'
+  String _flow = 'register';
+
   final _tokenService = getIt<TokenService>();
   final _userService = getIt<UserService>();
   final _firebaseOtpService = getIt<FirebaseOtpService>();
@@ -66,9 +69,11 @@ class _VerifyScreenState extends State<VerifyScreen> {
       final phone = args['phoneNumber'] as String? ?? '';
       final verificationId = args['verificationId'] as String?;
       final userData = args['userData'];
+      final flow = args['flow'] as String? ?? 'register';
 
       debugPrint('📱 Phone: $phone');
       debugPrint('🔑 Verification ID: ${verificationId ?? 'null'}');
+      debugPrint('🔄 Flow: $flow');
       debugPrint(
         '👤 User Data: ${userData is RegisterUserModel ? userData.fullName : 'null'}',
       );
@@ -76,6 +81,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
       setState(() {
         _phoneNumber = phone;
         _verificationId = verificationId;
+        _flow = flow;
         if (userData is RegisterUserModel) {
           _userData = userData;
         }
@@ -103,6 +109,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
       setState(() {
         _userData = args;
         _phoneNumber = args.phoneNumber;
+        _flow = 'register';
         _isInitializing = false;
       });
 
@@ -119,7 +126,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
       // Show error and navigate back
       Future.delayed(const Duration(milliseconds: 500), () {
         if (mounted) {
-          _showError('Invalid registration data. Please try again.');
+          _showError('Invalid data. Please try again.');
           Navigator.pop(context);
         }
       });
@@ -201,7 +208,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
       return;
     }
 
-    debugPrint('🔵 Sending OTP to: $_phoneNumber');
+    debugPrint('🔵 Sending OTP to: $_phoneNumber for flow: $_flow');
     setState(() => _isLoading = true);
 
     try {
@@ -258,18 +265,19 @@ class _VerifyScreenState extends State<VerifyScreen> {
       return;
     }
 
-    if (_userData == null) {
-      _showError('User registration data is missing');
-      return;
-    }
-
     if (_verificationId == null) {
       _showError('OTP session expired. Sending new code...');
       await _sendOtp();
       return;
     }
 
-    debugPrint('🔵 Verifying OTP: $_otp');
+    // For reset password flow, we don't need user data
+    if (_flow == 'register' && _userData == null) {
+      _showError('User registration data is missing');
+      return;
+    }
+
+    debugPrint('🔵 Verifying OTP: $_otp for flow: $_flow');
     setState(() => _isLoading = true);
 
     try {
@@ -291,9 +299,14 @@ class _VerifyScreenState extends State<VerifyScreen> {
 
       if (!mounted) return;
 
-      // Step 3: Register user with backend
-      debugPrint('🔵 Registering user with backend...');
-      await _registerUserWithBackend(firebaseToken);
+      // Step 3: Handle based on flow type
+      if (_flow == 'register') {
+        await _handleRegistrationFlow(firebaseToken);
+      } else if (_flow == 'resetPassword') {
+        await _handleResetPasswordFlow(firebaseToken);
+      } else {
+        throw Exception('Unknown flow type: $_flow');
+      }
     } on FirebaseAuthException catch (e) {
       debugPrint('❌ Firebase auth error: ${e.code} - ${e.message}');
       if (mounted) {
@@ -323,24 +336,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
     }
   }
 
-  String _getFirebaseErrorMessage(FirebaseAuthException e) {
-    switch (e.code) {
-      case 'invalid-verification-code':
-        return 'Invalid OTP code. Please try again.';
-      case 'session-expired':
-        return 'OTP session expired. Sending new code...';
-      case 'too-many-requests':
-        return 'Too many attempts. Please try again later.';
-      case 'missing-verification-id':
-        return 'Session expired. Sending new code...';
-      case 'network-request-failed':
-        return 'Network error. Please check your internet connection.';
-      default:
-        return e.message ?? 'Verification failed. Please try again.';
-    }
-  }
-
-  Future<void> _registerUserWithBackend(String firebaseToken) async {
+  Future<void> _handleRegistrationFlow(String firebaseToken) async {
     try {
       final registerData = RegisterUserModel(
         fullName: _userData!.fullName,
@@ -410,6 +406,22 @@ class _VerifyScreenState extends State<VerifyScreen> {
     }
   }
 
+  Future<void> _handleResetPasswordFlow(String firebaseToken) async {
+    debugPrint('🔵 Handling reset password flow');
+
+    if (!mounted) return;
+
+    setState(() => _isLoading = false);
+
+    // Navigate to reset password screen with the token
+    debugPrint('🔵 Navigating to reset password screen...');
+    Navigator.pushNamed(
+      context,
+      AppRoutes.resetPassword,
+      arguments: {'phoneNumber': _phoneNumber, 'firebaseToken': firebaseToken},
+    );
+  }
+
   Future<void> _handleRegistrationFailure() async {
     try {
       final currentUser = FirebaseAuth.instance.currentUser;
@@ -421,6 +433,23 @@ class _VerifyScreenState extends State<VerifyScreen> {
       }
     } catch (e) {
       debugPrint('❌ Failed to clean up Firebase user: $e');
+    }
+  }
+
+  String _getFirebaseErrorMessage(FirebaseAuthException e) {
+    switch (e.code) {
+      case 'invalid-verification-code':
+        return 'Invalid OTP code. Please try again.';
+      case 'session-expired':
+        return 'OTP session expired. Sending new code...';
+      case 'too-many-requests':
+        return 'Too many attempts. Please try again later.';
+      case 'missing-verification-id':
+        return 'Session expired. Sending new code...';
+      case 'network-request-failed':
+        return 'Network error. Please check your internet connection.';
+      default:
+        return e.message ?? 'Verification failed. Please try again.';
     }
   }
 
@@ -443,6 +472,16 @@ class _VerifyScreenState extends State<VerifyScreen> {
     final displayPhoneNumber = _phoneNumber.isNotEmpty
         ? _phoneNumber
         : _userData?.phoneNumber ?? '+855968877203';
+
+    // Determine header text based on flow
+    final isResetFlow = _flow == 'resetPassword';
+    final headerTitle = isResetFlow ? 'Verify Your Identity' : 'Create Account';
+    final headerSubtitle = isResetFlow
+        ? 'Enter the 6-digit code sent to your phone to reset your password'
+        : 'Enter the 6-digit code sent to verify your account';
+    final buttonText = isResetFlow
+        ? 'Verify & Continue'
+        : 'Verify & Create Account';
 
     // Show loading while initializing
     if (_isInitializing) {
@@ -490,11 +529,11 @@ class _VerifyScreenState extends State<VerifyScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  _buildHeader(isDark, displayPhoneNumber),
+                  _buildHeader(isDark, displayPhoneNumber, isResetFlow),
                   const SizedBox(height: 32),
-                  _buildFormCard(isDark),
+                  _buildFormCard(isDark, buttonText),
                   const SizedBox(height: 20),
-                  _buildFooter(isDark),
+                  _buildFooter(isDark, isResetFlow),
                 ],
               ),
             ),
@@ -504,7 +543,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
     );
   }
 
-  Widget _buildHeader(bool isDark, String phoneNumber) {
+  Widget _buildHeader(bool isDark, String phoneNumber, bool isResetFlow) {
     return Column(
       children: [
         Container(
@@ -514,14 +553,14 @@ class _VerifyScreenState extends State<VerifyScreen> {
             shape: BoxShape.circle,
           ),
           child: Icon(
-            Icons.person_add_rounded,
+            isResetFlow ? Icons.verified_rounded : Icons.person_add_rounded,
             color: AppTheme.kAccent,
             size: 32,
           ),
         ),
         const SizedBox(height: 16),
         Text(
-          'Create Account',
+          isResetFlow ? 'Verify Your Identity' : 'Create Account',
           style: TextStyle(
             fontFamily: AppTheme.fontFamily,
             color: isDark ? Colors.white : AppTheme.kLightText,
@@ -532,7 +571,9 @@ class _VerifyScreenState extends State<VerifyScreen> {
         ),
         const SizedBox(height: 4),
         Text(
-          'Enter the 6-digit code sent to verify your account',
+          isResetFlow
+              ? 'Enter the 6-digit code sent to your phone to reset your password'
+              : 'Enter the 6-digit code sent to verify your account',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontFamily: AppTheme.fontFamily,
@@ -558,7 +599,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
             ),
           ),
         ),
-        if (_userData != null && _userData!.fullName.isNotEmpty)
+        if (!isResetFlow && _userData != null && _userData!.fullName.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: Text(
@@ -571,11 +612,32 @@ class _VerifyScreenState extends State<VerifyScreen> {
               ),
             ),
           ),
+        if (isResetFlow)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.orange.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+              ),
+              child: Text(
+                'Password Reset',
+                style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
+                  color: Colors.orange.shade700,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }
 
-  Widget _buildFormCard(bool isDark) {
+  Widget _buildFormCard(bool isDark, String buttonText) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -637,7 +699,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
                         Text(
                           _verificationId == null
                               ? 'Requesting OTP...'
-                              : 'Verify & Create Account',
+                              : buttonText,
                           style: TextStyle(
                             fontFamily: AppTheme.fontFamily,
                             fontSize: 16,
@@ -778,12 +840,12 @@ class _VerifyScreenState extends State<VerifyScreen> {
     );
   }
 
-  Widget _buildFooter(bool isDark) {
+  Widget _buildFooter(bool isDark, bool isResetFlow) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          'Already have an account?',
+          isResetFlow ? 'Remember your password?' : 'Already have an account?',
           style: TextStyle(
             fontFamily: AppTheme.fontFamily,
             color: isDark ? Colors.white70 : AppTheme.kLightTextSub,
@@ -794,7 +856,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
         GestureDetector(
           onTap: () => Navigator.pop(context),
           child: Text(
-            'Sign In',
+            isResetFlow ? 'Sign In' : 'Sign In',
             style: TextStyle(
               fontFamily: AppTheme.fontFamily,
               color: AppTheme.kAccent,
