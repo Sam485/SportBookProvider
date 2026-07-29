@@ -11,7 +11,7 @@ class CreatedSportClubsDto {
   final Duration openTime;
   final Duration closeTime;
   final String description;
-  final int categoryId;
+  final int categoryIds;
   final List<File> images;
 
   CreatedSportClubsDto({
@@ -23,7 +23,7 @@ class CreatedSportClubsDto {
     required this.openTime,
     required this.closeTime,
     required this.description,
-    required this.categoryId,
+    required this.categoryIds,
     required this.images,
   });
 
@@ -66,7 +66,7 @@ class CreatedSportClubsDto {
       'open_time': formatDuration(openTime),
       'close_time': formatDuration(closeTime),
       'description': description,
-      'category_id': categoryId,
+      'category_ids': categoryIds,
     });
 
     // Add images if any exist
@@ -86,7 +86,7 @@ class CreatedSportClubsDto {
     Duration? openTime,
     Duration? closeTime,
     String? description,
-    int? categoryId,
+    int? categoryIds,
     List<File>? images,
   }) {
     return CreatedSportClubsDto(
@@ -98,7 +98,7 @@ class CreatedSportClubsDto {
       openTime: openTime ?? this.openTime,
       closeTime: closeTime ?? this.closeTime,
       description: description ?? this.description,
-      categoryId: categoryId ?? this.categoryId,
+      categoryIds: categoryIds ?? this.categoryIds,
       images: images ?? this.images,
     );
   }

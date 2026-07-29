@@ -19,7 +19,6 @@ class FirebaseOtpService {
     bool isResend = false,
   }) async {
     try {
-      // Ensure Firebase is initialized
       await FirebaseConfig.initialize();
 
       final timeout = defaultTargetPlatform == TargetPlatform.iOS
@@ -37,13 +36,6 @@ class FirebaseOtpService {
             await _firebaseAuth.signInWithCredential(credential);
           } on FirebaseAuthException catch (e) {
             onFailed(e);
-          } catch (e) {
-            onFailed(
-              FirebaseAuthException(
-                code: 'verification_completed_error',
-                message: e.toString(),
-              ),
-            );
           }
         },
         verificationFailed: (FirebaseAuthException e) {
@@ -117,14 +109,20 @@ class FirebaseOtpService {
           e.code == 'session-expired') {
         _verificationId = null;
       }
+
       rethrow;
     } catch (e) {
-      // Handle platform channel error
+      // ✅ FIX: Handle the platform channel error
+      // When this error occurs, the user might still be signed in
       if (e.toString().contains('PigeonUserDetails')) {
+        // Wait a moment for Firebase to complete the sign-in process
         await Future.delayed(const Duration(milliseconds: 500));
+
+        // Check if user is now signed in
         final currentUser = _firebaseAuth.currentUser;
 
         if (currentUser != null) {
+          // Verify this is the correct user
           if (currentUser.phoneNumber == _phoneNumber) {
             return currentUser;
           } else {
@@ -148,10 +146,5 @@ class FirebaseOtpService {
     }
   }
 
-  // Clear stored data
-  void clear() {
-    _verificationId = null;
-    _resendToken = null;
-    _phoneNumber = null;
-  }
+  // ... rest of the code
 }

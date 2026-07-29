@@ -265,5 +265,42 @@ class UserRespository {
     } else {
       return Exception('Network error: ${e.message}');
     }
+  } // feature/User/repositories/user_api_repository.dart
+
+  Future<void> forgotPassword({
+    required String firebaseToken,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    try {
+      final response = await dio.post(
+        '/auth/forgot-password',
+        data: {
+          'firebase_token': firebaseToken,
+          'new_password': newPassword,
+          'confirm_password': confirmPassword,
+        },
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return;
+      } else {
+        throw Exception('Failed to reset password: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      if (e.response != null) {
+        throw Exception(
+          'Server error: ${e.response?.data['message'] ?? e.message}',
+        );
+      } else if (e.type == DioExceptionType.connectionTimeout) {
+        throw Exception(
+          'Connection timeout. Please check your internet connection.',
+        );
+      } else if (e.type == DioExceptionType.receiveTimeout) {
+        throw Exception('Receive timeout. Server is not responding.');
+      } else {
+        throw Exception('Network error: ${e.message}');
+      }
+    }
   }
 }

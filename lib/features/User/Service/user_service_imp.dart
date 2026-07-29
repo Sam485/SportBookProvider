@@ -125,6 +125,33 @@ class UserServiceImp extends ChangeNotifier implements UserService {
     }
   }
 
+  // feature/User/service/user_service_imp.dart
+  @override
+  Future<void> forgotPassword({
+    required String firebaseToken,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    _isLoading = true;
+    _error = '';
+    notifyListeners();
+
+    try {
+      await userApiRepository.forgotPassword(
+        firebaseToken: firebaseToken,
+        newPassword: newPassword,
+        confirmPassword: confirmPassword,
+      );
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      rethrow;
+    }
+  }
+
   @override
   Future<void> changePassword(UpdatePasswordModel request) async {
     _isLoading = true;

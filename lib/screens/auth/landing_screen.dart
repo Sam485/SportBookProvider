@@ -44,13 +44,16 @@ class _LandingScreenState extends State<LandingScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final width = MediaQuery.of(context).size.width;
 
     return Scaffold(
       backgroundColor: isDark ? AppTheme.kBg : AppTheme.kLightBg,
       body: Column(
         children: [
           SizedBox(
-            height: MediaQuery.of(context).size.height * 0.65,
+            height: width <= 667
+                ? MediaQuery.of(context).size.height * 0.50
+                : MediaQuery.of(context).size.height * 0.60,
             child: _carousel(context),
           ),
           _buildBottomSection(context),
@@ -137,6 +140,7 @@ class _LandingScreenState extends State<LandingScreen> {
                   child: Text(
                     AppTranslations.translate(slide['titleKey'], locale: null),
                     style: const TextStyle(
+                      fontFamily: AppTheme.fontFamily,
                       color: Colors.white,
                       fontSize: 32,
                       fontWeight: FontWeight.w900,
@@ -177,6 +181,7 @@ class _LandingScreenState extends State<LandingScreen> {
               locale: null,
             ),
             style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
               fontSize: 14,
               color: isDark ? const Color(0xFFADB5C7) : AppTheme.kLightTextSub,
               height: 1.5,
@@ -213,10 +218,16 @@ class _LandingScreenState extends State<LandingScreen> {
             child: ElevatedButton(
               onPressed: () =>
                   Navigator.pushReplacementNamed(context, AppRoutes.signUp),
-              style: AppTheme.elevatedButtonStyle(),
+              style: AppTheme.elevatedButtonStyle().copyWith(
+                textStyle: const WidgetStatePropertyAll(
+                  TextStyle(fontFamily: AppTheme.fontFamily),
+                ),
+              ),
               child: Text(
                 AppTranslations.translate('sign_up', locale: null),
-                style: AppTheme.tsButtonLabel,
+                style: AppTheme.tsButtonLabel.copyWith(
+                  fontFamily: AppTheme.fontFamily,
+                ),
               ),
             ),
           ),
@@ -241,10 +252,12 @@ class _LandingScreenState extends State<LandingScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
+                textStyle: const TextStyle(fontFamily: AppTheme.fontFamily),
               ),
               child: Text(
                 AppTranslations.translate('login', locale: null),
                 style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
                   color: isDark ? Colors.white : AppTheme.kLightText,
                   fontSize: 16,
                   fontWeight: FontWeight.w700,

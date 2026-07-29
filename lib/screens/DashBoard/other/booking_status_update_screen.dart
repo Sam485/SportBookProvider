@@ -4,6 +4,7 @@ import 'package:flutter_application_1/core/theme.dart';
 import 'package:flutter_application_1/features/Booking/Model/booking_model.dart';
 import 'package:flutter_application_1/features/Booking/Service/booking_service.dart';
 import 'package:flutter_application_1/core/di/service_locator.dart';
+import 'package:flutter_application_1/translations/app_translations.dart';
 
 class BookingStatusUpdateSheet extends StatefulWidget {
   final BookingModel booking;
@@ -44,8 +45,19 @@ class _BookingStatusUpdateSheetState extends State<BookingStatusUpdateSheet> {
   @override
   void initState() {
     super.initState();
-    _selectedStatus = widget.booking.status;
-    _selectedPaymentStatus = widget.booking.paymentStatus;
+
+    // ✅ FIX: Ensure the selected status is valid, otherwise default to first option
+    final currentStatus = widget.booking.status.toLowerCase();
+    _selectedStatus = _availableStatuses.contains(currentStatus)
+        ? currentStatus
+        : _availableStatuses.first;
+
+    // ✅ FIX: Ensure the selected payment status is valid, otherwise default to first option
+    final currentPaymentStatus = widget.booking.paymentStatus.toLowerCase();
+    _selectedPaymentStatus =
+        _availablePaymentStatuses.contains(currentPaymentStatus)
+        ? currentPaymentStatus
+        : _availablePaymentStatuses.first;
   }
 
   @override
@@ -98,11 +110,13 @@ class _BookingStatusUpdateSheetState extends State<BookingStatusUpdateSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Update Booking Status',
+                      'update_booking_status'.tr(context),
                       style: AppTheme.tsTitleAdaptive(context),
                     ),
                     Text(
-                      'Booking #${widget.booking.id}',
+                      'booking_id'
+                          .tr(context)
+                          .replaceAll('{id}', '${widget.booking.id}'),
                       style: AppTheme.tsSubAdaptive(context),
                     ),
                   ],
@@ -134,28 +148,28 @@ class _BookingStatusUpdateSheetState extends State<BookingStatusUpdateSheet> {
             child: Column(
               children: [
                 _buildInfoRow(
-                  'Customer',
+                  'customer'.tr(context),
                   widget.booking.user.fullName,
                   Icons.person,
                   isDark,
                 ),
                 const SizedBox(height: 8),
                 _buildInfoRow(
-                  'Court',
+                  'court'.tr(context),
                   widget.booking.slot.name,
                   Icons.sports,
                   isDark,
                 ),
                 const SizedBox(height: 8),
                 _buildInfoRow(
-                  'Date & Time',
+                  'date_and_time'.tr(context),
                   '${_formatDate(widget.booking.bookingDate)} • ${_formatTime(widget.booking.startTime)} - ${_formatTime(widget.booking.endTime)}',
                   Icons.calendar_today,
                   isDark,
                 ),
                 const SizedBox(height: 8),
                 _buildInfoRow(
-                  'Amount',
+                  'amount'.tr(context),
                   '\$${widget.booking.totalAmount}',
                   Icons.attach_money,
                   isDark,
@@ -168,7 +182,7 @@ class _BookingStatusUpdateSheetState extends State<BookingStatusUpdateSheet> {
 
           // Status Dropdown
           _buildStatusDropdown(
-            'Booking Status',
+            'booking_status'.tr(context),
             _selectedStatus!,
             _availableStatuses,
             (value) {
@@ -183,7 +197,7 @@ class _BookingStatusUpdateSheetState extends State<BookingStatusUpdateSheet> {
 
           // Payment Status Dropdown
           _buildStatusDropdown(
-            'Payment Status',
+            'payment_status'.tr(context),
             _selectedPaymentStatus!,
             _availablePaymentStatuses,
             (value) {
@@ -210,11 +224,13 @@ class _BookingStatusUpdateSheetState extends State<BookingStatusUpdateSheet> {
               maxLines: 3,
               initialValue: widget.booking.note,
               style: TextStyle(
+                fontFamily: AppTheme.fontFamily,
                 color: isDark ? Colors.white : AppTheme.kLightText,
               ),
               decoration: InputDecoration(
-                hintText: 'Add a note (optional)',
+                hintText: 'add_note_optional'.tr(context),
                 hintStyle: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
                   color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                 ),
                 border: InputBorder.none,
@@ -225,6 +241,7 @@ class _BookingStatusUpdateSheetState extends State<BookingStatusUpdateSheet> {
                 ),
               ),
               onChanged: (value) {
+                // Handle note change if needed
               },
             ),
           ),
@@ -247,10 +264,12 @@ class _BookingStatusUpdateSheetState extends State<BookingStatusUpdateSheet> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
+                    textStyle: const TextStyle(fontFamily: AppTheme.fontFamily),
                   ),
                   child: Text(
-                    'Cancel',
+                    'cancel'.tr(context),
                     style: TextStyle(
+                      fontFamily: AppTheme.fontFamily,
                       color: isDark ? Colors.white70 : AppTheme.kLightText,
                     ),
                   ),
@@ -276,6 +295,9 @@ class _BookingStatusUpdateSheetState extends State<BookingStatusUpdateSheet> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
+                      textStyle: const TextStyle(
+                        fontFamily: AppTheme.fontFamily,
+                      ),
                     ),
                     child: _isUpdating
                         ? const SizedBox(
@@ -286,9 +308,10 @@ class _BookingStatusUpdateSheetState extends State<BookingStatusUpdateSheet> {
                               strokeWidth: 2,
                             ),
                           )
-                        : const Text(
-                            'Update Status',
-                            style: TextStyle(
+                        : Text(
+                            'update_status'.tr(context),
+                            style: const TextStyle(
+                              fontFamily: AppTheme.fontFamily,
                               color: Colors.white,
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -314,6 +337,7 @@ class _BookingStatusUpdateSheetState extends State<BookingStatusUpdateSheet> {
         Text(
           '$label: ',
           style: TextStyle(
+            fontFamily: AppTheme.fontFamily,
             color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
             fontSize: 13,
           ),
@@ -322,6 +346,7 @@ class _BookingStatusUpdateSheetState extends State<BookingStatusUpdateSheet> {
           child: Text(
             value,
             style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
               color: isDark ? Colors.white : AppTheme.kLightText,
               fontSize: 13,
               fontWeight: FontWeight.w500,
@@ -355,7 +380,10 @@ class _BookingStatusUpdateSheetState extends State<BookingStatusUpdateSheet> {
           child: DropdownButton<String>(
             value: currentValue,
             isExpanded: true,
-            hint: Text(label),
+            hint: Text(
+              label,
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             items: options.map((status) {
               return DropdownMenuItem<String>(
                 value: status,
@@ -366,6 +394,7 @@ class _BookingStatusUpdateSheetState extends State<BookingStatusUpdateSheet> {
                     Text(
                       status.toUpperCase(),
                       style: TextStyle(
+                        fontFamily: AppTheme.fontFamily,
                         color: isDark ? Colors.white : AppTheme.kLightText,
                         fontSize: 14,
                       ),
@@ -381,6 +410,7 @@ class _BookingStatusUpdateSheetState extends State<BookingStatusUpdateSheet> {
               color: isDark ? Colors.white70 : AppTheme.kLightText,
             ),
             style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
               color: isDark ? Colors.white : AppTheme.kLightText,
               fontSize: 14,
             ),
@@ -440,9 +470,7 @@ class _BookingStatusUpdateSheetState extends State<BookingStatusUpdateSheet> {
 
     try {
       // Update booking status
-      await _bookingService.updateBookingStatus(
-        widget.booking.id,
-      );
+      await _bookingService.updateBookingStatus(widget.booking.id);
 
       // If payment status is also changed, update it
       if (_selectedPaymentStatus != widget.booking.paymentStatus) {
@@ -452,7 +480,12 @@ class _BookingStatusUpdateSheetState extends State<BookingStatusUpdateSheet> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Booking status updated to ${_selectedStatus?.toUpperCase()}',
+              'update_success'
+                  // ignore: use_build_context_synchronously
+                  .tr(context)
+                  .replaceAll('{id}', '${widget.booking.id}')
+                  .replaceAll('{status}', _selectedStatus!.toUpperCase()),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
             ),
             backgroundColor: Colors.green,
           ),
@@ -474,7 +507,12 @@ class _BookingStatusUpdateSheetState extends State<BookingStatusUpdateSheet> {
       // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to update status: ${e.toString()}'),
+          // ignore: use_build_context_synchronously
+          content: Text(
+            // ignore: use_build_context_synchronously
+            '${'update_failed'.tr(context)}: ${e.toString()}',
+            style: const TextStyle(fontFamily: AppTheme.fontFamily),
+          ),
           backgroundColor: Colors.red,
         ),
       );

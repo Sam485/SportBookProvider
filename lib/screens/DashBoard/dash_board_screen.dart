@@ -6,6 +6,8 @@ import 'package:flutter_application_1/features/Booking/Service/booking_service.d
 import 'package:flutter_application_1/features/SportClub/model/sport_club_model.dart';
 import 'package:flutter_application_1/features/SportClub/service/sport_club_service.dart';
 import 'package:flutter_application_1/core/di/service_locator.dart';
+import 'package:flutter_application_1/screens/DashBoard/other/booking_status_update_screen.dart';
+import 'package:flutter_application_1/translations/app_translations.dart';
 
 class DashBoardScreen extends StatefulWidget {
   const DashBoardScreen({super.key});
@@ -65,7 +67,10 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to load sport clubs: ${e.toString()}'),
+            content: Text(
+              'Failed to load sport clubs: ${e.toString()}',
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -83,10 +88,8 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
     try {
       final status = _selectedStatus == 'All' ? null : _selectedStatus;
 
-      // Format date for API if selected
       String? formattedDate;
       if (_selectedDate != null) {
-        // Format as YYYY-MM-DD for API
         formattedDate = _selectedDate!.toIso8601String().split('T').first;
       }
 
@@ -95,7 +98,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
         _currentPage,
         _limit,
         status,
-        formattedDate, // Pass formatted date string instead of DateTime
+        formattedDate,
       );
 
       if (mounted) {
@@ -112,7 +115,10 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to load bookings: ${e.toString()}'),
+            content: Text(
+              'Failed to load bookings: ${e.toString()}',
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -143,13 +149,8 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: <Widget>[
-              // Header
               SliverToBoxAdapter(child: _buildHeader()),
-
-              // Filter Section
               SliverToBoxAdapter(child: _buildFilterSection()),
-
-              // Stats Grid
               SliverPadding(
                 padding: const EdgeInsets.all(8.0),
                 sliver: SliverGrid(
@@ -165,10 +166,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                   ),
                 ),
               ),
-
-              // Recent Bookings
               SliverToBoxAdapter(child: _buildRecentBookingSection()),
-
               const SliverToBoxAdapter(child: SizedBox(height: 20)),
             ],
           ),
@@ -189,7 +187,10 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Dashboard', style: AppTheme.tsTitleAdaptive(context)),
+              Text(
+                'dashboard'.tr(context),
+                style: AppTheme.tsTitleAdaptive(context),
+              ),
               const SizedBox(height: 4),
               Text(_getFormattedDate(), style: AppTheme.tsSubAdaptive(context)),
             ],
@@ -218,7 +219,6 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
       decoration: AppTheme.cardDecorationAdaptive(context),
       child: Column(
         children: [
-          // Sport Club Dropdown
           Row(
             children: [
               Expanded(
@@ -231,6 +231,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                       child: Text(
                         club.name,
                         style: TextStyle(
+                          fontFamily: AppTheme.fontFamily,
                           color: isDark ? Colors.white : AppTheme.kLightText,
                         ),
                         overflow: TextOverflow.ellipsis,
@@ -244,17 +245,15 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                     });
                     _loadRecentBookings();
                   },
-                  hint: 'Select Sport Club',
+                  hint: 'select_sport_club'.tr(context),
                   icon: Icons.sports,
                 ),
               ),
               const SizedBox(width: 8),
-              // Date Picker
               Expanded(child: _buildDatePickerButton(isDark)),
             ],
           ),
           const SizedBox(height: 8),
-          // Status Dropdown and Clear Filters
           Row(
             children: [
               Expanded(
@@ -267,6 +266,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                       child: Text(
                         status.toUpperCase(),
                         style: TextStyle(
+                          fontFamily: AppTheme.fontFamily,
                           color: isDark ? Colors.white : AppTheme.kLightText,
                         ),
                       ),
@@ -279,17 +279,19 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                     });
                     _loadRecentBookings();
                   },
-                  hint: 'Status',
+                  hint: 'status'.tr(context),
                   icon: Icons.filter_list,
                 ),
               ),
               const SizedBox(width: 8),
-              // Clear Filters Button
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: _clearFilters,
                   icon: const Icon(Icons.clear_all, size: 18),
-                  label: const Text('Clear'),
+                  label: Text(
+                    'clear_filters'.tr(context),
+                    style: const TextStyle(fontFamily: AppTheme.fontFamily),
+                  ),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     shape: RoundedRectangleBorder(
@@ -300,6 +302,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                           ? Colors.grey.shade600
                           : Colors.grey.shade300,
                     ),
+                    textStyle: const TextStyle(fontFamily: AppTheme.fontFamily),
                   ),
                 ),
               ),
@@ -340,6 +343,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
               Text(
                 hint,
                 style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
                   color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                   fontSize: 13,
                 ),
@@ -350,6 +354,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
           onChanged: onChanged,
           dropdownColor: isDark ? AppTheme.kBg : Colors.white,
           style: TextStyle(
+            fontFamily: AppTheme.fontFamily,
             color: isDark ? Colors.white : AppTheme.kLightText,
             fontSize: 13,
           ),
@@ -411,8 +416,9 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
               child: Text(
                 _selectedDate != null
                     ? '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}'
-                    : 'Select Date',
+                    : 'select_date'.tr(context),
                 style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
                   color: _selectedDate != null
                       ? (isDark ? Colors.white : AppTheme.kLightText)
                       : (isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub),
@@ -452,30 +458,30 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
   List<StatCardData> _getStatsData() {
     return [
       StatCardData(
-        title: "Total Bookings",
+        title: 'total_bookings'.tr(context),
         value: '$_totalBookings',
-        description: 'All bookings',
+        description: 'all_bookings'.tr(context),
         desColor: AppTheme.kAccent,
         icon: Icons.bookmark,
       ),
       StatCardData(
-        title: 'Revenue',
+        title: 'revenue'.tr(context),
         value: '\$${_totalRevenue.toStringAsFixed(0)}',
-        description: 'Total revenue',
+        description: 'total_earned'.tr(context),
         desColor: Colors.green,
         icon: Icons.attach_money,
       ),
       StatCardData(
-        title: 'Pending',
+        title: 'pending'.tr(context),
         value: '$_pendingBookings',
-        description: 'Waiting approval',
+        description: 'waiting_approval'.tr(context),
         desColor: Colors.orange,
         icon: Icons.pending_actions,
       ),
       StatCardData(
-        title: 'Confirmed',
+        title: 'confirmed'.tr(context),
         value: '$_confirmedBookings',
-        description: 'Approved bookings',
+        description: 'approved_bookings'.tr(context),
         desColor: Colors.blue,
         icon: Icons.check_circle,
       ),
@@ -499,6 +505,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                 Text(
                   data.title,
                   style: AppTheme.tsBodyAdaptive(context).copyWith(
+                    fontFamily: AppTheme.fontFamily,
                     color: isDark ? Colors.grey.shade400 : Colors.grey[600],
                     fontSize: 12,
                   ),
@@ -517,6 +524,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
             Text(
               data.description,
               style: AppTheme.tsSubAdaptive(context).copyWith(
+                fontFamily: AppTheme.fontFamily,
                 color: data.desColor,
                 fontWeight: FontWeight.w500,
                 fontSize: 11,
@@ -540,7 +548,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
             Row(
               children: [
                 Text(
-                  'Recent Bookings',
+                  'recent_bookings'.tr(context),
                   style: AppTheme.tsLabelAdaptive(context),
                 ),
                 const Spacer(),
@@ -550,7 +558,10 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                       // Navigate to all bookings screen
                       // Navigator.pushNamed(context, AppRoutes.allBookings);
                     },
-                    child: Text('See all', style: AppTheme.tsAccent),
+                    child: Text(
+                      'see_all'.tr(context),
+                      style: AppTheme.tsAccent,
+                    ),
                   ),
               ],
             ),
@@ -605,7 +616,10 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
               child: Center(
                 child: Text(
                   initial,
-                  style: AppTheme.tsLabel.copyWith(color: statusColor),
+                  style: AppTheme.tsLabel.copyWith(
+                    fontFamily: AppTheme.fontFamily,
+                    color: statusColor,
+                  ),
                 ),
               ),
             ),
@@ -649,6 +663,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                     child: Text(
                       booking.status.toUpperCase(),
                       style: AppTheme.tsBody.copyWith(
+                        fontFamily: AppTheme.fontFamily,
                         color: statusColor,
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
@@ -670,7 +685,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _BookingDetailSheet(
+      builder: (context) => BookingStatusUpdateSheet(
         booking: booking,
         onStatusUpdated: _loadRecentBookings,
       ),
@@ -679,6 +694,8 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
 
   // ── Empty State ──────────────────────────────────────────────────────
   Widget _buildEmptyState() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 40),
       child: Column(
@@ -686,17 +703,22 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
           Icon(Icons.calendar_today, size: 60, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
-            'No bookings found',
+            'no_bookings_found'.tr(context),
             style: TextStyle(
-              color: Colors.grey[600],
+              fontFamily: AppTheme.fontFamily,
+              color: isDark ? Colors.grey[400] : Colors.grey[600],
               fontSize: 16,
               fontWeight: FontWeight.w500,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Try adjusting your filters',
-            style: TextStyle(color: Colors.grey[400], fontSize: 14),
+            'try_adjusting_filters'.tr(context),
+            style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
+              color: isDark ? Colors.grey[500] : Colors.grey[400],
+              fontSize: 14,
+            ),
           ),
         ],
       ),
@@ -780,556 +802,4 @@ class StatCardData {
     required this.desColor,
     required this.icon,
   });
-}
-
-// ── Booking Detail Sheet Widget ────────────────────────────────────────
-class _BookingDetailSheet extends StatefulWidget {
-  final BookingModel booking;
-  final VoidCallback onStatusUpdated;
-
-  const _BookingDetailSheet({
-    required this.booking,
-    required this.onStatusUpdated,
-  });
-
-  @override
-  State<_BookingDetailSheet> createState() => _BookingDetailSheetState();
-}
-
-class _BookingDetailSheetState extends State<_BookingDetailSheet> {
-  final BookingService _bookingService = getIt<BookingService>();
-  bool _isUpdating = false;
-  String? _selectedStatus;
-  String? _selectedPaymentStatus;
-  final TextEditingController _noteController = TextEditingController();
-
-  final List<String> _availableStatuses = [
-    'pending',
-    'confirmed',
-    'cancelled',
-    'completed',
-  ];
-
-  final List<String> _availablePaymentStatuses = [
-    'pending',
-    'paid',
-    'failed',
-    'refunded',
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedStatus = widget.booking.status;
-    _selectedPaymentStatus = widget.booking.paymentStatus;
-    _noteController.text = widget.booking.note;
-  }
-
-  @override
-  void dispose() {
-    _noteController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: isDark ? AppTheme.kBg : Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Drag Indicator
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: isDark ? Colors.grey.shade600 : Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Header
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AppTheme.kAccent, Color(0xFF00B4D8)],
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.edit_calendar,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Booking Details',
-                        style: AppTheme.tsTitleAdaptive(context),
-                      ),
-                      Text(
-                        'ID: #${widget.booking.id}',
-                        style: AppTheme.tsSubAdaptive(context),
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: Icon(
-                    Icons.close,
-                    color: isDark ? Colors.white70 : Colors.grey.shade600,
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 20),
-
-            // Booking Info Card
-            _buildBookingInfoCard(isDark),
-            const SizedBox(height: 20),
-
-            // Status Section
-            _buildStatusSection(isDark),
-            const SizedBox(height: 20),
-
-            // Payment Status Section
-            _buildPaymentStatusSection(isDark),
-            const SizedBox(height: 20),
-
-            // Note
-            _buildNoteSection(isDark),
-            const SizedBox(height: 24),
-
-            // Action Buttons
-            _buildActionButtons(isDark),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBookingInfoCard(bool isDark) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? AppTheme.kCardAlt : AppTheme.kLightCardAlt,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isDark ? AppTheme.kBorder : AppTheme.kLightBorder,
-          width: 1,
-        ),
-      ),
-      child: Column(
-        children: [
-          _buildInfoRow(
-            'Customer',
-            widget.booking.user.fullName,
-            Icons.person,
-            isDark,
-          ),
-          const SizedBox(height: 8),
-          _buildInfoRow(
-            'Court',
-            widget.booking.slot.name,
-            Icons.sports,
-            isDark,
-          ),
-          const SizedBox(height: 8),
-          _buildInfoRow(
-            'Date & Time',
-            '${_formatDate(widget.booking.bookingDate)} • ${_formatTime(widget.booking.startTime)} - ${_formatTime(widget.booking.endTime)}',
-            Icons.calendar_today,
-            isDark,
-          ),
-          const SizedBox(height: 8),
-          _buildInfoRow(
-            'Amount',
-            '\$${widget.booking.totalAmount}',
-            Icons.attach_money,
-            isDark,
-          ),
-          const SizedBox(height: 8),
-          _buildInfoRow(
-            'Status',
-            widget.booking.status.toUpperCase(),
-            Icons.circle,
-            isDark,
-            status: widget.booking.status,
-          ),
-          const SizedBox(height: 8),
-          _buildInfoRow(
-            'Payment',
-            widget.booking.paymentStatus.toUpperCase(),
-            Icons.payment,
-            isDark,
-            paymentStatus: widget.booking.paymentStatus,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(
-    String label,
-    String value,
-    IconData icon,
-    bool isDark, {
-    String? status,
-    String? paymentStatus,
-  }) {
-    Color? valueColor;
-    if (status != null) {
-      valueColor = _getStatusColor(status);
-    } else if (paymentStatus != null) {
-      valueColor = _getPaymentStatusColor(paymentStatus);
-    }
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, color: AppTheme.kAccent, size: 16),
-        const SizedBox(width: 8),
-        Expanded(
-          flex: 2,
-          child: Text(
-            '$label:',
-            style: TextStyle(
-              color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
-              fontSize: 13,
-            ),
-          ),
-        ),
-        Expanded(
-          flex: 3,
-          child: Text(
-            value,
-            style: TextStyle(
-              color:
-                  valueColor ?? (isDark ? Colors.white : AppTheme.kLightText),
-              fontSize: 13,
-              fontWeight: valueColor != null
-                  ? FontWeight.w600
-                  : FontWeight.w400,
-            ),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatusSection(bool isDark) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Update Booking Status', style: AppTheme.tsLabelAdaptive(context)),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: _availableStatuses.map((status) {
-            final isSelected = _selectedStatus == status;
-            final color = _getStatusColor(status);
-            return FilterChip(
-              selected: isSelected,
-              label: Text(
-                status.toUpperCase(),
-                style: TextStyle(
-                  color: isSelected ? Colors.white : color,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                  fontSize: 12,
-                ),
-              ),
-              backgroundColor: isDark
-                  ? AppTheme.kCardAlt
-                  : AppTheme.kLightCardAlt,
-              selectedColor: color,
-              showCheckmark: false,
-              onSelected: (selected) {
-                setState(() {
-                  _selectedStatus = status;
-                });
-              },
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-                side: BorderSide(
-                  color: isSelected
-                      ? color
-                      : (isDark ? AppTheme.kBorder : AppTheme.kLightBorder),
-                  width: 1.5,
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPaymentStatusSection(bool isDark) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Update Payment Status', style: AppTheme.tsLabelAdaptive(context)),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: _availablePaymentStatuses.map((status) {
-            final isSelected = _selectedPaymentStatus == status;
-            final color = _getPaymentStatusColor(status);
-            return FilterChip(
-              selected: isSelected,
-              label: Text(
-                status.toUpperCase(),
-                style: TextStyle(
-                  color: isSelected ? Colors.white : color,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                  fontSize: 12,
-                ),
-              ),
-              backgroundColor: isDark
-                  ? AppTheme.kCardAlt
-                  : AppTheme.kLightCardAlt,
-              selectedColor: color,
-              showCheckmark: false,
-              onSelected: (selected) {
-                setState(() {
-                  _selectedPaymentStatus = status;
-                });
-              },
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-                side: BorderSide(
-                  color: isSelected
-                      ? color
-                      : (isDark ? AppTheme.kBorder : AppTheme.kLightBorder),
-                  width: 1.5,
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildNoteSection(bool isDark) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Add Note', style: AppTheme.tsLabelAdaptive(context)),
-        const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: isDark ? AppTheme.kCardAlt : AppTheme.kLightCardAlt,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isDark ? AppTheme.kBorder : AppTheme.kLightBorder,
-              width: 1,
-            ),
-          ),
-          child: TextFormField(
-            controller: _noteController,
-            maxLines: 3,
-            style: TextStyle(
-              color: isDark ? Colors.white : AppTheme.kLightText,
-            ),
-            decoration: InputDecoration(
-              hintText: 'Add a note (optional)',
-              hintStyle: TextStyle(
-                color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
-              ),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.all(16),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionButtons(bool isDark) {
-    return Row(
-      children: [
-        Expanded(
-          child: OutlinedButton(
-            onPressed: _isUpdating ? null : () => Navigator.pop(context),
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              side: BorderSide(
-                color: isDark ? Colors.grey.shade600 : Colors.grey.shade300,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: Text(
-              'Cancel',
-              style: TextStyle(
-                color: isDark ? Colors.white70 : AppTheme.kLightText,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppTheme.kAccent, Color(0xFF00B4D8)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: ElevatedButton(
-              onPressed: _isUpdating ? null : _updateBookingStatus,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                shadowColor: Colors.transparent,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: _isUpdating
-                  ? const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : const Text(
-                      'Update Status',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ── Update Status ──────────────────────────────────────────────────────
-  Future<void> _updateBookingStatus() async {
-    if (_selectedStatus == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select a status'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      return;
-    }
-
-    setState(() {
-      _isUpdating = true;
-    });
-
-    try {
-      await _bookingService.updateBookingStatus(widget.booking.id);
-
-      if (mounted) {
-        setState(() {
-          _isUpdating = false;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Booking #${widget.booking.id} updated to ${_selectedStatus?.toUpperCase()}',
-            ),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-
-        Navigator.pop(context);
-        widget.onStatusUpdated();
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isUpdating = false;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to update status: ${e.toString()}'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
-    }
-  }
-
-  // ── Helper Methods ──────────────────────────────────────────────────
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'confirmed':
-        return Colors.green;
-      case 'pending':
-        return Colors.orange;
-      case 'cancelled':
-        return Colors.red;
-      case 'completed':
-        return Colors.blue;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  Color _getPaymentStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'paid':
-        return Colors.green;
-      case 'pending':
-        return Colors.orange;
-      case 'failed':
-        return Colors.red;
-      case 'refunded':
-        return Colors.purple;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
-  }
-
-  String _formatTime(Duration time) {
-    final hours = time.inHours.toString().padLeft(2, '0');
-    final minutes = time.inMinutes.remainder(60).toString().padLeft(2, '0');
-    return '$hours:$minutes';
-  }
 }

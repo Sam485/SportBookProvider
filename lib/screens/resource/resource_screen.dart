@@ -4,6 +4,8 @@ import 'package:flutter_application_1/core/theme.dart';
 import 'package:flutter_application_1/features/SportClub/model/sport_club_model.dart';
 import 'package:flutter_application_1/features/SportClub/service/sport_club_service.dart';
 import 'package:flutter_application_1/routes/app_routes.dart';
+import 'package:flutter_application_1/screens/resource/other/create_sport_club_screen.dart';
+import 'package:flutter_application_1/translations/app_translations.dart';
 import 'package:flutter_application_1/widgets/cards/club_card.dart';
 import 'package:flutter_application_1/widgets/cards/club_card_skeleton.dart';
 
@@ -58,6 +60,31 @@ class _ResourceScreenState extends State<ResourceScreen> {
     await loadingData();
   }
 
+  // Navigate to create/edit screen and refresh on success
+  void _navigateToCreateClub() {
+    Navigator.pushNamed(context, AppRoutes.editSportClub).then((result) {
+      // Refresh if the operation was successful
+      if (result == true) {
+        loadingData();
+      }
+    });
+  }
+
+  // Navigate to edit screen from ClubCard and refresh on success
+  void _navigateToEditClub(SportClubModel club) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CreateSportClubScreen(clubToEdit: club),
+      ),
+    ).then((result) {
+      // Refresh if the operation was successful
+      if (result == true) {
+        loadingData();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -109,7 +136,7 @@ class _ResourceScreenState extends State<ResourceScreen> {
                     ),
                     const SizedBox(width: 10),
                     Text(
-                      'Sport Clubs',
+                      'sport_clubs'.tr(context),
                       style: AppTheme.tsLabelAdaptive(context),
                     ),
                   ],
@@ -124,8 +151,11 @@ class _ResourceScreenState extends State<ResourceScreen> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    '${clubs.length} clubs',
+                    'club_count'
+                        .tr(context)
+                        .replaceAll('{count}', '${clubs.length}'),
                     style: TextStyle(
+                      fontFamily: AppTheme.fontFamily,
                       color: AppTheme.kAccent,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -144,7 +174,11 @@ class _ResourceScreenState extends State<ResourceScreen> {
                   delegate: SliverChildBuilderDelegate((context, index) {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
-                      child: ClubCard(club: clubs[index]),
+                      child: ClubCard(
+                        club: clubs[index],
+                        onEdit: () => _navigateToEditClub(clubs[index]),
+                        onDelete: loadingData, // Refresh after delete
+                      ),
                     );
                   }, childCount: clubs.length),
                 ),
@@ -167,14 +201,15 @@ class _ResourceScreenState extends State<ResourceScreen> {
             Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
             const SizedBox(height: 16),
             Text(
-              'Something went wrong',
+              'error_occurred'.tr(context),
               style: AppTheme.tsTitleAdaptive(context),
             ),
             const SizedBox(height: 8),
             Text(
-              _error ?? 'Failed to load clubs',
+              _error ?? 'failed_to_load_clubs'.tr(context),
               textAlign: TextAlign.center,
               style: TextStyle(
+                fontFamily: AppTheme.fontFamily,
                 color: isDark ? Colors.grey[400] : Colors.grey[700],
                 fontSize: 14,
               ),
@@ -192,9 +227,13 @@ class _ResourceScreenState extends State<ResourceScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
+                textStyle: const TextStyle(fontFamily: AppTheme.fontFamily),
               ),
               icon: const Icon(Icons.refresh),
-              label: const Text('Try Again'),
+              label: Text(
+                'try_again'.tr(context),
+                style: const TextStyle(fontFamily: AppTheme.fontFamily),
+              ),
             ),
           ],
         ),
@@ -217,15 +256,17 @@ class _ResourceScreenState extends State<ResourceScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'No clubs found',
-            style: AppTheme.tsTitleAdaptive(
-              context,
-            ).copyWith(color: isDark ? Colors.grey[400] : Colors.grey[600]),
+            'no_clubs_found'.tr(context),
+            style: AppTheme.tsTitleAdaptive(context).copyWith(
+              fontFamily: AppTheme.fontFamily,
+              color: isDark ? Colors.grey[400] : Colors.grey[600],
+            ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Tap the "Add Club" button to create one',
+            'add_club_message'.tr(context),
             style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
               color: isDark ? Colors.grey[500] : Colors.grey[500],
               fontSize: 14,
             ),
@@ -253,15 +294,13 @@ class _ResourceScreenState extends State<ResourceScreen> {
             child: const Icon(Icons.dashboard, color: Colors.white, size: 24),
           ),
           const SizedBox(width: 12),
-          Text('Resources', style: AppTheme.tsTitleAdaptive(context)),
+          Text(
+            'resource'.tr(context),
+            style: AppTheme.tsTitleAdaptive(context),
+          ),
           const Spacer(),
           ElevatedButton.icon(
-            onPressed: () {
-              Navigator.pushNamed(context, AppRoutes.editSportClub).then((_) {
-                // Refresh when returning from create/edit screen
-                loadingData();
-              });
-            },
+            onPressed: _navigateToCreateClub, // Use the new method
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.kAccent,
               foregroundColor: const Color(0xFF0A1828),
@@ -270,11 +309,16 @@ class _ResourceScreenState extends State<ResourceScreen> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
+              textStyle: const TextStyle(fontFamily: AppTheme.fontFamily),
             ),
             icon: const Icon(Icons.add_circle_outline, size: 18),
-            label: const Text(
-              'Add Club',
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+            label: Text(
+              'add_club'.tr(context),
+              style: const TextStyle(
+                fontFamily: AppTheme.fontFamily,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
             ),
           ),
         ],

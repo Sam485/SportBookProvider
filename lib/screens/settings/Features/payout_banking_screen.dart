@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/core/theme.dart';
+import 'package:flutter_application_1/translations/app_translations.dart';
 
 class PayoutBankingScreen extends StatefulWidget {
   const PayoutBankingScreen({super.key});
@@ -52,15 +53,27 @@ class _PayoutBankingScreenState extends State<PayoutBankingScreen> {
       color: Colors.green,
     ),
   ];
+
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
+      backgroundColor: isDark ? AppTheme.kBg : AppTheme.kLightBg,
       appBar: AppBar(
+        backgroundColor: isDark ? AppTheme.kBg : AppTheme.kLightBg,
+        elevation: 0,
         leading: InkWell(
           onTap: () => Navigator.pop(context),
-          child: Icon(Icons.arrow_back_ios),
+          child: Icon(
+            Icons.arrow_back_ios,
+            color: isDark ? Colors.white : AppTheme.kLightText,
+          ),
         ),
-        title: Text('Payout & Banking', style: AppTheme.tsTitle),
+        title: Text(
+          'payout_and_banking'.tr(context),
+          style: AppTheme.tsTitleAdaptive(context),
+        ),
       ),
       body: SafeArea(
         child: CustomScrollView(
@@ -75,45 +88,55 @@ class _PayoutBankingScreenState extends State<PayoutBankingScreen> {
   }
 
   Widget _buildTotalBalanceSection() {
+
     return Padding(
-      padding: EdgeInsets.all(10),
+      padding: const EdgeInsets.all(10),
       child: Column(
         children: [
           Container(
             width: double.infinity,
-            padding: EdgeInsets.all(15),
+            padding: const EdgeInsets.all(15),
             decoration: AppTheme.cardDecorationAdaptive(context),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  'Available balance',
+                  'available_balance'.tr(context),
                   style: AppTheme.tsBodyAdaptive(context),
                 ),
                 Text(
                   '\$ 348.60',
                   style: AppTheme.tsLabelAdaptive(
                     context,
-                  ).copyWith(fontSize: 28),
+                  ).copyWith(fontFamily: AppTheme.fontFamily, fontSize: 28),
                 ),
                 Text(
-                  'Next payout: Jun 15,2026',
+                  'next_payout'
+                      .tr(context)
+                      .replaceAll('{date}', 'Jun 15, 2026'),
                   style: AppTheme.tsBodyAdaptive(context),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 SizedBox(
                   height: 45,
                   width: 180,
                   child: ElevatedButton(
                     onPressed: () {},
-                    style: AppTheme.elevatedButtonStyle(),
-                    child: Text('Withdraw now'),
+                    style: AppTheme.elevatedButtonStyle().copyWith(
+                      textStyle: const WidgetStatePropertyAll(
+                        TextStyle(fontFamily: AppTheme.fontFamily),
+                      ),
+                    ),
+                    child: Text(
+                      'withdraw_now'.tr(context),
+                      style: const TextStyle(fontFamily: AppTheme.fontFamily),
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           SizedBox(
             width: double.infinity,
             height: 100,
@@ -122,39 +145,56 @@ class _PayoutBankingScreenState extends State<PayoutBankingScreen> {
               children: [
                 Expanded(
                   child: Container(
-                    padding: EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(10),
                     decoration: AppTheme.cardDecorationAdaptive(context),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('This month', style: AppTheme.tsBody),
+                        Text(
+                          'this_month'.tr(context),
+                          style: AppTheme.tsBodyAdaptive(context),
+                        ),
                         Text(
                           '\$1,240',
-                          style: AppTheme.tsLabel.copyWith(fontSize: 22),
+                          style: AppTheme.tsTitleAdaptive(context).copyWith(
+                            fontFamily: AppTheme.fontFamily,
+                            fontSize: 22,
+                          ),
                         ),
                         Text(
                           '+18%',
-                          style: AppTheme.tsBody.copyWith(color: Colors.green),
+                          style: AppTheme.tsBodyAdaptive(context).copyWith(
+                            fontFamily: AppTheme.fontFamily,
+                            color: Colors.green,
+                          ),
                         ),
                       ],
                     ),
                   ),
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Container(
-                    padding: EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(10),
                     decoration: AppTheme.cardDecorationAdaptive(context),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Total earned', style: AppTheme.tsBody),
                         Text(
-                          '\$12,480',
-                          style: AppTheme.tsLabel.copyWith(fontSize: 22),
+                          'total_earned'.tr(context),
+                          style: AppTheme.tsBodyAdaptive(context),
                         ),
                         Text(
-                          'Since Jan 2026',
+                          '\$12,480',
+                          style: AppTheme.tsTitleAdaptive(context).copyWith(
+                            fontFamily: AppTheme.fontFamily,
+                            fontSize: 22,
+                          ),
+                        ),
+                        Text(
+                          'since_date'
+                              .tr(context)
+                              .replaceAll('{date}', 'Jan 2026'),
                           style: AppTheme.tsBodyAdaptive(context),
                         ),
                       ],
@@ -170,12 +210,17 @@ class _PayoutBankingScreenState extends State<PayoutBankingScreen> {
   }
 
   Widget _buildLinkedAccountsSection() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
-      padding: EdgeInsets.only(bottom: 10, left: 10, right: 10),
+      padding: const EdgeInsets.only(bottom: 10, left: 10, right: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Linked accounts', style: AppTheme.tsLabel),
+          Text(
+            'linked_accounts'.tr(context),
+            style: AppTheme.tsLabelAdaptive(context),
+          ),
           const SizedBox(height: 10),
           ...List.generate(
             accounts.length,
@@ -186,8 +231,19 @@ class _PayoutBankingScreenState extends State<PayoutBankingScreen> {
             width: double.infinity,
             child: OutlinedButton(
               onPressed: () {},
-              style: AppTheme.outlineButtonStyle(),
-              child: Text('Add bank account or e-wallet'),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(
+                  color: isDark ? AppTheme.kBorder : AppTheme.kLightBorder,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                textStyle: const TextStyle(fontFamily: AppTheme.fontFamily),
+              ),
+              child: Text(
+                'add_bank_account'.tr(context),
+                style: const TextStyle(fontFamily: AppTheme.fontFamily),
+              ),
             ),
           ),
         ],
@@ -196,26 +252,37 @@ class _PayoutBankingScreenState extends State<PayoutBankingScreen> {
   }
 
   Widget _buildBankCard(AccountData data) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       decoration: AppTheme.cardDecorationAdaptive(context),
-      margin: EdgeInsets.only(bottom: 10),
-
+      margin: const EdgeInsets.only(bottom: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Container(
-            padding: EdgeInsets.all(10),
+            padding: const EdgeInsets.all(10),
             width: 60,
             height: 60,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               color: data.color.withValues(alpha: 0.4),
             ),
-            child: Center(child: Text(data.intial)),
+            child: Center(
+              child: Text(
+                data.intial,
+                style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : AppTheme.kLightText,
+                ),
+              ),
+            ),
           ),
-          SizedBox(width: 10),
+          const SizedBox(width: 10),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -224,15 +291,15 @@ class _PayoutBankingScreenState extends State<PayoutBankingScreen> {
               if (data.isDefault) _buildBadge(),
             ],
           ),
-          Spacer(),
+          const Spacer(),
           IconButton(
             onPressed: () {},
-            icon: Icon(Icons.edit),
+            icon: const Icon(Icons.edit),
             color: Colors.amber,
           ),
           IconButton(
             onPressed: () {},
-            icon: Icon(Icons.delete),
+            icon: const Icon(Icons.delete),
             color: Colors.red,
           ),
         ],
@@ -242,11 +309,14 @@ class _PayoutBankingScreenState extends State<PayoutBankingScreen> {
 
   Widget _buildRecentTransaction() {
     return Padding(
-      padding: EdgeInsets.all(10),
+      padding: const EdgeInsets.all(10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Recent transactions', style: AppTheme.tsLabelAdaptive(context)),
+          Text(
+            'recent_transactions'.tr(context),
+            style: AppTheme.tsLabelAdaptive(context),
+          ),
           const SizedBox(height: 10),
           ...List.generate(
             transactions.length,
@@ -259,26 +329,30 @@ class _PayoutBankingScreenState extends State<PayoutBankingScreen> {
 
   Widget _buildBadge() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 2.5),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2.5),
       decoration: BoxDecoration(
         color: Colors.green.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
-        'Default',
-        style: AppTheme.tsBody.copyWith(color: Colors.green),
+        'default_account'.tr(context),
+        style: AppTheme.tsBodyAdaptive(
+          context,
+        ).copyWith(fontFamily: AppTheme.fontFamily, color: Colors.green),
       ),
     );
   }
 
   Widget _buildTransaction(TransactionData data) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Column(
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Container(
-              padding: EdgeInsets.all(10),
+              padding: const EdgeInsets.all(10),
               width: 50,
               height: 50,
               decoration: BoxDecoration(
@@ -287,7 +361,7 @@ class _PayoutBankingScreenState extends State<PayoutBankingScreen> {
               ),
               child: Center(child: Icon(data.icon, color: data.color)),
             ),
-            SizedBox(width: 10),
+            const SizedBox(width: 10),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -297,17 +371,25 @@ class _PayoutBankingScreenState extends State<PayoutBankingScreen> {
                     context,
                   ).copyWith(fontSize: 14),
                 ),
-                Text(data.dateName, style: AppTheme.tsBody),
+                Text(data.dateName, style: AppTheme.tsBodyAdaptive(context)),
               ],
             ),
-            Spacer(),
+            const Spacer(),
             Column(
               children: [
                 Text(
                   data.amount,
-                  style: AppTheme.tsAccent.copyWith(color: data.color),
+                  style: AppTheme.tsAccent.copyWith(
+                    fontFamily: AppTheme.fontFamily,
+                    color: data.color,
+                  ),
                 ),
-                Text(data.status, style: AppTheme.tsSub),
+                Text(
+                  data.status == 'Settled'
+                      ? 'settled'.tr(context)
+                      : 'pending'.tr(context),
+                  style: AppTheme.tsSubAdaptive(context),
+                ),
               ],
             ),
           ],
@@ -315,7 +397,10 @@ class _PayoutBankingScreenState extends State<PayoutBankingScreen> {
         if (data != transactions.last)
           SizedBox(
             width: double.infinity,
-            child: Divider(color: AppTheme.kTextSub, thickness: 0.3),
+            child: Divider(
+              color: isDark ? AppTheme.kBorder : AppTheme.kLightBorder,
+              thickness: 0.5,
+            ),
           ),
       ],
     );

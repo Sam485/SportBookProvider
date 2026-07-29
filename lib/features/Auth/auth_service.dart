@@ -34,12 +34,16 @@ class AuthService {
 
   // ✅ Initialize app - check auth and navigate accordingly
   Future<void> initializeApp(BuildContext context) async {
+    // Check if context is still valid
+    if (!context.mounted) return;
+
     final hasValidToken = await isAuthenticated();
 
     if (hasValidToken) {
       // User is authenticated, go to home
-      // ignore: use_build_context_synchronously
-      _navigateToHome(context);
+      if (context.mounted) {
+        _navigateToHome(context);
+      }
     } else {
       // Try to refresh token
       final refreshToken = await _tokenServiceInstance.getRefreshToken();
@@ -47,21 +51,26 @@ class AuthService {
         final refreshed = await _tokenServiceInstance.refreshAccessToken();
         if (refreshed) {
           // Token refreshed successfully, go to home
-          // ignore: use_build_context_synchronously
-          _navigateToHome(context);
+          if (context.mounted) {
+            _navigateToHome(context);
+          }
           return;
         }
       }
 
       // No valid token, go to login
       await _tokenServiceInstance.clearToken();
-      // ignore: use_build_context_synchronously
-      _navigateToLanding(context);
+      if (context.mounted) {
+        _navigateToLanding(context);
+      }
     }
   }
 
   // ✅ Check auth status and redirect appropriately (for other screens)
   Future<void> checkAndRedirect(BuildContext context) async {
+    // Check if context is still valid
+    if (!context.mounted) return;
+
     // Skip if already on login or signup screen
     final currentRoute = ModalRoute.of(context)?.settings.name;
     if (currentRoute == AppRoutes.landing ||
@@ -73,8 +82,7 @@ class AuthService {
 
     if (hasValidToken) {
       // Already authenticated, go to home if not already there
-      if (currentRoute != AppRoutes.home) {
-        // ignore: use_build_context_synchronously
+      if (currentRoute != AppRoutes.home && context.mounted) {
         _navigateToHome(context);
       }
     } else {
@@ -83,8 +91,7 @@ class AuthService {
       if (refreshToken != null && refreshToken.isNotEmpty) {
         final refreshed = await _tokenServiceInstance.refreshAccessToken();
         if (refreshed) {
-          if (currentRoute != AppRoutes.home) {
-            // ignore: use_build_context_synchronously
+          if (currentRoute != AppRoutes.home && context.mounted) {
             _navigateToHome(context);
           }
           return;
@@ -93,8 +100,7 @@ class AuthService {
 
       // No valid token, go to login
       await _tokenServiceInstance.clearToken();
-      if (currentRoute != AppRoutes.landing) {
-        // ignore: use_build_context_synchronously
+      if (currentRoute != AppRoutes.landing && context.mounted) {
         _navigateToLanding(context);
       }
     }
@@ -111,6 +117,9 @@ class AuthService {
 
   // Show session expired dialog and redirect to login
   void showSessionExpiredDialog(BuildContext context) {
+    // Check if context is still valid
+    if (!context.mounted) return;
+
     // Check if there's already a dialog showing
     if (ModalRoute.of(context)?.isCurrent != true) return;
 
@@ -125,7 +134,10 @@ class AuthService {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.of(dialogContext).pop();
+              // Check if dialog context is still valid before popping
+              if (dialogContext.mounted) {
+                Navigator.of(dialogContext).pop();
+              }
               logout();
             },
             child: const Text('Login'),
@@ -161,6 +173,13 @@ class AuthService {
 
   // ✅ Navigate to home (with proper stack clearing)
   void _navigateToHome(BuildContext context) {
+    // Check if context is still valid before navigation
+    if (!context.mounted) {
+      // Fallback to using navigator key
+      _navigateToHomeUsingKey();
+      return;
+    }
+
     Navigator.pushNamedAndRemoveUntil(
       context,
       AppRoutes.home,
@@ -170,6 +189,13 @@ class AuthService {
 
   // ✅ Navigate to landing (with proper stack clearing)
   void _navigateToLanding(BuildContext context) {
+    // Check if context is still valid before navigation
+    if (!context.mounted) {
+      // Fallback to using navigator key
+      _navigateToLandingUsingKey();
+      return;
+    }
+
     Navigator.pushNamedAndRemoveUntil(
       context,
       AppRoutes.landing,
@@ -177,19 +203,29 @@ class AuthService {
     );
   }
 
+  // ✅ Navigate to home using navigator key (for background tasks)
+  void _navigateToHomeUsingKey() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final navState = _navigatorKeyInstance.currentState;
+      if (navState == null || !navState.context.mounted) return;
+
+      final currentRoute = ModalRoute.of(navState.context)?.settings.name;
+      if (currentRoute != AppRoutes.home) {
+        navState.pushNamedAndRemoveUntil(AppRoutes.home, (route) => false);
+      }
+    });
+  }
+
   // ✅ Navigate to landing using navigator key (for background tasks)
   void _navigateToLandingUsingKey() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final navState = _navigatorKeyInstance.currentState;
-      if (navState == null) return;
+      if (navState == null || !navState.context.mounted) return;
 
       final currentRoute = ModalRoute.of(navState.context)?.settings.name;
       if (currentRoute != AppRoutes.landing &&
           currentRoute != AppRoutes.createProfile) {
-        navState.pushNamedAndRemoveUntil(
-          AppRoutes.landing, // ✅ Navigate to landing, not home
-          (route) => false,
-        );
+        navState.pushNamedAndRemoveUntil(AppRoutes.landing, (route) => false);
       }
     });
   }

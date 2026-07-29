@@ -1,14 +1,24 @@
 // widgets/cards/club_card.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/core/di/service_locator.dart';
+import 'package:flutter_application_1/features/SportClub/model/sport_club_model.dart';
+import 'package:flutter_application_1/features/SportClub/service/sport_club_service.dart';
 import 'package:flutter_application_1/routes/app_routes.dart';
+import 'package:flutter_application_1/screens/resource/other/create_sport_club_screen.dart';
 import '../../core/theme.dart';
 import '../../translations/app_translations.dart';
-import '../../features/SportClub/model/sport_club_model.dart';
 
 class ClubCard extends StatefulWidget {
   final SportClubModel club;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete; // Add delete callback
 
-  const ClubCard({super.key, required this.club});
+  const ClubCard({
+    super.key,
+    required this.club,
+    this.onEdit,
+    this.onDelete, // Add this
+  });
 
   @override
   State<ClubCard> createState() => _ClubCardState();
@@ -17,6 +27,8 @@ class ClubCard extends StatefulWidget {
 class _ClubCardState extends State<ClubCard> {
   int _page = 0;
   late PageController _ctrl;
+  bool _isDeleting = false;
+  final SportClubService _sportClubService = getIt<SportClubService>();
 
   @override
   void initState() {
@@ -75,15 +87,151 @@ class _ClubCardState extends State<ClubCard> {
   }
 
   void _navigateToAddSlot(int id) {
-     Navigator.pushNamed(
-      context,
-      AppRoutes.slot,
-      arguments: widget.club, // Pass the entire club model
-    );
+    Navigator.pushNamed(context, AppRoutes.slot, arguments: widget.club);
   }
 
   void _navigateToEditSportClub() {
-    Navigator.pushNamed(context, AppRoutes.editSportClub,arguments: c);
+    if (widget.onEdit != null) {
+      widget.onEdit!();
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CreateSportClubScreen(clubToEdit: widget.club),
+        ),
+      );
+    }
+  }
+
+  // Show delete confirmation dialog
+  Future<void> _showDeleteConfirmation() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: isDark ? AppTheme.kBg : Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.delete_outline, color: Colors.red, size: 28),
+              const SizedBox(width: 12),
+              Text(
+                'delete_club'.tr(context),
+                style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
+                  color: isDark ? Colors.white : AppTheme.kLightText,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'delete_club_confirmation'
+                .tr(context)
+                .replaceAll('{name}', widget.club.name),
+            style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
+              color: isDark ? Colors.white70 : AppTheme.kLightTextSub,
+              fontSize: 16,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              style: TextButton.styleFrom(
+                foregroundColor: isDark ? Colors.white70 : Colors.grey,
+                textStyle: const TextStyle(
+                  fontFamily: AppTheme.fontFamily,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              child: Text('cancel'.tr(context)),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                textStyle: const TextStyle(
+                  fontFamily: AppTheme.fontFamily,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              child: Text('delete'.tr(context)),
+            ),
+          ],
+        );
+      },
+    ).then((confirmed) {
+      if (confirmed == true) {
+        _deleteClub();
+      }
+    });
+  }
+
+  // Delete club
+  Future<void> _deleteClub() async {
+    setState(() {
+      _isDeleting = true;
+    });
+
+    try {
+      await _sportClubService.deleteSportClub(widget.club.id!);
+
+      if (mounted) {
+        setState(() {
+          _isDeleting = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'club_deleted_success'
+                  .tr(context)
+                  .replaceAll('{name}', widget.club.name),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+
+        // Call the delete callback to refresh the parent
+        if (widget.onDelete != null) {
+          widget.onDelete!();
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isDeleting = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'club_delete_failed'
+                  .tr(context)
+                  .replaceAll('{error}', e.toString()),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -175,6 +323,7 @@ class _ClubCardState extends State<ClubCard> {
                                   Text(
                                     'no_images'.tr(context),
                                     style: TextStyle(
+                                      fontFamily: AppTheme.fontFamily,
                                       color: isDark
                                           ? Colors.white38
                                           : AppTheme.kLightTextSub,
@@ -234,6 +383,40 @@ class _ClubCardState extends State<ClubCard> {
                             ),
                           ),
 
+                          // Delete button - TOP LEFT (below open badge)
+                          Positioned(
+                            top: 8,
+                            right: 50, // Position next to settings button
+                            child: GestureDetector(
+                              onTap: _showDeleteConfirmation,
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.5),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.red,
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: _isDeleting
+                                    ? const SizedBox(
+                                        width: 18,
+                                        height: 18,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.red,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : Icon(
+                                        Icons.delete_outline,
+                                        color: Colors.red,
+                                        size: 18,
+                                      ),
+                              ),
+                            ),
+                          ),
+
                           // Page count badge - Only show if multiple images
                           if (urls.length > 1)
                             Positioned(
@@ -252,6 +435,7 @@ class _ClubCardState extends State<ClubCard> {
                                 child: Text(
                                   '${_page + 1}/${urls.length}',
                                   style: const TextStyle(
+                                    fontFamily: AppTheme.fontFamily,
                                     color: Colors.white70,
                                     fontSize: 10,
                                     fontWeight: FontWeight.w600,
@@ -320,6 +504,7 @@ class _ClubCardState extends State<ClubCard> {
                             child: Text(
                               initials,
                               style: TextStyle(
+                                fontFamily: AppTheme.fontFamily,
                                 color: isDark
                                     ? Colors.white
                                     : AppTheme.kLightText,
@@ -336,6 +521,7 @@ class _ClubCardState extends State<ClubCard> {
                                 Text(
                                   c.name,
                                   style: TextStyle(
+                                    fontFamily: AppTheme.fontFamily,
                                     color: isDark
                                         ? Colors.white
                                         : AppTheme.kLightText,
@@ -356,6 +542,7 @@ class _ClubCardState extends State<ClubCard> {
                                     Text(
                                       formatDurationToTimeString(c.openTime),
                                       style: const TextStyle(
+                                        fontFamily: AppTheme.fontFamily,
                                         color: AppTheme.kAccent,
                                         fontSize: 10,
                                         fontWeight: FontWeight.w600,
@@ -382,6 +569,7 @@ class _ClubCardState extends State<ClubCard> {
                                     Text(
                                       formatDurationToTimeString(c.closeTime),
                                       style: TextStyle(
+                                        fontFamily: AppTheme.fontFamily,
                                         color: isDark
                                             ? AppTheme.kTextSub
                                             : AppTheme.kLightTextSub,
@@ -418,6 +606,7 @@ class _ClubCardState extends State<ClubCard> {
                             child: Text(
                               c.location,
                               style: TextStyle(
+                                fontFamily: AppTheme.fontFamily,
                                 color: isDark
                                     ? Colors.white70
                                     : AppTheme.kLightTextSub,
@@ -445,6 +634,7 @@ class _ClubCardState extends State<ClubCard> {
                               child: Text(
                                 c.categories.map((cat) => cat.name).join(', '),
                                 style: TextStyle(
+                                  fontFamily: AppTheme.fontFamily,
                                   color: isDark
                                       ? AppTheme.kTextSub
                                       : AppTheme.kLightTextSub,
@@ -473,6 +663,7 @@ class _ClubCardState extends State<ClubCard> {
                                 Text(
                                   '${c.favoriteCount}',
                                   style: TextStyle(
+                                    fontFamily: AppTheme.fontFamily,
                                     color: isDark
                                         ? AppTheme.kTextSub
                                         : AppTheme.kLightTextSub,
@@ -514,6 +705,7 @@ class _ClubCardState extends State<ClubCard> {
                               child: Text(
                                 'Add slot',
                                 style: const TextStyle(
+                                  fontFamily: AppTheme.fontFamily,
                                   color: Color(0xFF0A1828),
                                   fontSize: 11,
                                   fontWeight: FontWeight.w800,
@@ -593,6 +785,7 @@ class _ClubCardState extends State<ClubCard> {
           Text(
             isOpen ? 'open'.tr(context) : 'closed'.tr(context),
             style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
               color: isOpen ? Colors.greenAccent : Colors.redAccent,
               fontSize: 9,
               fontWeight: FontWeight.w700,

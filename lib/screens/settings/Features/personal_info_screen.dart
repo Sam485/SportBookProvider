@@ -104,7 +104,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
           SnackBar(
             content: Text(
               '${'avatar_update_failed'.tr(context)}: $errorMessage',
-              style: const TextStyle(),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
             ),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 3),
@@ -138,7 +138,10 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
       if (!_isDisposed && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to pick image: $e', style: const TextStyle()),
+            content: Text(
+              '${'failed_to_pick_image'.tr(context)}: $e',
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 2),
           ),
@@ -166,7 +169,10 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
       if (!_isDisposed && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to take photo: $e', style: const TextStyle()),
+            content: Text(
+              '${'failed_to_take_photo'.tr(context)}: $e',
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 2),
           ),
@@ -206,6 +212,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
               Text(
                 'choose_photo'.tr(context),
                 style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
                   color: isDark ? Colors.white : AppTheme.kLightText,
                   fontSize: 16,
                   fontWeight: FontWeight.w800,
@@ -229,6 +236,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                 title: Text(
                   'choose_from_library'.tr(context),
                   style: TextStyle(
+                    fontFamily: AppTheme.fontFamily,
                     color: isDark ? Colors.white : AppTheme.kLightText,
                   ),
                 ),
@@ -253,6 +261,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                 title: Text(
                   'take_a_photo'.tr(context),
                   style: TextStyle(
+                    fontFamily: AppTheme.fontFamily,
                     color: isDark ? Colors.white : AppTheme.kLightText,
                   ),
                 ),
@@ -274,7 +283,10 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                   ),
                   title: Text(
                     'remove_photo'.tr(context),
-                    style: const TextStyle(color: Colors.red),
+                    style: const TextStyle(
+                      fontFamily: AppTheme.fontFamily,
+                      color: Colors.red,
+                    ),
                   ),
                   onTap: () {
                     Navigator.pop(context);
@@ -295,8 +307,8 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Remove avatar feature coming soon',
-          style: const TextStyle(),
+          'remove_avatar_coming_soon'.tr(context),
+          style: const TextStyle(fontFamily: AppTheme.fontFamily),
         ),
         backgroundColor: Colors.grey,
         duration: const Duration(seconds: 2),
@@ -350,7 +362,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
         SnackBar(
           content: Text(
             'fill_all_fields'.tr(context),
-            style: const TextStyle(),
+            style: const TextStyle(fontFamily: AppTheme.fontFamily),
           ),
           backgroundColor: Colors.red,
         ),
@@ -386,7 +398,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
           SnackBar(
             content: Text(
               '${'update_failed'.tr(context)}: $errorMessage',
-              style: const TextStyle(),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
             ),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 3),
@@ -430,6 +442,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
         title: Text(
           'edit_profile'.tr(context),
           style: TextStyle(
+            fontFamily: AppTheme.fontFamily,
             color: isDark ? Colors.white : AppTheme.kLightText,
             fontSize: 18,
             fontWeight: FontWeight.w800,
@@ -452,6 +465,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                 : Text(
                     'save'.tr(context),
                     style: TextStyle(
+                      fontFamily: AppTheme.fontFamily,
                       color: AppTheme.kAccent,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -617,6 +631,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
         child: TextField(
           controller: _locationController,
           style: TextStyle(
+            fontFamily: AppTheme.fontFamily,
             color: isDark ? Colors.white : AppTheme.kLightText,
             fontSize: 16,
           ),
@@ -625,6 +640,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
           decoration: InputDecoration(
             labelText: 'location'.tr(context),
             labelStyle: TextStyle(
+              fontFamily: AppTheme.fontFamily,
               color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
             ),
             prefixIcon: Icon(
@@ -634,6 +650,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
             suffixIcon: Icon(Icons.edit_location, color: AppTheme.kAccent),
             hintText: 'tap_to_select_location'.tr(context),
             hintStyle: TextStyle(
+              fontFamily: AppTheme.fontFamily,
               color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
             ),
             enabledBorder: OutlineInputBorder(
@@ -654,7 +671,11 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Colors.red, width: 2),
             ),
-            errorStyle: TextStyle(color: Colors.red.shade300, fontSize: 12),
+            errorStyle: TextStyle(
+              fontFamily: AppTheme.fontFamily,
+              color: Colors.red.shade300,
+              fontSize: 12,
+            ),
             filled: true,
             fillColor: isDark ? AppTheme.kCard : AppTheme.kLightCard,
           ),
@@ -673,6 +694,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     return TextField(
       controller: controller,
       style: TextStyle(
+        fontFamily: AppTheme.fontFamily,
         color: isDark ? Colors.white : AppTheme.kLightText,
         fontSize: 16,
       ),
@@ -681,9 +703,11 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(
+          fontFamily: AppTheme.fontFamily,
           color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
         ),
         hintStyle: TextStyle(
+          fontFamily: AppTheme.fontFamily,
           color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
         ),
         prefixIcon: Icon(
@@ -708,7 +732,11 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Colors.red, width: 2),
         ),
-        errorStyle: TextStyle(color: Colors.red.shade300, fontSize: 12),
+        errorStyle: TextStyle(
+          fontFamily: AppTheme.fontFamily,
+          color: Colors.red.shade300,
+          fontSize: 12,
+        ),
         filled: true,
         fillColor: isDark ? AppTheme.kCard : AppTheme.kLightCard,
       ),
@@ -730,7 +758,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
               borderRadius: BorderRadius.circular(12),
             ),
             elevation: 2,
-            textStyle: const TextStyle(),
+            textStyle: const TextStyle(fontFamily: AppTheme.fontFamily),
           ),
           child: _isLoading
               ? const SizedBox(
@@ -744,6 +772,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
               : Text(
                   'save_changes'.tr(context),
                   style: TextStyle(
+                    fontFamily: AppTheme.fontFamily,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: isDark ? Colors.black : Colors.white,

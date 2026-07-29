@@ -10,6 +10,7 @@ import 'package:flutter_application_1/features/SportClub/model/dto/update_sport_
 import 'package:flutter_application_1/features/SportClub/model/dto/update_sport_club_images.dart';
 import 'package:flutter_application_1/features/SportClub/model/sport_club_model.dart';
 import 'package:flutter_application_1/features/SportClub/service/sport_club_service.dart';
+import 'package:flutter_application_1/translations/app_translations.dart';
 import 'package:flutter_application_1/widgets/common/map_picker_screen.dart';
 
 class CreateSportClubScreen extends StatefulWidget {
@@ -135,7 +136,10 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to load categories: ${e.toString()}'),
+            content: Text(
+              'Failed to load categories: ${e.toString()}',
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -201,8 +205,11 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            _isEditMode ? 'Update Images' : 'Select Images',
+                            _isEditMode
+                                ? 'update_images'.tr(context)
+                                : 'select_images'.tr(context),
                             style: TextStyle(
+                              fontFamily: AppTheme.fontFamily,
                               color: isDark
                                   ? Colors.white
                                   : AppTheme.kLightText,
@@ -223,8 +230,11 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                         ],
                       ),
                       Text(
-                        'Choose up to ${5 - _images.length} images',
+                        'choose_up_to_images'
+                            .tr(context)
+                            .replaceAll('{count}', '${5 - _images.length}'),
                         style: TextStyle(
+                          fontFamily: AppTheme.fontFamily,
                           color: isDark
                               ? AppTheme.kTextSub
                               : AppTheme.kLightTextSub,
@@ -245,8 +255,8 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                         // Gallery option
                         _buildPickerOption(
                           icon: Icons.photo_library,
-                          title: 'Choose from Gallery',
-                          subtitle: 'Select multiple images from your gallery',
+                          title: 'choose_from_gallery'.tr(context),
+                          subtitle: 'select_multiple_images'.tr(context),
                           color: AppTheme.kAccent,
                           isDark: isDark,
                           onTap: () => _handleGalleryPick(dialogContext),
@@ -256,8 +266,8 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                         // Camera option
                         _buildPickerOption(
                           icon: Icons.camera_alt,
-                          title: 'Take Photo',
-                          subtitle: 'Capture a new photo with camera',
+                          title: 'take_photo'.tr(context),
+                          subtitle: 'capture_new_photo'.tr(context),
                           color: Colors.orange,
                           isDark: isDark,
                           onTap: () => _handleCameraPick(dialogContext),
@@ -267,8 +277,8 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                         // Cancel option
                         _buildPickerOption(
                           icon: Icons.cancel,
-                          title: 'Cancel',
-                          subtitle: 'Go back without selecting',
+                          title: 'cancel'.tr(context),
+                          subtitle: 'go_back_without_selecting'.tr(context),
                           color: Colors.red,
                           isDark: isDark,
                           onTap: () => Navigator.pop(dialogContext, false),
@@ -311,7 +321,10 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                '${savedImages.length} images selected successfully',
+                'images_selected_success'
+                    .tr(context)
+                    .replaceAll('{count}', '${savedImages.length}'),
+                style: const TextStyle(fontFamily: AppTheme.fontFamily),
               ),
               backgroundColor: Colors.green,
               duration: const Duration(seconds: 2),
@@ -320,8 +333,11 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
         }
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('No images selected'),
+          SnackBar(
+            content: Text(
+              'no_images_selected'.tr(context),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             backgroundColor: Colors.orange,
           ),
         );
@@ -331,7 +347,12 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error selecting images: ${e.toString()}'),
+            content: Text(
+              'error_selecting_images'
+                  .tr(context)
+                  .replaceAll('{error}', e.toString()),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -363,10 +384,13 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Photo captured successfully'),
+            SnackBar(
+              content: Text(
+                'photo_captured_success'.tr(context),
+                style: const TextStyle(fontFamily: AppTheme.fontFamily),
+              ),
               backgroundColor: Colors.green,
-              duration: Duration(seconds: 2),
+              duration: const Duration(seconds: 2),
             ),
           );
         }
@@ -376,7 +400,12 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error taking photo: ${e.toString()}'),
+            content: Text(
+              'error_taking_photo'
+                  .tr(context)
+                  .replaceAll('{error}', e.toString()),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -422,6 +451,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                   Text(
                     title,
                     style: TextStyle(
+                      fontFamily: AppTheme.fontFamily,
                       color: isDark ? Colors.white : AppTheme.kLightText,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -430,6 +460,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                   Text(
                     subtitle,
                     style: TextStyle(
+                      fontFamily: AppTheme.fontFamily,
                       color: isDark
                           ? AppTheme.kTextSub
                           : AppTheme.kLightTextSub,
@@ -449,7 +480,6 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
       ),
     );
   }
-
 
   // Open Map Picker
   Future<void> _openMapPicker() async {
@@ -485,8 +515,11 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
       // Validate location is selected
       if (_locationController.text.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please select a location on the map'),
+          SnackBar(
+            content: Text(
+              'please_select_location'.tr(context),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             backgroundColor: Colors.orange,
           ),
         );
@@ -496,8 +529,11 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
       // Validate category is selected
       if (_selectedCategory == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please select a category'),
+          SnackBar(
+            content: Text(
+              'category_required'.tr(context),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             backgroundColor: Colors.orange,
           ),
         );
@@ -507,8 +543,11 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
       // Validate images for create mode
       if (!_isEditMode && _images.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please upload at least one image'),
+          SnackBar(
+            content: Text(
+              'image_required'.tr(context),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             backgroundColor: Colors.orange,
           ),
         );
@@ -518,8 +557,11 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
       // Validate status is selected
       if (_isOpen == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please select club status (Open/Closed)'),
+          SnackBar(
+            content: Text(
+              'status_required'.tr(context),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             backgroundColor: Colors.orange,
           ),
         );
@@ -529,8 +571,11 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
       // Validate times are selected
       if (_openTime == null || _closeTime == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please select opening and closing times'),
+          SnackBar(
+            content: Text(
+              'times_required'.tr(context),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             backgroundColor: Colors.orange,
           ),
         );
@@ -543,8 +588,11 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
 
       if (lat == null || lng == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Invalid location coordinates'),
+          SnackBar(
+            content: Text(
+              'invalid_location_coordinates'.tr(context),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             backgroundColor: Colors.orange,
           ),
         );
@@ -563,7 +611,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
     }
   }
 
-  // Create method
+  // In CreateSportClubScreen.dart - modify the submit methods
   Future<void> _createSportClub(double lat, double lng) async {
     try {
       final sportClubDto = CreatedSportClubsDto(
@@ -575,7 +623,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
         openTime: _timeToDuration(_openTime!),
         closeTime: _timeToDuration(_closeTime!),
         description: _descriptionController.text,
-        categoryId: _selectedCategory!.id,
+        categoryIds: _selectedCategory!.id,
         images: _images,
       );
 
@@ -589,12 +637,17 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Club "${createdClub.name}" created successfully! 🎉',
+              'club_created_success'
+                  .tr(context)
+                  .replaceAll('{name}', createdClub.name),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
             ),
             backgroundColor: Colors.green,
             duration: const Duration(seconds: 2),
           ),
         );
+
+        // Return true to indicate success
         Navigator.pop(context, true);
       }
     } catch (e) {
@@ -605,16 +658,24 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to create club: ${e.toString()}'),
+            content: Text(
+              'club_created_failed'
+                  .tr(context)
+                  .replaceAll('{error}', e.toString()),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 3),
           ),
         );
+
+        // Return false to indicate failure
+        Navigator.pop(context, false);
       }
     }
   }
 
-  // Update method - FIXED to use correct DTOs
+  // Similarly update _updateSportClub method:
   Future<void> _updateSportClub(double lat, double lng) async {
     try {
       final clubId = _editingClubId!;
@@ -647,7 +708,10 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                'Club "${updatedClub.name}" updated successfully! ✏️',
+                'club_updated_success'
+                    .tr(context)
+                    .replaceAll('{name}', updatedClub.name),
+                style: const TextStyle(fontFamily: AppTheme.fontFamily),
               ),
               backgroundColor: Colors.green,
               duration: const Duration(seconds: 2),
@@ -666,7 +730,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
           lat: lat,
           lng: lng,
           isOpen: _isOpen!,
-          categoryId: _selectedCategory!.id, // List of category IDs
+          categoryId: _selectedCategory!.id,
         );
 
         final updatedClub = await sportClubService.updateSportClub(
@@ -682,7 +746,10 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                'Club "${updatedClub.name}" updated successfully! ✏️',
+                'club_updated_no_images'
+                    .tr(context)
+                    .replaceAll('{name}', updatedClub.name),
+                style: const TextStyle(fontFamily: AppTheme.fontFamily),
               ),
               backgroundColor: Colors.green,
               duration: const Duration(seconds: 2),
@@ -699,11 +766,17 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to update club: ${e.toString()}'),
+            content: Text(
+              'club_updated_failed'
+                  .tr(context)
+                  .replaceAll('{error}', e.toString()),
+              style: const TextStyle(fontFamily: AppTheme.fontFamily),
+            ),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 3),
           ),
         );
+        Navigator.pop(context, false);
       }
     }
   }
@@ -758,18 +831,22 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                   borderSide: BorderSide(color: AppTheme.kAccent, width: 2),
                 ),
                 hintStyle: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
                   color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                 ),
                 labelStyle: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
                   color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                 ),
               ),
               helpTextStyle: TextStyle(
+                fontFamily: AppTheme.fontFamily,
                 color: isDark ? Colors.white : AppTheme.kLightText,
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
               dialTextStyle: TextStyle(
+                fontFamily: AppTheme.fontFamily,
                 color: isDark ? Colors.white : AppTheme.kLightText,
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
@@ -799,7 +876,9 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final title = _isEditMode ? 'Edit Sport Club' : 'Create Sport Club';
+    final title = _isEditMode
+        ? 'edit_sport_club'.tr(context)
+        : 'create_sport_club'.tr(context);
 
     return Scaffold(
       backgroundColor: isDark ? AppTheme.kBg : AppTheme.kLightBg,
@@ -830,7 +909,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
 
                     // ── Basic Information ─────────────────────────────────
                     _buildSectionTitle(
-                      'Basic Information',
+                      'basic_information'.tr(context),
                       Icons.info_outline,
                       isDark,
                     ),
@@ -838,12 +917,12 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
 
                     _buildTextField(
                       controller: _nameController,
-                      label: 'Club Name',
-                      hint: 'Enter club name',
+                      label: 'club_name'.tr(context),
+                      hint: 'enter_club_name'.tr(context),
                       icon: Icons.sports,
                       validator: (value) {
                         if (value?.isEmpty ?? true) {
-                          return 'Please enter club name';
+                          return 'please_enter_club_name'.tr(context);
                         }
                         return null;
                       },
@@ -860,7 +939,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
 
                     // ── Operating Hours ───────────────────────────────────
                     _buildSectionTitle(
-                      'Operating Hours',
+                      'operating_hours'.tr(context),
                       Icons.access_time,
                       isDark,
                     ),
@@ -875,7 +954,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                       children: [
                         Expanded(
                           child: _buildTimePicker(
-                            label: 'Opening Time',
+                            label: 'opening_time'.tr(context),
                             time: _openTime,
                             onTap: () => _selectTime(isOpen: true),
                             isDark: isDark,
@@ -884,7 +963,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: _buildTimePicker(
-                            label: 'Closing Time',
+                            label: 'closing_time'.tr(context),
                             time: _closeTime,
                             onTap: () => _selectTime(isOpen: false),
                             isDark: isDark,
@@ -896,7 +975,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
 
                     // ── Description ────────────────────────────────────────
                     _buildSectionTitle(
-                      'Description',
+                      'description'.tr(context),
                       Icons.description,
                       isDark,
                     ),
@@ -919,11 +998,13 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                         controller: _descriptionController,
                         maxLines: 4,
                         style: TextStyle(
+                          fontFamily: AppTheme.fontFamily,
                           color: isDark ? Colors.white : AppTheme.kLightText,
                         ),
                         decoration: InputDecoration(
-                          hintText: 'Describe your club...',
+                          hintText: 'describe_club'.tr(context),
                           hintStyle: TextStyle(
+                            fontFamily: AppTheme.fontFamily,
                             color: isDark
                                 ? AppTheme.kTextSub
                                 : AppTheme.kLightTextSub,
@@ -939,7 +1020,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                         ),
                         validator: (value) {
                           if (value?.isEmpty ?? true) {
-                            return 'Please enter description';
+                            return 'please_enter_description'.tr(context);
                           }
                           return null;
                         },
@@ -962,6 +1043,111 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
 
   // ── Category Dropdown ─────────────────────────────────────────────────
   Widget _buildCategoryDropdown(bool isDark) {
+    // If in edit mode, show category as a read-only field
+    if (_isEditMode && _selectedCategory != null) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isDark ? AppTheme.kCardAlt : AppTheme.kLightCardAlt,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark ? AppTheme.kBorder : AppTheme.kLightBorder,
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.category, color: AppTheme.kAccent, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'category'.tr(context),
+                    style: TextStyle(
+                      fontFamily: AppTheme.fontFamily,
+                      color: isDark
+                          ? AppTheme.kTextSub
+                          : AppTheme.kLightTextSub,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      if (_selectedCategory!.imageUrl.isNotEmpty)
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: Image.network(
+                            _selectedCategory!.imageUrl,
+                            width: 20,
+                            height: 20,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                width: 20,
+                                height: 20,
+                                color: Colors.grey.shade300,
+                                child: const Icon(
+                                  Icons.error_outline,
+                                  size: 12,
+                                ),
+                              );
+                            },
+                          ),
+                        )
+                      else
+                        Container(
+                          width: 20,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            color: AppTheme.kAccent.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Icon(
+                            Icons.category,
+                            color: AppTheme.kAccent,
+                            size: 12,
+                          ),
+                        ),
+                      const SizedBox(width: 8),
+                      Text(
+                        _selectedCategory!.name,
+                        style: TextStyle(
+                          fontFamily: AppTheme.fontFamily,
+                          color: isDark ? Colors.white : AppTheme.kLightText,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.grey.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                'read_only'.tr(context),
+                style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
+                  color: isDark ? Colors.white70 : AppTheme.kLightTextSub,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Create mode - show dropdown
     return Container(
       decoration: BoxDecoration(
         color: isDark ? AppTheme.kCardAlt : AppTheme.kLightCardAlt,
@@ -983,8 +1169,9 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    'Loading categories...',
+                    'loading_categories'.tr(context),
                     style: TextStyle(
+                      fontFamily: AppTheme.fontFamily,
                       color: isDark
                           ? AppTheme.kTextSub
                           : AppTheme.kLightTextSub,
@@ -1004,8 +1191,9 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                       Icon(Icons.category, color: AppTheme.kAccent),
                       const SizedBox(width: 8),
                       Text(
-                        'Select Category',
+                        'select_category'.tr(context),
                         style: TextStyle(
+                          fontFamily: AppTheme.fontFamily,
                           color: isDark
                               ? Colors.white70
                               : AppTheme.kLightTextSub,
@@ -1062,6 +1250,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                             child: Text(
                               category.name,
                               style: TextStyle(
+                                fontFamily: AppTheme.fontFamily,
                                 color: isDark
                                     ? Colors.white
                                     : AppTheme.kLightText,
@@ -1074,20 +1263,27 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                     ),
                   );
                 }).toList(),
-                onChanged: (CategoriesModel? newValue) {
-                  setState(() {
-                    _selectedCategory = newValue;
-                  });
-                },
+                onChanged: _isEditMode
+                    ? null // Disable in edit mode
+                    : (CategoriesModel? newValue) {
+                        setState(() {
+                          _selectedCategory = newValue;
+                        });
+                      },
                 dropdownColor: isDark ? AppTheme.kBg : Colors.white,
                 icon: Padding(
                   padding: const EdgeInsets.only(right: 16),
                   child: Icon(
-                    Icons.arrow_drop_down,
-                    color: isDark ? Colors.white70 : AppTheme.kLightText,
+                    _isEditMode ? Icons.lock_outline : Icons.arrow_drop_down,
+                    color: isDark
+                        ? (_isEditMode ? Colors.white38 : Colors.white70)
+                        : (_isEditMode
+                              ? AppTheme.kLightTextSub
+                              : AppTheme.kLightText),
                   ),
                 ),
                 style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
                   color: isDark ? Colors.white : AppTheme.kLightText,
                   fontSize: 14,
                 ),
@@ -1151,9 +1347,10 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                   children: [
                     Text(
                       _locationController.text.isNotEmpty
-                          ? 'Location Selected ✓'
-                          : 'Select Location on Map',
+                          ? 'location_selected'.tr(context)
+                          : 'select_location'.tr(context),
                       style: TextStyle(
+                        fontFamily: AppTheme.fontFamily,
                         color: isDark ? Colors.white : AppTheme.kLightText,
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -1163,8 +1360,9 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                     Text(
                       _locationController.text.isNotEmpty
                           ? _locationController.text
-                          : 'Tap to pick location from map',
+                          : 'tap_to_pick_location'.tr(context),
                       style: TextStyle(
+                        fontFamily: AppTheme.fontFamily,
                         color: _locationController.text.isNotEmpty
                             ? (isDark ? Colors.white70 : AppTheme.kLightText)
                             : (isDark
@@ -1265,9 +1463,10 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                       color: Colors.green.withValues(alpha: 0.8),
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    child: const Text(
-                      'Existing',
-                      style: TextStyle(
+                    child: Text(
+                      'existing_image'.tr(context),
+                      style: const TextStyle(
+                        fontFamily: AppTheme.fontFamily,
                         color: Colors.white,
                         fontSize: 8,
                         fontWeight: FontWeight.w500,
@@ -1332,9 +1531,10 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                     color: Colors.blue.withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  child: const Text(
-                    'New',
-                    style: TextStyle(
+                  child: Text(
+                    'new_image'.tr(context),
+                    style: const TextStyle(
+                      fontFamily: AppTheme.fontFamily,
                       color: Colors.white,
                       fontSize: 8,
                       fontWeight: FontWeight.w500,
@@ -1365,8 +1565,11 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
               Icon(Icons.photo_library, color: AppTheme.kAccent, size: 20),
               const SizedBox(width: 8),
               Text(
-                _isEditMode ? 'Update Images' : 'Club Images',
+                _isEditMode
+                    ? 'update_images'.tr(context)
+                    : 'club_images'.tr(context),
                 style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
                   color: isDark ? Colors.white : AppTheme.kLightText,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -1376,6 +1579,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
               Text(
                 '${_keptImageUrls.length + _images.length}/5',
                 style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
                   color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                   fontSize: 12,
                 ),
@@ -1431,10 +1635,16 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                     Text(
                       _images.isEmpty && _keptImageUrls.isEmpty
                           ? (_isEditMode
-                                ? 'Add new images'
-                                : 'Tap to upload images')
-                          : 'Add more images (${5 - (_keptImageUrls.length + _images.length)} remaining)',
+                                ? 'add_new_images'.tr(context)
+                                : 'tap_to_upload_images'.tr(context))
+                          : 'add_more_images'
+                                .tr(context)
+                                .replaceAll(
+                                  '{remaining}',
+                                  '${5 - (_keptImageUrls.length + _images.length)}',
+                                ),
                       style: TextStyle(
+                        fontFamily: AppTheme.fontFamily,
                         color: _keptImageUrls.length + _images.length < 5
                             ? AppTheme.kAccent
                             : Colors.grey,
@@ -1469,6 +1679,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
         Text(
           title,
           style: TextStyle(
+            fontFamily: AppTheme.fontFamily,
             color: isDark ? Colors.white : AppTheme.kLightText,
             fontSize: 18,
             fontWeight: FontWeight.w700,
@@ -1501,17 +1712,22 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
       ),
       child: TextFormField(
         controller: controller,
-        style: TextStyle(color: isDark ? Colors.white : AppTheme.kLightText),
+        style: TextStyle(
+          fontFamily: AppTheme.fontFamily,
+          color: isDark ? Colors.white : AppTheme.kLightText,
+        ),
         keyboardType: keyboardType,
         validator: validator,
         enabled: enabled,
         decoration: InputDecoration(
           labelText: label,
           labelStyle: TextStyle(
+            fontFamily: AppTheme.fontFamily,
             color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
           ),
           hintText: hint,
           hintStyle: TextStyle(
+            fontFamily: AppTheme.fontFamily,
             color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
           ),
           prefixIcon: Icon(icon, color: AppTheme.kAccent, size: 20),
@@ -1547,19 +1763,21 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Club Status',
+                  'club_status'.tr(context),
                   style: TextStyle(
+                    fontFamily: AppTheme.fontFamily,
                     color: isDark ? Colors.white70 : AppTheme.kLightTextSub,
                     fontSize: 12,
                   ),
                 ),
                 Text(
                   _isOpen == null
-                      ? 'Select club status'
+                      ? 'select_club_status'.tr(context)
                       : (_isOpen!
-                            ? 'Currently Open 🟢'
-                            : 'Currently Closed 🔴'),
+                            ? 'currently_open'.tr(context)
+                            : 'currently_closed'.tr(context)),
                   style: TextStyle(
+                    fontFamily: AppTheme.fontFamily,
                     color: isDark ? Colors.white : AppTheme.kLightText,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -1614,6 +1832,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                 Text(
                   label,
                   style: TextStyle(
+                    fontFamily: AppTheme.fontFamily,
                     color: isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub,
                     fontSize: 12,
                   ),
@@ -1622,8 +1841,9 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
             ),
             const SizedBox(height: 6),
             Text(
-              time?.format(context) ?? 'Select time',
+              time?.format(context) ?? 'select_time'.tr(context),
               style: TextStyle(
+                fontFamily: AppTheme.fontFamily,
                 color: time != null
                     ? (isDark ? Colors.white : AppTheme.kLightText)
                     : (isDark ? AppTheme.kTextSub : AppTheme.kLightTextSub),
@@ -1639,7 +1859,9 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
 
   // ── Submit Button ──────────────────────────────────────────────────────
   Widget _buildSubmitButton(bool isDark) {
-    final buttonText = _isEditMode ? 'Update Club' : 'Create Club';
+    final buttonText = _isEditMode
+        ? 'update_club'.tr(context)
+        : 'create_club'.tr(context);
     final icon = _isEditMode ? Icons.edit : Icons.check_circle_outline;
 
     return Container(
@@ -1668,6 +1890,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
+          textStyle: const TextStyle(fontFamily: AppTheme.fontFamily),
         ),
         child: _isSubmitting
             ? const SizedBox(
@@ -1686,6 +1909,7 @@ class _CreateSportClubScreenState extends State<CreateSportClubScreen> {
                   Text(
                     buttonText,
                     style: TextStyle(
+                      fontFamily: AppTheme.fontFamily,
                       color: Colors.white,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
