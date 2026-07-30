@@ -13,7 +13,7 @@ class UpdateUserModel {
 
   factory UpdateUserModel.fromJson(Map<String, dynamic> json) {
     return UpdateUserModel(
-      name: json['name'] as String,
+      name: json['full_name'] as String,
       lat: (json['lat'] as num).toDouble(),
       lng: (json['lng'] as num).toDouble(),
       location: json['location'] as String,
@@ -21,6 +21,6 @@ class UpdateUserModel {
   }
 
   Map<String, dynamic> toJson() {
-    return {'name': name, 'lat': lat, 'lng': lng, 'location': location};
+    return {'full_name': name, 'lat': lat, 'lng': lng, 'location': location};
   }
 }
