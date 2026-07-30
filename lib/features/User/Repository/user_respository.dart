@@ -84,10 +84,10 @@ class UserRespository {
   ) async {
     try {
       final response = await dio.put(
-        '/user/me/password',
+        '/users/me/password',
         data: updatePassword.toJson(),
       );
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         return UserModel.fromJson(response.data);
       } else {
         final errorMessage = _extractErrorMessage(response.data);

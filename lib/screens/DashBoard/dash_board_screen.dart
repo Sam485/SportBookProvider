@@ -555,8 +555,11 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                 if (_recentBookings.isNotEmpty)
                   GestureDetector(
                     onTap: () {
-                      // Navigate to all bookings screen
-                      // Navigator.pushNamed(context, AppRoutes.allBookings);
+                      Navigator.pushNamed(
+                        context,
+                        AppRoutes.allBookings,
+                        arguments: _selectedSportClubId,
+                      );
                     },
                     child: Text(
                       'see_all'.tr(context),

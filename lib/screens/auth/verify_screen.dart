@@ -475,10 +475,6 @@ class _VerifyScreenState extends State<VerifyScreen> {
 
     // Determine header text based on flow
     final isResetFlow = _flow == 'resetPassword';
-    final headerTitle = isResetFlow ? 'Verify Your Identity' : 'Create Account';
-    final headerSubtitle = isResetFlow
-        ? 'Enter the 6-digit code sent to your phone to reset your password'
-        : 'Enter the 6-digit code sent to verify your account';
     final buttonText = isResetFlow
         ? 'Verify & Continue'
         : 'Verify & Create Account';
