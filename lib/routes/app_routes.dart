@@ -1,13 +1,16 @@
+// lib/routes/app_routes.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/features/Slot/model/slot_model.dart';
 import 'package:flutter_application_1/features/SportClub/model/sport_club_model.dart';
 import 'package:flutter_application_1/screens/DashBoard/Notification/notification_screen.dart';
+import 'package:flutter_application_1/screens/DashBoard/other/all_booking_screen.dart';
 import 'package:flutter_application_1/screens/auth/forget_password_screen.dart';
 import 'package:flutter_application_1/screens/auth/landing_screen.dart';
 import 'package:flutter_application_1/screens/auth/login_screen.dart';
 import 'package:flutter_application_1/screens/auth/reset_password_screen.dart';
 import 'package:flutter_application_1/screens/auth/signup_screen.dart';
-import 'package:flutter_application_1/screens/auth/verify_screen.dart'; // ✅ Import VerifyScreen
+import 'package:flutter_application_1/screens/auth/verify_screen.dart';
 import 'package:flutter_application_1/screens/main_screen.dart';
 import 'package:flutter_application_1/screens/resource/other/adjust_slot_screen.dart';
 import 'package:flutter_application_1/screens/resource/other/slot_screen.dart';
@@ -34,6 +37,9 @@ class AppRoutes {
   static const slot = '/addSlot';
   static const adjustSlot = '/createEditSlot';
   static const updateSlot = '/updateSlot';
+
+  // Bookings
+  static const allBookings = '/all-bookings'; // Add this line
 
   // Settings and Profile routes
   static const setting = '/settings';
@@ -67,7 +73,6 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const SignUpScreen());
 
       case verify:
-        // ✅ Handle VerifyScreen with arguments
         final args = settings.arguments;
         if (args is Map<String, dynamic>) {
           return MaterialPageRoute(
@@ -75,7 +80,6 @@ class AppRoutes {
             settings: RouteSettings(arguments: args),
           );
         } else {
-          // If no arguments, return VerifyScreen with default values
           return MaterialPageRoute(builder: (_) => const VerifyScreen());
         }
 
@@ -129,6 +133,14 @@ class AppRoutes {
           builder: (_) => CreateSportClubScreen(clubToEdit: clubToEdit),
         );
 
+      // ── Booking Routes ──────────────────────────────────────────
+      case allBookings:
+        final sportClubId = settings.arguments as int?;
+        return MaterialPageRoute(
+          builder: (_) => AllBookingsScreen(sportClubId: sportClubId),
+        );
+
+      // ── Settings Routes ──────────────────────────────────────────
       case setting:
         return MaterialPageRoute(builder: (_) => const SettingsScreen());
 

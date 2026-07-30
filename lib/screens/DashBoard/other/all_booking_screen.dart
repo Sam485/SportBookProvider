@@ -11,7 +11,9 @@ import 'package:flutter_application_1/screens/DashBoard/other/booking_status_upd
 import 'package:flutter_application_1/translations/app_translations.dart';
 
 class AllBookingsScreen extends StatefulWidget {
-  const AllBookingsScreen({super.key});
+  final int? sportClubId;
+
+  const AllBookingsScreen({super.key, this.sportClubId});
 
   @override
   State<AllBookingsScreen> createState() => _AllBookingsScreenState();
@@ -21,23 +23,19 @@ class _AllBookingsScreenState extends State<AllBookingsScreen> {
   final BookingService _bookingService = getIt<BookingService>();
   final SportClubService _sportClubService = getIt<SportClubService>();
 
-  // Controllers
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
-  // Data
   List<BookingModel> _bookings = [];
   List<BookingModel> _filteredBookings = [];
   List<SportClubModel> _sportClubs = [];
 
-  // Pagination
   int _currentPage = 1;
   final int _limit = 15;
   bool _isLoading = false;
   bool _hasMoreData = true;
   bool _isFirstLoad = true;
 
-  // Filters
   int? _selectedSportClubId;
   DateTime? _selectedDate;
   String? _selectedStatus;
@@ -54,6 +52,7 @@ class _AllBookingsScreenState extends State<AllBookingsScreen> {
   @override
   void initState() {
     super.initState();
+    _selectedSportClubId = widget.sportClubId;
     _loadSportClubs();
     _scrollController.addListener(_onScroll);
   }
@@ -80,7 +79,18 @@ class _AllBookingsScreenState extends State<AllBookingsScreen> {
       if (mounted) {
         setState(() {
           _sportClubs = clubs;
-          if (_sportClubs.isNotEmpty) {
+
+          if (_selectedSportClubId != null) {
+            final clubExists = _sportClubs.any(
+              (club) => club.id == _selectedSportClubId,
+            );
+            if (clubExists) {
+              _loadBookings(reset: true);
+            } else if (_sportClubs.isNotEmpty) {
+              _selectedSportClubId = _sportClubs.first.id;
+              _loadBookings(reset: true);
+            }
+          } else if (_sportClubs.isNotEmpty) {
             _selectedSportClubId = _sportClubs.first.id;
             _loadBookings(reset: true);
           }
@@ -358,7 +368,6 @@ class _AllBookingsScreenState extends State<AllBookingsScreen> {
           padding: const EdgeInsets.all(12),
           child: Row(
             children: [
-              // User Avatar
               Container(
                 width: 50,
                 height: 50,
@@ -379,7 +388,6 @@ class _AllBookingsScreenState extends State<AllBookingsScreen> {
                 ),
               ),
               const SizedBox(width: 12),
-              // Booking Info
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -395,7 +403,7 @@ class _AllBookingsScreenState extends State<AllBookingsScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${booking.slot.name}',
+                      booking.slot.name,
                       style: AppTheme.tsSubAdaptive(
                         context,
                       ).copyWith(fontSize: 13),
@@ -440,7 +448,6 @@ class _AllBookingsScreenState extends State<AllBookingsScreen> {
                   ],
                 ),
               ),
-              // Status Badge
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 10,
@@ -568,7 +575,6 @@ class _AllBookingsScreenState extends State<AllBookingsScreen> {
     );
   }
 
-  // Helper Methods
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'confirmed':
@@ -642,7 +648,6 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Handle
           Center(
             child: Container(
               width: 40,
@@ -678,11 +683,10 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
           ),
           const SizedBox(height: 16),
 
-          // Sport Club Filter
           _buildFilterField(
             label: 'sport_club'.tr(context),
             child: DropdownButtonFormField<int>(
-              value: _selectedSportClubId,
+              initialValue: _selectedSportClubId,
               decoration: _buildInputDecoration(
                 'select_sport_club'.tr(context),
               ),
@@ -713,11 +717,10 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
 
           const SizedBox(height: 12),
 
-          // Status Filter
           _buildFilterField(
             label: 'status'.tr(context),
             child: DropdownButtonFormField<String>(
-              value: _selectedStatus ?? 'All',
+              initialValue: _selectedStatus ?? 'All',
               decoration: _buildInputDecoration('select_status'.tr(context)),
               items: widget.statusOptions.map((status) {
                 return DropdownMenuItem<String>(
@@ -746,7 +749,6 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
 
           const SizedBox(height: 12),
 
-          // Date Filter
           _buildFilterField(
             label: 'date'.tr(context),
             child: InkWell(
@@ -810,7 +812,6 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
 
           const SizedBox(height: 20),
 
-          // Apply Button
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
