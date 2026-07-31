@@ -51,7 +51,11 @@ class AppRoutes {
   static const reviews = '/reviews';
   static const resetPassword = '/resetPassword';
 
-  static Route<dynamic> onGenerateRoute(RouteSettings settings) {
+  static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
+    final appRoute = settings.name;
+    if (appRoute!.startsWith('/link?') || appRoute.startsWith('/link')) {
+      return null;
+    }
     switch (settings.name) {
       // ── Auth Routes ──────────────────────────────────────────────
       case forget:
